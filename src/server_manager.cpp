@@ -70,45 +70,30 @@ void ServerManager::TrackSocketsEvent()
         nfds = epoll_wait(epfd, events, MAX_EVENTS, -1);
         for (int i = 0; i < nfds; i++) {
             socketsManager *sock = (socketsManager *)events[i].data.ptr;
-            sock->handleSocketsAction();
+            sock->handleEvent();
+            if (this->error)
+                break ;
         }
     }
 }
 
-//add item to the map
-// insert_new_Record(pair<>) {
-//     opu
-// }
+void ServerManager::closeConnection(int fd) {
+    socketsManager *sock = socketHandler[fd];
+    epoll_ctl(epfd, EPOLL_CTL_DEL, fd, NULL);
+    close(fd);
+    delete sock;
+    socketHandler.erase(fd);
+}
 
-// int ServerManager::GetEpollFd() {
-//     return this->epfd;
-// }
+void ServerManager::addConnection(struct epoll_event ev, int fd, socketsManager *sock) {
+    epoll_ctl(this->epfd, EPOLL_CTL_ADD, fd, &ev);
+    this->socketHandler.insert({fd, sock});
+}
 
-// struct epoll_event *ServerManager::GetEventEpoll() {
-//     return this->events;
-// }
+void ServerManager::setError() {
+    this->error = true;
+}
 
-// std::unordered_map<int, void *> ServerManager::GetSocketMap() {
-//     return this->socketHandler;
-// }
-
-// std::vector<SocketInfo *> ServerManager::GetSocketInfoContiner() {
-//     return this->sockInfoAdd;
-// }
-
-// void    ServerManager::freeClientData(int fd) {
-//     delete (ClientSocket *)(this->socketHandler[fd]);
-//     this->socketHandler.erase(fd);
-//     for (int i = 0; i < sockInfoAdd.size(); i++) {
-//         if (sockInfoAdd[i]->fd == fd) {
-//             delete sockInfoAdd[i];
-//             sockInfoAdd.erase(sockInfoAdd.begin() + i);
-//             break ;
-//         }
-//     }
-//     close (fd);
-// }
-
-// bool ServerManager::checkError() {
-//     return this->error;
-// }
+bool ServerManager::checkError( void ) {
+    return this->error;
+}

@@ -1,18 +1,18 @@
-#include "../includes/client.hpp"
+#include "../includes/clientSocket.hpp"
 
-ClientSocket::ClientSocket(serverConfig *conf, int fd): socketsManager(conf, fd) {
-	RequestIsFull = false;
-	ResponseIsComplet = false;
-}
-
-int handleRequest( void ) {
+ClientSocket::ClientSocket(int fd ,serverConfig *conf, ServerManager *ptr): 
+socketsManager(conf, fd, ptr), state(READING_REQUEST){
 
 }
 
-int handleResponse( void ) {
+int ClientSocket::handleRequest( void ) {
+
+}
+
+int ClientSocket::handleResponse( void ) {
 	
 }
 
-void handleSocketsAction() {
-
+void ClientSocket::handleEvent() {
+	
 }

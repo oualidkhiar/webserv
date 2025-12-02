@@ -2,6 +2,10 @@
 #define SOCKETSMANAGER_HPP
 
 #include "./config.hpp"
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+class ServerManager;
 
 class socketsManager {
 protected:
@@ -12,10 +16,10 @@ protected:
 
 public:
 
-    socketsManager(serverConfig *conf, int fd, ServerManager *ptr): serverConf(conf), socketFd(fd), ptr(ptr) {}
+    socketsManager(serverConfig *conf, int fd, ServerManager *ptr);
     virtual ~socketsManager();
 
-    virtual void handleSocketsAction() = 0;
+    virtual void handleEvent() = 0;
 
 };
 

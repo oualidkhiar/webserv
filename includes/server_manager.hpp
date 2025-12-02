@@ -1,12 +1,12 @@
 #ifndef SERVER_MANAGER_HPP
 #define SERVER_MANAGER_HPP
 
-#include "./handle_passive_sockets.hpp"
-#include "./client.hpp"
+#include "./listeningSocket.hpp"
+#include "./clientSocket.hpp"
 #include <sys/epoll.h>
 
 
-class ServerManager{
+class ServerManager {
 private:
 
     std::unordered_map<int, socketsManager *>   socketHandler;
@@ -22,14 +22,12 @@ public:
     void StartAllServers();
     void TrackSocketsEvent();
 
+    
+    void addConnection(struct epoll_event ev, int fd, socketsManager *sock);
+    void closeConnection(int fd);
 
-
-    // int GetEpollFd();
-    // struct epoll_event *GetEventEpoll();
-    // std::unordered_map<int, void *> GetSocketMap();
-    // std::vector<SocketInfo *> GetSocketInfoContiner();
-    // void    freeClientData(int fd);
-    // bool checkError();
+    void setError();
+    bool checkError( void );
 
 };
 
