@@ -134,7 +134,7 @@ int main(void)
             perror("epoll_wait Failed : ");
             exit(EXIT_FAILURE);
         }
-        int i = 0;
+        int i = 0;`
         while (i < nfds)
         {
             int fd = data.events[i].data.fd;
