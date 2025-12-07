@@ -16,27 +16,36 @@ enum type {
     STRING,
     SEMICOLON,
     OPENBRACKETS,
-    CLOSEBRACKETS,
-    EDONTIFIER
+    CLOSEBRACKETS
+    // EDONTIFIER
 };
 
 struct Token {
     type t;
     std::string data;
+    Token(type t, std::string d): t(t), data(d) {}
 };
 
 class tokenizer {
 private:
-    FILE *file;
-    std::vector<Token *> tokens;
+
+    std::ifstream           file;
+    std::vector<Token *>    tokens;
+
+    void createToren(type t, std::string data);
+    void extructToken(std::string& line, int& index);
+
 public:
-    tokenizer(FILE *file);
+
+    tokenizer(std::string fileName);
     ~tokenizer();
+    void tokenizerStart();
+    void parseTokens();
+    void printTokens();
+
 };
 
-tokenizer::tokenizer(FILE *file): file(file){}
-
-tokenizer::~tokenizer() {}
-
+void skipe_spaces(std::string& str, int& index);
+std::string handleString(std::string& str, int& index);
 
 #endif

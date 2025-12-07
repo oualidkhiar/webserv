@@ -15,16 +15,18 @@ private:
     int                                         epfd;
     bool                                        error;
 
+    int ListeningSocketStart(serverConfig *serverConf);
+
 public:
 
     ServerManager(std::string FileConfigName);
     ~ServerManager();
+
     void StartAllServers();
     void TrackSocketsEvent();
 
-    
     void addConnection(struct epoll_event ev, int fd, socketsManager *sock);
-    void closeConnection(int fd);
+    void removeConnection(int fd);
 
     void setError();
     bool checkError( void );

@@ -12,7 +12,7 @@ ServerManager::~ServerManager() {
 
 }
 
-int ListeningSocketStart(serverConfig *serverConf)
+int ServerManager::ListeningSocketStart(serverConfig *serverConf)
 {
     int                 opt;
     int                 socketFd;
@@ -55,7 +55,7 @@ void ServerManager::StartAllServers()
         }
         socketsManager *sock = new ListeningSocket(conf.getSerevrConfig(i), sockFd, this);
         ev.data.ptr = sock;
-        ev.events = EPOLLIN | EPOLLET;
+        ev.events = EPOLLIN;
         epoll_ctl(epfd, EPOLL_CTL_ADD, sockFd, &ev);
         this->socketHandler.insert({sockFd, sock});
     }
@@ -77,7 +77,7 @@ void ServerManager::TrackSocketsEvent()
     }
 }
 
-void ServerManager::closeConnection(int fd) {
+void ServerManager::removeConnection(int fd) {
     socketsManager *sock = socketHandler[fd];
     epoll_ctl(epfd, EPOLL_CTL_DEL, fd, NULL);
     close(fd);

@@ -1,15 +1,7 @@
 #ifndef CONFIG_HPP
 #define CONFIG_HPP
 
-#include <iostream>
-#include <string>
-#include <vector>
-#include <unordered_map>
-#include <unordered_set>
-#include <sys/types.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <fstream>
+#include "./tokenizer.hpp"
 
 struct location {
 
@@ -34,21 +26,18 @@ private:
 
 	std::vector<serverConfig *>					servers;
 	bool										error;
-	std::ifstream								file;
+	std::string									fileName;
 	void buildServersConfig();								// method to build the list of servers it called at the contruct time
-	std::vector<std::string>& readServerBlocFromFile();
-	void parseServerBlock(std::vector<std::string>& serverBlock);
 
 public:
+
     config(std::string FileName);
     ~config();
+
 	serverConfig *getSerevrConfig(int index);
-	bool CheckParse() {
-		return this->error;
-	}
-	int ServersNumber() {
-		return servers.size();
-	}
+	bool CheckParse();
+	int ServersNumber();
+
 };
 
 

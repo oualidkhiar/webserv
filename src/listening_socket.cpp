@@ -3,9 +3,7 @@
 
 ListeningSocket::ListeningSocket(serverConfig *conf, int fd, ServerManager *ptr): socketsManager(conf, fd, ptr) {}
 
-ListeningSocket::~ListeningSocket() {
-
-}
+ListeningSocket::~ListeningSocket() {}
 
 void ListeningSocket::handleEvent( void )
 {
