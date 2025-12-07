@@ -17,8 +17,13 @@ enum type {
     SEMICOLON,
     OPENBRACKETS,
     CLOSEBRACKETS
-    // EDONTIFIER
 };
+
+enum nodeType {
+    BLOCK_NODE,
+    DIRECTIVE_NODE
+};
+
 
 struct Token {
     type t;
@@ -26,8 +31,17 @@ struct Token {
     Token(type t, std::string d): t(t), data(d) {}
 };
 
+struct  AstNode {
+    nodeType type;
+    std::string name;
+    std::vector<std::string> args;
+    std::vector<AstNode *> children;
+    AstNode(nodeType type, std::string name, std::vector<std::string> args): type(type), name(name), args(args) {}
+};
+
+
 class tokenizer {
-private:
+protected:
 
     std::ifstream           file;
     std::vector<Token *>    tokens;
@@ -40,8 +54,24 @@ public:
     tokenizer(std::string fileName);
     ~tokenizer();
     void tokenizerStart();
-    void parseTokens();
     void printTokens();
+
+};
+
+
+
+class parser: public tokenizer {
+private:
+
+    bool     error;
+    AstNode *root;
+
+public:
+
+    parser(std::string filename);
+    ~parser();
+
+    void startParser();
 
 };
 

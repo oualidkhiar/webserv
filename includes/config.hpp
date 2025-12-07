@@ -13,6 +13,7 @@ struct location {
 struct serverConfig {
 
     int                         					Port;
+	size_t											clientMaxSizeBody;
 	std::vector<std::string>						ServerNames;
 	std::string										rootPath;
 	std::vector<std::string>						indexFiles;
@@ -27,6 +28,7 @@ private:
 	std::vector<serverConfig *>					servers;
 	bool										error;
 	std::string									fileName;
+
 	void buildServersConfig();								// method to build the list of servers it called at the contruct time
 
 public:

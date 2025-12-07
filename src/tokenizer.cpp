@@ -94,10 +94,3 @@ void tokenizer::printTokens()
         index++;
     }
 }
-
-void tokenizer::parseTokens()
-{
-    for (int i = 0; i < tokens.size(); i++) {
-
-    }
-}
