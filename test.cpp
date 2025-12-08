@@ -1,11 +1,14 @@
 
 #include "./includes/tokenizer.hpp"
+#include "./includes/parser.hpp"
 #include <map>
 using namespace std;
 int main() {
     
     tokenizer tok("./config/test.config");
     tok.tokenizerStart();
+    parser p(tok);
+    p.startParser();
 }
 
 // class Solution {

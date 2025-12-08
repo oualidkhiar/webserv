@@ -19,24 +19,11 @@ enum type {
     CLOSEBRACKETS
 };
 
-enum nodeType {
-    BLOCK_NODE,
-    DIRECTIVE_NODE
-};
-
 
 struct Token {
     type t;
     std::string data;
     Token(type t, std::string d): t(t), data(d) {}
-};
-
-struct  AstNode {
-    nodeType type;
-    std::string name;
-    std::vector<std::string> args;
-    std::vector<AstNode *> children;
-    AstNode(nodeType type, std::string name, std::vector<std::string> args): type(type), name(name), args(args) {}
 };
 
 
@@ -52,26 +39,20 @@ protected:
 public:
 
     tokenizer(std::string fileName);
+
+    Token *getToken(int index) {
+        if (index < tokens.size())
+            return tokens[index];
+        return NULL;
+    }
+
+    int getTokensSize() {
+        return tokens.size();
+    }
+
     ~tokenizer();
     void tokenizerStart();
     void printTokens();
-
-};
-
-
-
-class parser: public tokenizer {
-private:
-
-    bool     error;
-    AstNode *root;
-
-public:
-
-    parser(std::string filename);
-    ~parser();
-
-    void startParser();
 
 };
 

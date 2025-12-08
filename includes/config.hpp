@@ -1,7 +1,7 @@
 #ifndef CONFIG_HPP
 #define CONFIG_HPP
 
-#include "./tokenizer.hpp"
+#include "./parser.hpp"
 
 struct location {
 
@@ -25,6 +25,7 @@ struct serverConfig {
 class config {
 private:
 
+	// tokenizer									*tok;
 	std::vector<serverConfig *>					servers;
 	bool										error;
 	std::string									fileName;
