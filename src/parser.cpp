@@ -3,11 +3,8 @@
 parser::parser(tokenizer& tok): tokens(tok), error(false), index(0) {}
 
 parser::~parser() {
-    for (int i = 0; i < this->serversBlock.size(); i++) {
-        for (int j = 0; j < serversBlock[i]->children.size(); j++) {
-            delete serversBlock[i]->children[j];
-        }
-        delete serversBlock[i];
+    for (int i = 0; i < serversBlock.size(); i++) {
+        clearAst(serversBlock[i]);
     }
 }
 
@@ -19,28 +16,38 @@ AstNode *parser::creatNode(AstNode node) {
     return nd;
 }
 
-void parser::parseToken(int index) {
-
+void clearAst(AstNode *root) {
+    if (!root)
+        return ;
+    for (int i = 0; i < root->children.size(); i++) {
+        if (root->children[i]->type == LOCATION_NODE) {
+            for (int j = 0; j < root->children[i]->children.size(); j++) {
+                delete root->children[i]->children[j];
+            }
+            delete root->children[i];
+        }
+        else {
+            delete root->children[i];
+        }
+    }
+    delete root;
 }
 
-bool parser::expectedTokenData(std::string exp) {
-    std::string token = this->tokens.getToken(this->index)->data;
-    if (exp != token)
-    {
-        std::cout << "unexpected token" << " " << token << std::endl;
+bool parser::expectedTokenType(type exp)
+{
+    if (index >= tokens.getTokensSize()) {
+        std::cout << "unexpected EOF" << std::endl;
         this->error = true;
         return false;
     }
-    this->advanceToken();
-    return true;
-}
-
-bool parser::expectedTokenType(type exp) {
-    type tokenType = this->tokens.getToken(this->index)->t;
-    std::string token = this->tokens.getToken(this->index)->data;
-    if (exp != tokenType)
+    Token *tok = peekToken();
+    if (!tok) {
+        this->error = true;
+        return false;
+    }
+    if (exp != tok->t)
     {
-        std::cout << "unexpected token" << " " << token << std::endl;
+        std::cout << "unexpected token" << " " << tok->data << std::endl;
         this->error = true;
         return false;
     }
@@ -56,30 +63,32 @@ void parser::advanceToken() {
     this->index++;
 }
 
-void clearAst(AstNode *root) {
-    for (int i = 0; i < root->children.size(); i++) {
-        delete root->children[i];
-    }
-    delete root;
-}
-
 AstNode *parser::parseData()
 {
     AstNode node;
+    Token *tok;
 
+    tok = peekToken();
+    if (!tok)
+        return NULL;
     node.type = DATA_NODE;
-    node.name = peekToken()->data;
+    node.name = tok->data;
     advanceToken();
-    while (index < tokens.getTokensSize() && peekToken()->t != SEMICOLON && peekToken()->t != OPENBRACKETS && peekToken()->t != CLOSEBRACKETS) {
-        node.args.push_back(peekToken()->data);
+    tok = peekToken();
+    while (index < tokens.getTokensSize() && tok && tok->t != SEMICOLON && tok->t != OPENBRACKETS && tok->t != CLOSEBRACKETS) {
+        node.args.push_back(tok->data);
         advanceToken();
+        tok = peekToken();
+        if (!tok)
+            return NULL;
     }
     if (!expectedTokenType(SEMICOLON))
         return NULL;
     return (creatNode(node));
 }
 
-AstNode *parser::parseLocationBlock() {
+AstNode *parser::parseLocationBlock()
+{
     Token *tok = peekToken();
 
     if (!expectedTokenType(STRING))
@@ -87,10 +96,11 @@ AstNode *parser::parseLocationBlock() {
     if (!expectedTokenType(OPENBRACKETS))
         return NULL;
     AstNode *root = new AstNode(LOCATION_NODE, "location", {tok->data});
-    while (peekToken()->t == STRING) {
+    while (peekToken() != NULL && peekToken()->t == STRING) {
         AstNode *child = parseData();
         if (child == NULL || this->error)
             break ;
+        root->children.push_back(child);
     }
     if (this->error || !expectedTokenType(CLOSEBRACKETS)) {
         clearAst(root);
@@ -99,15 +109,15 @@ AstNode *parser::parseLocationBlock() {
     return root;
 }
 
-
 AstNode *parser::parseServerBlock()
 {
-    if (!expectedTokenData("server"))
+    if (!peekToken() || peekToken()->data != "server")
         return NULL;
+    this->advanceToken();
     if (!expectedTokenType(OPENBRACKETS))
         return NULL;
     AstNode *root = new AstNode(SERVER_NODE, "server", {});
-    while (peekToken()->t == STRING)
+    while (peekToken() != NULL && peekToken()->t == STRING)
     {
         AstNode *child;
         if (peekToken()->data == "location") {
@@ -131,6 +141,7 @@ AstNode *parser::parseServerBlock()
 void parser::startParser()
 {
     AstNode *root = parseServerBlock();
+    std::cout << this->error << std::endl;
     if (this->error || root == NULL)
         return ;
     this->serversBlock.push_back(root);
@@ -139,8 +150,35 @@ void parser::startParser()
 }
 
 
+// --------------------------------------------------------------- 
+void printData(AstNode *data) {
+    std::cout << data->name << " : ";
+    int k = 0;
+    while (k < data->args.size()) {
+        std::cout << data->args[k] << ", ";
+        k++;
+    }
+    std::cout << std::endl;
+}
+
+void printLoation(AstNode * loctionchildren) {
+    std::cout << "name " << loctionchildren->name << std::endl;
+    for (int i = 0; i < loctionchildren->children.size(); i++) {
+        printData(loctionchildren->children[i]);
+    }
+}
+
 void parser::printParser() {
     for (int i = 0; i < serversBlock.size(); i++) {
-
+        std::cout << "name " << serversBlock[i]->name << std::endl;
+        std::vector<AstNode *> children = serversBlock[i]->children;
+        for (int j = 0; j < children.size(); j++) {
+            if (children[j]->type == LOCATION_NODE) {
+                printLoation(children[j]);
+            }
+            else {
+                printData(children[j]);
+            }
+        }
     }
 }

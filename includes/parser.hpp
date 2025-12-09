@@ -26,7 +26,6 @@ private:
 	int			index;
     bool        error;
 
-	bool expectedTokenData(std::string exp);
 	bool expectedTokenType(type t);
 
 public:
@@ -35,7 +34,6 @@ public:
     ~parser();
 
     void startParser();
-    void parseToken(int tokIndex);
     AstNode *creatNode(AstNode node);
 
 	AstNode *parseData();
@@ -48,5 +46,6 @@ public:
 
 };
 
+void clearAst(AstNode *root);
 
 #endif

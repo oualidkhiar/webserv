@@ -7,8 +7,10 @@ int main() {
     
     tokenizer tok("./config/test.config");
     tok.tokenizerStart();
+    // tok.printTokens();
     parser p(tok);
     p.startParser();
+    // p.printParser();
 }
 
 // class Solution {
