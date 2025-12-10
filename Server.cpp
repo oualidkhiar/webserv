@@ -28,7 +28,7 @@ std ::vector<std::string> split(std ::string &s, std ::string delimiter)
 }
 
 int send_foward_message(struct MclientsData *data, int client_socket_fd)
-{
+{   
     std ::string remainder;
         char message_server[BUFFER_SIZE] = "MESSAGE FROM SERVER ";
         char buffer[BUFFER_SIZE];
