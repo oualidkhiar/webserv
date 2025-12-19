@@ -1,6 +1,12 @@
 #include "../includes/tokenizer.hpp"
 
-tokenizer::tokenizer(std::string filename): file(filename){}
+tokenizer::tokenizer(std::string filename): file(filename) {
+    if (!file.is_open()) {
+        std::cerr << "Error: failed to open config file\n";
+        this->error = true;
+        return ;
+    }
+}
 
 tokenizer::~tokenizer() {
     for (int i = 0; i < tokens.size(); i++) {
@@ -9,7 +15,11 @@ tokenizer::~tokenizer() {
     file.close();
 }
 
-void tokenizer::createToren(type t, std::string data)
+bool tokenizer::checkTokenizeError() {
+    return this->error;
+}
+
+void tokenizer::tokenizer::createToren(type t, std::string data)
 {
     Token *tok = new Token(t, data);
     this->tokens.push_back(tok);
@@ -76,6 +86,8 @@ void tokenizer::tokenizerStart()
         }
     }
 }
+
+//  print toknizer----------------------------------------------------
 
 void tokenizer::printTokens()
 {

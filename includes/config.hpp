@@ -25,22 +25,22 @@ struct serverConfig {
 class config {
 private:
 
-	// tokenizer									*tok;
 	std::vector<serverConfig *>					servers;
 	bool										error;
-	std::string									fileName;
-
-	void buildServersConfig();								// method to build the list of servers it called at the contruct time
-
+	std::string									filename;
+	int											index;
+	
 public:
-
+	
     config(std::string FileName);
     ~config();
-
+	
 	serverConfig *getSerevrConfig(int index);
 	bool CheckParse();
 	int ServersNumber();
-
+	
+	void buildServersConfig();
+	void startEvaluation(parser& p);
 };
 
 

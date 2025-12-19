@@ -1,8 +1,7 @@
 #include "../includes/config.hpp"
 
-config::config(std::string FileName): fileName(FileName){
+config::config(std::string FileName): filename(FileName), index(0) {
     this->error = false;
-    this->buildServersConfig();
 }
 
 config::~config()
@@ -17,14 +16,47 @@ serverConfig *config::getSerevrConfig( int index )
 	return this->servers[index];
 }
 
+// void customSever(AstNode *server)
+// {
+//     if (server->type == DATA_NODE)
+        
+// }
+
+void config::startEvaluation(parser& p)
+{
+    while (p.peekNode(index)->type == SERVER_NODE)
+    {
+        // customSever(p.advanceNode(index));
+        if (this->error)
+            break ;
+    }
+}
+
 void config::buildServersConfig( void )
 {
-    tokenizer fileData(fileName);
+    tokenizer tok(filename);
 
-    fileData.tokenizerStart();
-    fileData.printTokens();
-    // fileData.parseTokens();
-    // this->fillServersData(fileData);
+    if (tok.checkTokenizeError()) {
+        this->error = true;
+        return ;
+    }
+    tok.tokenizerStart();
+    tok.printTokens();
+    if (tok.getTokensSize() == 0) {
+        std::cout << "Error: empty or invalid configuration file" << std::endl;
+        this->error = true;
+        return ;
+    }
+
+    parser p(tok);
+
+    p.startParser();
+    p.printParser();
+    if (p.checkErrorParse()) {
+        this->error = true;
+        return ;
+    }
+    startEvaluation(p);
 }
 
 bool config::CheckParse() {

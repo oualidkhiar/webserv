@@ -8,6 +8,10 @@ parser::~parser() {
     }
 }
 
+bool parser::checkErrorParse() {
+    return this->error;
+}
+
 AstNode *parser::creatNode(AstNode node) {
     AstNode *nd = new AstNode(node.type, node.name, node.args);
     if (!nd) {
@@ -21,10 +25,7 @@ void clearAst(AstNode *root) {
         return ;
     for (int i = 0; i < root->children.size(); i++) {
         if (root->children[i]->type == LOCATION_NODE) {
-            for (int j = 0; j < root->children[i]->children.size(); j++) {
-                delete root->children[i]->children[j];
-            }
-            delete root->children[i];
+            clearAst(root->children[i]);
         }
         else {
             delete root->children[i];
@@ -36,7 +37,7 @@ void clearAst(AstNode *root) {
 bool parser::expectedTokenType(type exp)
 {
     if (index >= tokens.getTokensSize()) {
-        std::cout << "unexpected EOF" << std::endl;
+        std::cout << "Error : unexpected EOF" << std::endl;
         this->error = true;
         return false;
     }
@@ -47,7 +48,7 @@ bool parser::expectedTokenType(type exp)
     }
     if (exp != tok->t)
     {
-        std::cout << "unexpected token" << " " << tok->data << std::endl;
+        std::cout << "Error : unexpected token" << " " << tok->data << std::endl;
         this->error = true;
         return false;
     }
@@ -75,7 +76,8 @@ AstNode *parser::parseData()
     node.name = tok->data;
     advanceToken();
     tok = peekToken();
-    while (index < tokens.getTokensSize() && tok && tok->t != SEMICOLON && tok->t != OPENBRACKETS && tok->t != CLOSEBRACKETS) {
+    while (index < tokens.getTokensSize() && tok && tok->t 
+            != SEMICOLON && tok->t != OPENBRACKETS && tok->t != CLOSEBRACKETS) {
         node.args.push_back(tok->data);
         advanceToken();
         tok = peekToken();
@@ -111,12 +113,20 @@ AstNode *parser::parseLocationBlock()
 
 AstNode *parser::parseServerBlock()
 {
-    if (!peekToken() || peekToken()->data != "server")
+    if (!peekToken() || peekToken()->data != "server") {
+        this->error = true;
         return NULL;
+    }
     this->advanceToken();
-    if (!expectedTokenType(OPENBRACKETS))
+    if (!expectedTokenType(OPENBRACKETS)) {
+        this->error = true;
         return NULL;
+    }
     AstNode *root = new AstNode(SERVER_NODE, "server", {});
+    if (!root) {
+        this->error = true; 
+        return NULL;
+    }
     while (peekToken() != NULL && peekToken()->t == STRING)
     {
         AstNode *child;
@@ -139,9 +149,8 @@ AstNode *parser::parseServerBlock()
 }
 
 void parser::startParser()
-{
+{ 
     AstNode *root = parseServerBlock();
-    std::cout << this->error << std::endl;
     if (this->error || root == NULL)
         return ;
     this->serversBlock.push_back(root);
@@ -150,7 +159,8 @@ void parser::startParser()
 }
 
 
-// --------------------------------------------------------------- 
+// print parser --------------------------------------------------------------- 
+
 void printData(AstNode *data) {
     std::cout << data->name << " : ";
     int k = 0;

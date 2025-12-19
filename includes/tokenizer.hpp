@@ -32,6 +32,7 @@ protected:
 
     std::ifstream           file;
     std::vector<Token *>    tokens;
+    bool                    error;
 
     void createToren(type t, std::string data);
     void extructToken(std::string& line, int& index);
@@ -39,6 +40,7 @@ protected:
 public:
 
     tokenizer(std::string fileName);
+    ~tokenizer();
 
     Token *getToken(int index) {
         if (index < tokens.size())
@@ -50,9 +52,9 @@ public:
         return tokens.size();
     }
 
-    ~tokenizer();
     void tokenizerStart();
     void printTokens();
+    bool checkTokenizeError();
 
 };
 

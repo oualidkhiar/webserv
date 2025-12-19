@@ -7,7 +7,7 @@ int main(int ac, char **av)
         return 2;
     }
 
-    // ServerManager server(av[1]);
+    ServerManager server(av[1]);
 
     // server.StartAllServers();
     // if (server.checkError())

@@ -20,6 +20,7 @@ public:
     virtual ~socketsManager();
 
     virtual void handleEvent() = 0;
+    // virtual void printLog() = 0;
 
 };
 

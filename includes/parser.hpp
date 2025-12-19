@@ -26,7 +26,14 @@ private:
 	int			index;
     bool        error;
 
+
 	bool expectedTokenType(type t);
+    AstNode *creatNode(AstNode node);
+	AstNode *parseData();
+	AstNode *parseLocationBlock();
+	AstNode *parseServerBlock();
+	void advanceToken();
+	Token *peekToken();
 
 public:
 
@@ -34,16 +41,19 @@ public:
     ~parser();
 
     void startParser();
-    AstNode *creatNode(AstNode node);
-
-	AstNode *parseData();
-	AstNode *parseLocationBlock();
-	AstNode *parseServerBlock();
-	void advanceToken();
-	Token *peekToken();
+    bool checkErrorParse();
 
     void printParser();
-
+    AstNode *peekNode(int index)
+    {
+        return serversBlock[index];
+    }
+    AstNode *advanceNode(int& index)
+    {
+        AstNode *ret = serversBlock[index];
+        index++;
+        return ret;
+    }
 };
 
 void clearAst(AstNode *root);
