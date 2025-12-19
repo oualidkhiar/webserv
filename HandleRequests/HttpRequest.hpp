@@ -13,9 +13,11 @@ private:
     std::map<std::string, std::string> headers;
     std::string body;
     enum status status;
+    int response_code;
+    int body_buffer_size;
 
 public:
-    HttpRequest(std :: string & _request);
+    HttpRequest(std ::string &_request);
     enum RequestType getType();
     std::string getUri();
     std::map<std::string, std::string> getHeaders();
@@ -23,7 +25,13 @@ public:
     std::string getHeader(std::string key);
     enum status getStatus();
     std::string &getRequest();
+    int getResponseCode();
+    int getBodyBufferSize();
 
+    int addHeader(std::string key, std::string value);
+
+    void SetBodyBufferSize(int bf_size);
+    void setResponseCode(int code);
     void setBody(std::string body);
     void setHeaders(std::map<std::string, std::string> headers);
     void setUri(std::string uri);

@@ -11,11 +11,11 @@ private:
 public:
     HttpResponse();
     void setStatus(int status);
-    int AddHeader(std ::string key, std::string value);
+    void AddHeader(std ::string key, std::string value);
     void setBody(std ::string body);
 
     int getStatus();
     std::string getHeader(std::string key);
     std::string getBody();
-    ~HttpResponse(){}
+    ~HttpResponse();
 };
