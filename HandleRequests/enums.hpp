@@ -1,6 +1,6 @@
 #pragma once
-#define CHUNKED "Transfer-Encoding"
-#define FIXED_LENGTH "Content-Length"
+#define CHUNKED_HEADER "Transfer-Encoding"
+#define FIXED_LENGTH_HEADER "Content-Length"
 
 enum RequestType
 {
@@ -15,4 +15,10 @@ enum status
     READ_BODY,
     FINISHED,
     ERROR
+};
+
+enum ReadingType
+{
+    CHUNKED,
+    FIXED_LENGTH
 };

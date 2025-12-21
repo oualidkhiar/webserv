@@ -2,6 +2,7 @@
 #include <string>
 #include <map>
 #include "enums.hpp"
+#include "Body.hpp"
 
 class HttpRequest
 
@@ -11,30 +12,28 @@ private:
     enum RequestType type;
     std::string uri;
     std::map<std::string, std::string> headers;
-    std::string body;
     enum status status;
     int response_code;
-    int body_buffer_size;
+    Body *body;
 
 public:
     HttpRequest(std ::string &_request);
     enum RequestType getType();
     std::string getUri();
     std::map<std::string, std::string> getHeaders();
-    std::string getBody();
     std::string getHeader(std::string key);
     enum status getStatus();
     std::string &getRequest();
     int getResponseCode();
-    int getBodyBufferSize();
-
+    Body *getBody();
     int addHeader(std::string key, std::string value);
 
-    void SetBodyBufferSize(int bf_size);
+    void setBody(Body * body);
     void setResponseCode(int code);
-    void setBody(std::string body);
     void setHeaders(std::map<std::string, std::string> headers);
     void setUri(std::string uri);
     void setType(enum RequestType type);
-    void setStatus(enum status type);
+    void setStatus(enum status status);
+
+    ~HttpRequest();
 };

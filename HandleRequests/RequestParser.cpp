@@ -6,34 +6,61 @@
 
 RequestParser ::RequestParser() {}
 
+bool RequestParser::get_chunked(std::string &chunked, std::string &request_string, int size)
+{
+    chunked = request_string.substr(0, size);
+    if (request_string[size] == '\n')
+        return (true);
+    return (false);
+}
+
+bool RequestParser::setBufferFixed(HttpRequest &request, Body *body)
+{
+    std::string &request_string = request.getRequest();
+    int content_length = stringToNumber(request.getHeader(FIXED_LENGTH_HEADER));
+    if (content_length <= -1)
+        exit_error("RequestParser::setBufferFixed ERROR content_length Bad fornat\n");
+    body->setToRead((size_t)content_length);
+    return (true);
+}
+
+void RequestParser::read_body_fixed(HttpRequest &request)
+{
+    // To Implement Later   
+}
+void RequestParser::read_body_chunked(HttpRequest &request)
+{
+    Body *body = request.getBody();
+    size_t pos;
+    int size;
+    std::string chunk;
+    std::string request_string = request.getRequest();
+    pos = request_string.find('\n');
+    size = hex_to_num(request_string);
+    if (size <= -1)
+        exit_error("read_body_chunked ERROR:: size <= -1 \n");
+    request_string.erase(0, pos + 1);
+    if (get_chunked(chunk, request_string, size) == false)
+        exit_error("read_body_chunked ERROR:: Chunked[size]!= 'new_line' \n");
+    body->setBody(body->getBody() + '\n' + chunk);
+    request_string.erase(0, size + 1);
+}
+
 void RequestParser::read_body(HttpRequest &request)
 {
-    std::string value;
-    int size;
-    std::string &request_string = request.getRequest();
-    if ((value = request.getHeader(CHUNKED)).empty() == false)
+    Body *body = request.getBody();
+    if (body == NULL)
     {
-        size_t pos = request_string.find('\n');
-        size = hex_to_num(request_string.substr(0, pos));
-        request_string.erase(0, pos + 1);
-        std::string chunk = request_string.substr(0, size);
-        if (request_string.at(pos) == '\n')
-            request_string.erase(0 , pos + 1);
-        else
-        {
-            std::cout << "BAD REQUEST FOR NOW" << std::endl;
-            exit(1);
-        }
+        body = new Body();
+        body->discoverReadingType(request);
+        request.setBody(body);
+        if (body->getType() == FIXED_LENGTH)
+            setBufferFixed(request, body);
     }
-    else if ((value = request.getHeader(FIXED_LENGTH)).empty() == false)
-    {
-        request.set
-    }
+    if (body->getType() == CHUNKED)
+        read_body_chunked(request);
     else
-    {
-        std::cout << "BAD REQUEST FOR NOW" << std::endl;
-        exit(1);
-    }
+        read_body_fixed(request);
 }
 void RequestParser::reading_request_line(HttpRequest &request)
 {

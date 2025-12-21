@@ -58,15 +58,26 @@ int hex_to_num(std::string hex)
         else
             return (-1);
     }
+    return (1);
 }
 
 int stringToNumber(std::string s)
 {
     int number;
-    
-    int i = 0;
-    while(s[i] && std::isdigit(s[i]))
-    {
+    number = 0;
 
+    int i = 0;
+    while (s[i])
+    {
+        if (std::isdigit(s[i]) == false)
+            return (-1);
+        number = (number * 10) + (s[i] - '0');
     }
+    return (number);
+}
+
+void exit_error(const char *s)
+{
+    std::cout << s << std::endl;
+    exit(1);
 }

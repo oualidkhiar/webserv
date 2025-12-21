@@ -11,3 +11,4 @@ public:
 
 int hex_to_num(std::string hex);
 int stringToNumber(std::string s);
+void exit_error(const char * s);
