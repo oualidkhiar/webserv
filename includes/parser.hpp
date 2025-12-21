@@ -44,16 +44,7 @@ public:
     bool checkErrorParse();
 
     void printParser();
-    AstNode *peekNode(int index)
-    {
-        return serversBlock[index];
-    }
-    AstNode *advanceNode(int& index)
-    {
-        AstNode *ret = serversBlock[index];
-        index++;
-        return ret;
-    }
+    AstNode *peekNode(int index);
 };
 
 void clearAst(AstNode *root);

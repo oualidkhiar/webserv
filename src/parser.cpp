@@ -12,6 +12,13 @@ bool parser::checkErrorParse() {
     return this->error;
 }
 
+AstNode *parser::peekNode(int index)
+{
+    if (index < serversBlock.size())
+        return serversBlock[index];
+    return NULL;
+}
+
 AstNode *parser::creatNode(AstNode node) {
     AstNode *nd = new AstNode(node.type, node.name, node.args);
     if (!nd) {
