@@ -1,8 +1,6 @@
 #include "../includes/server_manager.hpp"
 
-ServerManager::ServerManager(config& conf): conf(conf), error(false) {
-    epfd = epoll_create(0);
-}
+ServerManager::ServerManager(config& conf): conf(conf), error(false) {}
 
 ServerManager::~ServerManager() {
     for (std::unordered_map<int, socketsManager *>::iterator it = socketHandler.begin(); it != socketHandler.end(); it++) {
@@ -48,10 +46,12 @@ void ServerManager::StartAllServers()
     struct epoll_event  ev;
     int sockFd;
 
+    this->epfd = epoll_create(1);
     for (int i = 0; i < conf.ServersNumber(); i++) {
         serverConfig *serverconf = conf.getSerevrConfig(i);
         for (int j = 0; j < serverconf->Port.size(); j++) {
-            if ((sockFd = ListeningSocketStart(serverconf, serverconf->Port[j]) < 0)) {
+            sockFd = ListeningSocketStart(serverconf, serverconf->Port[j]);
+            if (sockFd < 0) {
                 this->error = true;
                 return ;
             }
