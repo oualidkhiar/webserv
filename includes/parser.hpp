@@ -10,10 +10,10 @@ enum nodeType {
 };
 
 struct  AstNode {
-    nodeType type;
-    std::string name;
-    std::vector<std::string> args;
-    std::vector<AstNode *> children;
+    nodeType                    type;
+    std::string                 name;
+    std::vector<std::string>    args;
+    std::vector<AstNode *>      children;
 	AstNode() {}
     AstNode(nodeType type, std::string name, std::vector<std::string> args): type(type), name(name), args(args) {}
 };

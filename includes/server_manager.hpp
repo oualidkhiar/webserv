@@ -11,15 +11,15 @@ private:
 
     std::unordered_map<int, socketsManager *>   socketHandler;
     struct epoll_event                          events[MAX_EVENTS];
-    config                                      conf;
+    config&                                     conf;
     int                                         epfd;
     bool                                        error;
 
-    int ListeningSocketStart(serverConfig *serverConf);
+    int ListeningSocketStart(serverConfig *serverConf, int port);
 
 public:
 
-    ServerManager(std::string FileConfigName);
+    ServerManager(config& conf);
     ~ServerManager();
 
     void StartAllServers();

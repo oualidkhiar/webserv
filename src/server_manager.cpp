@@ -1,25 +1,25 @@
 #include "../includes/server_manager.hpp"
 
-ServerManager::ServerManager(std::string FileConfigName): conf(FileConfigName), error(false) {
-    if (conf.CheckParse()) {
-        this->error = true;
-        return ;
-    }
+ServerManager::ServerManager(config& conf): conf(conf), error(false) {
     epfd = epoll_create(0);
 }
 
 ServerManager::~ServerManager() {
-
+    for (std::unordered_map<int, socketsManager *>::iterator it = socketHandler.begin(); it != socketHandler.end(); it++) {
+        close(it->first);
+        delete it->second;
+    }
+    close(epfd);
 }
 
-int ServerManager::ListeningSocketStart(serverConfig *serverConf)
+int ServerManager::ListeningSocketStart(serverConfig *serverConf, int port)
 {
     int                 opt;
     int                 socketFd;
     struct sockaddr_in  address;
     socklen_t           addLen;
 
-    address.sin_port = htons(serverConf->Port);
+    address.sin_port = htons(port);
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = INADDR_ANY;
     addLen = sizeof(address);
@@ -49,15 +49,18 @@ void ServerManager::StartAllServers()
     int sockFd;
 
     for (int i = 0; i < conf.ServersNumber(); i++) {
-        if ((sockFd = ListeningSocketStart(conf.getSerevrConfig(i))) < 0) {
-            this->error = true;
-            return ;
+        serverConfig *serverconf = conf.getSerevrConfig(i);
+        for (int j = 0; j < serverconf->Port.size(); j++) {
+            if ((sockFd = ListeningSocketStart(serverconf, serverconf->Port[j]) < 0)) {
+                this->error = true;
+                return ;
+            }
+            socketsManager *sock = new ListeningSocket(serverconf, sockFd, this);
+            ev.data.ptr = sock;
+            ev.events = EPOLLIN;
+            epoll_ctl(epfd, EPOLL_CTL_ADD, sockFd, &ev);
+            this->socketHandler.insert({sockFd, sock});
         }
-        socketsManager *sock = new ListeningSocket(conf.getSerevrConfig(i), sockFd, this);
-        ev.data.ptr = sock;
-        ev.events = EPOLLIN;
-        epoll_ctl(epfd, EPOLL_CTL_ADD, sockFd, &ev);
-        this->socketHandler.insert({sockFd, sock});
     }
 }
 

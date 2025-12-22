@@ -22,8 +22,8 @@ private:
 public:
 	ClientSocket(int fd ,serverConfig *conf, ServerManager *ptr);
     void handleEvent();
-    int handleRequest( void );
-    int handleResponse( void );
+    void handleRequest( void );
+    void handleResponse( void );
 
 };
 

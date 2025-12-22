@@ -6,9 +6,17 @@
 
 struct location {
 
-	std::string						key;
-	std::unordered_set<std::string>	allowMethods;
-	size_t							clientMaxSizeBody;
+	std::string										key;
+	std::unordered_set<std::string>					allowMethods;
+	size_t											clientMaxSizeBody;
+	std::string										rootPath;
+	std::vector<std::string>						indexFiles;
+	bool											autoindex;
+	std::vector<std::string>						cgi_extension;
+	std::string										cgi_pass;
+	// std::pair<int, std::string>						redirect_return; 
+
+	location(): autoindex(false), clientMaxSizeBody(0) {}
 
 };
 
@@ -21,7 +29,9 @@ struct serverConfig {
 	std::vector<std::string>						indexFiles;
     std::unordered_map<int, std::string>    		errorPage;
 	std::unordered_map<std::string, location *>		Locations;
-	serverConfig(): clientMaxSizeBody(-1) {}
+	bool											autoindex;
+
+	serverConfig(): clientMaxSizeBody(0), autoindex(false) {}
 
 };
 
@@ -46,7 +56,7 @@ public:
 	void startEvaluation(parser& p);
 	void customSever(std::vector<AstNode *> root, serverConfig *server);
 	void customDataServer(AstNode *node, serverConfig *server);
-	void customDataLocation(AstNode *node, location *loc);
+	void customDataLocation(AstNode *node, location *loc, int locationNumber);
 	void customLocation(AstNode *node, location *server);
 	void printServer();
 };

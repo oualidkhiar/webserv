@@ -75,6 +75,7 @@ AstNode *parser::parseData()
 {
     AstNode node;
     Token *tok;
+    int currentIndex;
 
     tok = peekToken();
     if (!tok)
@@ -83,6 +84,7 @@ AstNode *parser::parseData()
     node.name = tok->data;
     advanceToken();
     tok = peekToken();
+    currentIndex = index;
     while (index < tokens.getTokensSize() && tok && tok->t 
             != SEMICOLON && tok->t != OPENBRACKETS && tok->t != CLOSEBRACKETS) {
         node.args.push_back(tok->data);
@@ -90,6 +92,10 @@ AstNode *parser::parseData()
         tok = peekToken();
         if (!tok)
             return NULL;
+    }
+    if (currentIndex == index) {
+        this->error = true;
+        return NULL;
     }
     if (!expectedTokenType(SEMICOLON))
         return NULL;
@@ -111,7 +117,7 @@ AstNode *parser::parseLocationBlock()
             break ;
         root->children.push_back(child);
     }
-    if (this->error || !expectedTokenType(CLOSEBRACKETS)) {
+    if (!expectedTokenType(CLOSEBRACKETS) || this->error) {
         clearAst(root);
         return NULL;
     }
@@ -148,7 +154,7 @@ AstNode *parser::parseServerBlock()
             break ;
         root->children.push_back(child);
     }
-    if (this->error || !expectedTokenType(CLOSEBRACKETS)) {
+    if (!expectedTokenType(CLOSEBRACKETS) || this->error) {
         clearAst(root);
         return NULL;
     }
