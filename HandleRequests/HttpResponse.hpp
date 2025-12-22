@@ -1,6 +1,8 @@
 #pragma once
+#include "enums.hpp"
 #include <map>
 #include <string>
+#include "HttpRequest.hpp"
 class HttpResponse
 {
 private:
@@ -14,8 +16,10 @@ public:
     void AddHeader(std ::string key, std::string value);
     void setBody(std ::string body);
 
+    std::string getReasonPhrase(int code);
     int getStatus();
     std::string getHeader(std::string key);
     std::string getBody();
+    static HttpResponse getResponse(HttpRequest & request);
     ~HttpResponse();
 };

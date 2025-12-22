@@ -15,6 +15,7 @@ private:
     enum status status;
     int response_code;
     Body *body;
+    size_t available_data;
 
 public:
     HttpRequest(std ::string &_request);
@@ -27,8 +28,10 @@ public:
     int getResponseCode();
     Body *getBody();
     int addHeader(std::string key, std::string value);
+    size_t getAvailableData();
 
-    void setBody(Body * body);
+    void setAvailableData(size_t available_data);
+    void setBody(Body *body);
     void setResponseCode(int code);
     void setHeaders(std::map<std::string, std::string> headers);
     void setUri(std::string uri);

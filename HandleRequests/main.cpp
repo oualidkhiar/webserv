@@ -15,28 +15,31 @@ void cout_request(HttpRequest &request)
         headers;
     headers = request.getHeaders();
 
-    std::cout << "URI = '" << request.getUri() <<"'"<< std::endl;
+    std::cout << "URI = '" << request.getUri() << "'" << std::endl;
     std::cout << "Type = " << types[request.getType()] << std::endl;
     std::cout << "Status = " << status[request.getStatus()] << std::endl;
     std::map<std::string, std::string>::const_iterator it;
-    for (it = headers.begin() ; it != headers.end() ; ++it)
+    for (it = headers.begin(); it != headers.end(); ++it)
     {
-        std::cout<<it->first<<" : "<<it->second<<std::endl;
+        std::cout << it->first << " : " << it->second << std::endl;
+    }
+    if (request.getType() == POST)
+    {
+        std::cout << "---BODY-----" << std::endl;
+        std::cout << request.getBody()->getBody() << std::endl;
     }
 }
 
 int main()
 {
-    std::string raw_get =
-        "GET / HTTP/1.1\r\n"
+    std::string raw_delete =
+        "DELETE /images/photo.jpg HTTP/1.1\r\n"
         "Host: localhost:8080\r\n"
-        "User-Agent: ::TestingClient/1.0\r\n"
-        "Accept: */*\r\n"
+        "User-Agent: TestingClient/1.0\r\n"
         "\r\n";
-    HttpRequest request(raw_get);
+    HttpRequest request(raw_delete);
     RequestParser request_parser;
     while (request.getStatus() != FINISHED)
         request_parser.create_request(request);
-    std::cout << "REQEUST FINISHED" << std::endl;
     cout_request(request);
 }

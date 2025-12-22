@@ -9,10 +9,7 @@ std::string StringManip::get_token(std::string string, char delimiter)
     size_t pos = string.find(delimiter);
     if (pos != std::string::npos)
     {
-        std::cout << "strtrim returned " << std::endl;
-        std::cout << "pos = " << pos << std::endl;
         token = string.substr(0, pos);
-        std::cout << "token = " << token << std::endl;
         return (token);
     }
     return (StringManip::strtrim(string));
@@ -44,21 +41,23 @@ std::string StringManip::strtrim(const std ::string s)
     return s.substr(start, end - start);
 }
 
-int hex_to_num(std::string hex)
+int hex_to_num(const std::string hex)
 {
-    int results = 0;
-    for (int i = 0; i < hex.length(); i++)
+    int result = 0;
+    for (size_t i = 0; i < hex.size(); ++i)
     {
+        result *= 16;
+
         if (std::isdigit(hex[i]))
-        {
-            results += (hex[i] - '0') * std::pow(16, i);
-        }
-        else if ((hex[i] >= 'A' && hex[i] <= 'F'))
-            results += (hex[i] - 'A' + 1) * std::pow(16, i);
+            result += hex[i] - '0';
+        else if (hex[i] >= 'A' && hex[i] <= 'F')
+            result += hex[i] - 'A' + 10;
+        else if (hex[i] >= 'a' && hex[i] <= 'f')
+            result += hex[i] - 'a' + 10;
         else
-            return (-1);
+            return -1;
     }
-    return (1);
+    return result;
 }
 
 int stringToNumber(std::string s)
@@ -72,6 +71,7 @@ int stringToNumber(std::string s)
         if (std::isdigit(s[i]) == false)
             return (-1);
         number = (number * 10) + (s[i] - '0');
+        i++;
     }
     return (number);
 }
@@ -80,4 +80,12 @@ void exit_error(const char *s)
 {
     std::cout << s << std::endl;
     exit(1);
+}
+
+void write_str(const char *des, const char *s)
+{
+    std::cout << "----------------------------------" << des << "-------------------------------------" << std::endl;
+    std::cout << "----------------------------------------------------------------------------" << std::endl;
+    std::cout << s << std::endl;
+    std::cout << "----------------------------------------------------------------------------" << std::endl;
 }

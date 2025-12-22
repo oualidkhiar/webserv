@@ -4,7 +4,7 @@ Body::Body() : to_read(0) {}
 
 void Body::setToRead(size_t to_read) { this->to_read = to_read; }
 void Body::setType(enum ReadingType type) { this->type = type; }
-void Body::setBody(std::string body) { this->body = body; }
+void Body::setBody(std::string chunk) { this->body =this->body  + chunk; }
 
 std::string Body::getBody() { return (this->body); }
 enum ReadingType Body::getType() { return (this->type); }
@@ -17,6 +17,14 @@ enum ReadingType Body::discoverReadingType(HttpRequest &request)
     else if (request.getHeader(FIXED_LENGTH_HEADER).empty() == false)
         setType(FIXED_LENGTH);
     return (type);
+}
+
+void Body::decrementToRead(size_t amount)
+{
+    if (amount >= to_read)
+        to_read = 0;
+    else
+        to_read-= amount;
 }
 
 Body::~Body() {}

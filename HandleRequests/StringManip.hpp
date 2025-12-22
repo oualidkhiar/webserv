@@ -1,3 +1,4 @@
+
 #pragma once
 #include <string>
 class StringManip
@@ -12,3 +13,4 @@ public:
 int hex_to_num(std::string hex);
 int stringToNumber(std::string s);
 void exit_error(const char * s);
+void write_str(const char * des , const char *s);

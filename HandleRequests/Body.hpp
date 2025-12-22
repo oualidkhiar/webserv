@@ -13,8 +13,8 @@ public:
     Body();
     void setType(enum ReadingType type);
     void setToRead(size_t to_read);
-    void setBody(std::string body);
-    void SetToRead(HttpRequest & request);
+    void setBody(std::string chunk);
+    void decrementToRead(size_t amount);
     
     enum ReadingType discoverReadingType(HttpRequest & request);
     enum ReadingType getType();

@@ -5,7 +5,8 @@ HttpRequest ::HttpRequest(std ::string &_request) : request(_request)
     status = READING_REQUEST_LINE;
     response_code = 0;
     body = NULL;
-};
+    available_data = 0;
+}
 
 enum RequestType HttpRequest::getType() { return (this->type); };
 std::string HttpRequest::getUri() { return (this->uri); }
@@ -14,7 +15,9 @@ enum status HttpRequest::getStatus() { return (this->status); }
 std::string &HttpRequest::getRequest() { return (this->request); }
 int HttpRequest::getResponseCode() { return (this->response_code); }
 Body *HttpRequest::getBody() { return (this->body); }
+size_t HttpRequest::getAvailableData() { return (this->available_data); }
 
+void HttpRequest::setAvailableData(size_t amount) { this->available_data += amount; };
 void HttpRequest::setBody(Body *body) { this->body = body; }
 void HttpRequest::setStatus(enum status status) { this->status = status; }
 void HttpRequest::setHeaders(std::map<std::string, std::string> headers) { this->headers = headers; }
