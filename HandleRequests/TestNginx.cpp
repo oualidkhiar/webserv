@@ -39,7 +39,7 @@ int main()
     // IMPORTANT: Each line must end in \r\n, and the request must end with a blank line (\r\n\r\n)
     std::string httpRequest =
         "GET / HTTP/1.1 \r\n"
-        "Host: site1.com\r\n"
+        "Host: site2.com\r\n"
         "Connectionclose\r\n"
         "User-Agent: ManualClient/1.0\r\n"
         "\r\n";

@@ -8,6 +8,7 @@ HttpRequest ::HttpRequest(std ::string &_request) : request(_request)
     available_data = 0;
 }
 
+int HttpRequest::getPort() { return (this->port); }
 enum RequestType HttpRequest::getType() { return (this->type); };
 std::string HttpRequest::getUri() { return (this->uri); }
 std::map<std::string, std::string> HttpRequest::getHeaders() { return (this->headers); }
@@ -16,7 +17,10 @@ std::string &HttpRequest::getRequest() { return (this->request); }
 int HttpRequest::getResponseCode() { return (this->response_code); }
 Body *HttpRequest::getBody() { return (this->body); }
 size_t HttpRequest::getAvailableData() { return (this->available_data); }
+struct serverConfig *HttpRequest::getConfig() { return (this->config); }
 
+void HttpRequest::setPort(int port) { this->port = port; }
+void HttpRequest::setConfig(struct serverConfig *config) { this->config = config; }
 void HttpRequest::setAvailableData(size_t amount) { this->available_data += amount; };
 void HttpRequest::setBody(Body *body) { this->body = body; }
 void HttpRequest::setStatus(enum status status) { this->status = status; }

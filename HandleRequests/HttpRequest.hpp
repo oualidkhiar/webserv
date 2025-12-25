@@ -3,6 +3,7 @@
 #include <map>
 #include "enums.hpp"
 #include "Body.hpp"
+#include "../includes/config.hpp"
 
 class HttpRequest
 
@@ -16,8 +17,12 @@ private:
     int response_code;
     Body *body;
     size_t available_data;
+    struct serverConfig * config;
+    int port;
+    
 
 public:
+
     HttpRequest(std ::string &_request);
     enum RequestType getType();
     std::string getUri();
@@ -29,7 +34,11 @@ public:
     Body *getBody();
     int addHeader(std::string key, std::string value);
     size_t getAvailableData();
+    struct serverConfig * getConfig();
+    int getPort();
 
+    void setPort(int port);
+    void setConfig(struct serverConfig * config);
     void setAvailableData(size_t available_data);
     void setBody(Body *body);
     void setResponseCode(int code);
