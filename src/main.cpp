@@ -15,6 +15,8 @@ int main(int ac, char **av)
     // conf.printServer();
     ServerManager server(conf);
     server.StartAllServers();
+    if (server.checkError())
+        return 2;
     server.TrackSocketsEvent();
     return (0);
 }

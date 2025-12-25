@@ -3,7 +3,7 @@
 parser::parser(tokenizer& tok): tokens(tok), error(false), index(0) {}
 
 parser::~parser() {
-    for (int i = 0; i < serversBlock.size(); i++) {
+    for (size_t i = 0; i < serversBlock.size(); i++) {
         clearAst(serversBlock[i]);
     }
 }
@@ -12,7 +12,7 @@ bool parser::checkErrorParse() {
     return this->error;
 }
 
-AstNode *parser::peekNode(int index)
+AstNode *parser::peekNode(size_t index)
 {
     if (index < serversBlock.size())
         return serversBlock[index];
@@ -30,7 +30,7 @@ AstNode *parser::creatNode(AstNode node) {
 void clearAst(AstNode *root) {
     if (!root)
         return ;
-    for (int i = 0; i < root->children.size(); i++) {
+    for (size_t i = 0; i < root->children.size(); i++) {
         if (root->children[i]->type == LOCATION_NODE) {
             clearAst(root->children[i]);
         }
@@ -105,12 +105,14 @@ AstNode *parser::parseData()
 AstNode *parser::parseLocationBlock()
 {
     Token *tok = peekToken();
+    std::vector<std::string> args;
 
     if (!expectedTokenType(STRING))
         return NULL;
     if (!expectedTokenType(OPENBRACKETS))
         return NULL;
-    AstNode *root = new AstNode(LOCATION_NODE, "location", {tok->data});
+    args.push_back(tok->data);
+    AstNode *root = new AstNode(LOCATION_NODE, "location", args);
     while (peekToken() != NULL && peekToken()->t == STRING) {
         AstNode *child = parseData();
         if (child == NULL || this->error)
@@ -135,7 +137,7 @@ AstNode *parser::parseServerBlock()
         this->error = true;
         return NULL;
     }
-    AstNode *root = new AstNode(SERVER_NODE, "server", {});
+    AstNode *root = new AstNode(SERVER_NODE, "server", (std::vector<std::string>){});
     if (!root) {
         this->error = true; 
         return NULL;
@@ -176,7 +178,7 @@ void parser::startParser()
 
 void printData(AstNode *data) {
     std::cout << data->name << " : ";
-    int k = 0;
+    size_t k = 0;
     while (k < data->args.size()) {
         std::cout << data->args[k] << ", ";
         k++;
@@ -186,16 +188,16 @@ void printData(AstNode *data) {
 
 void printLoation(AstNode * loctionchildren) {
     std::cout << "name " << loctionchildren->name << std::endl;
-    for (int i = 0; i < loctionchildren->children.size(); i++) {
+    for (size_t i = 0; i < loctionchildren->children.size(); i++) {
         printData(loctionchildren->children[i]);
     }
 }
 
 void parser::printParser() {
-    for (int i = 0; i < serversBlock.size(); i++) {
+    for (size_t i = 0; i < serversBlock.size(); i++) {
         std::cout << "name " << serversBlock[i]->name << std::endl;
         std::vector<AstNode *> children = serversBlock[i]->children;
-        for (int j = 0; j < children.size(); j++) {
+        for (size_t j = 0; j < children.size(); j++) {
             if (children[j]->type == LOCATION_NODE) {
                 printLoation(children[j]);
             }

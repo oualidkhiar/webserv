@@ -9,13 +9,13 @@
 class ServerManager {
 private:
 
-    std::unordered_map<int, socketsManager *>   socketHandler;
+    std::map<int, socketsManager *>   socketHandler;
     struct epoll_event                          events[MAX_EVENTS];
     config&                                     conf;
     int                                         epfd;
     bool                                        error;
 
-    int ListeningSocketStart(serverConfig *serverConf, int port);
+    int ListeningSocketStart(int port);
 
 public:
 
