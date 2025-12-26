@@ -15,7 +15,11 @@ struct  AstNode {
     std::vector<std::string>    args;
     std::vector<AstNode *>      children;
 	AstNode() {}
-    AstNode(nodeType type, std::string name, std::vector<std::string> args): type(type), name(name), args(args) {}
+    AstNode(nodeType type, std::string name, std::vector<std::string> args){
+        this->type = type;
+        this->name = name;
+        this->args = args;
+    }
 };
 
 class parser {
@@ -23,8 +27,8 @@ private:
 
     tokenizer&  tokens;
     std::vector<AstNode *> serversBlock;
-	int			index;
     bool        error;
+	int			index;
 
 
 	bool expectedTokenType(type t);
@@ -44,7 +48,7 @@ public:
     bool checkErrorParse();
 
     void printParser();
-    AstNode *peekNode(int index);
+    AstNode *peekNode(size_t index);
 };
 
 void clearAst(AstNode *root);

@@ -12,6 +12,10 @@ enum ClientState {
 };
 
 
+class requestHandler {
+
+};
+
 class ClientSocket: public socketsManager {
 private:
 
@@ -19,7 +23,12 @@ private:
     std::string	    ReceiveBuffer;
     std::string	    ResponseBuffer;
 
+    requestHandler  request;
+
+    void continueReading( void );
+
 public:
+
 	ClientSocket(int fd ,serverConfig *conf, ServerManager *ptr);
     void handleEvent();
     void handleRequest( void );
