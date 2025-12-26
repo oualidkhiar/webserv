@@ -2,6 +2,7 @@
 #define CHUNKED_HEADER "Transfer-Encoding"
 #define FIXED_LENGTH_HEADER "Content-Length"
 
+
 enum RequestType
 {
     DELETE,
@@ -17,12 +18,33 @@ enum status
     ERROR
 };
 
+
+enum ResponseState
+{
+    READING,
+    FINISHED
+};
+
 enum ReadingType
 {
     CHUNKED,
     FIXED_LENGTH
 };
 
+
+
+struct getInfos 
+{
+    ResponseState state;
+    int fd;
+    
+
+}
+
+
+#define CONTENT_TYPE_HEADER "Content-Type"
+#define PATH_DELIMITER "/"
+#define DEFAULT_CONTENT_TYPE "application/octet-stream"
 
                                  
 #define HP_OK               200  // Standard response for successful GET requests
@@ -43,3 +65,4 @@ enum ReadingType
 #define HP_INTERNAL_SERVER_ERROR 500 // CGI Error: Script crashed or system call (read/write) failed
 #define HP_NOT_IMPLEMENTED       501 // Parser Error: Method is not GET, POST, or DELETE
 #define HP_VERSION_NOT_SUPPORTED 505 // Parser Error: Request is not HTTP/1.1
+

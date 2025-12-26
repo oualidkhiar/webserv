@@ -1,11 +1,21 @@
 #include "HttpResponse.hpp"
 
-HttpResponse::HttpResponse() {}
+HttpResponse::HttpResponse() {file = NULL;}
 void HttpResponse::setStatus(int status) { this->status = status; }
 int HttpResponse::getStatus() { return (this->status); }
-std::string HttpResponse::getBody() { return this->body; }
-void HttpResponse::setBody(std::string body) { this->body = body; }
+std::vector<char> HttpResponse::getBody() { return this->body; }
+void HttpResponse::setBody(std::vector<char> body) { this->body = body; }
 void HttpResponse::AddHeader(std::string key, std::string value) { this->headers[key] = value; }
+
+void HttpResponse::setFile(FtFile *file)
+{
+    this->file = file;
+}
+
+FtFile *HttpResponse::getFile()
+{
+    return file;
+}
 
 std::string HttpResponse::getHeader(std::string key)
 {
@@ -16,47 +26,45 @@ std::string HttpResponse::getHeader(std::string key)
     return "NOT_FOUND";
 }
 
-
-
 std::string HttpResponse::getReasonPhrase(int code)
 {
     switch (code)
     {
-        // --- 2xx Success ---
-        case HP_OK:
-            return "OK";
-        case HP_CREATED:
-            return "Created";
-        case HP_NO_CONTENT:
-            return "No Content";
+    // --- 2xx Success ---
+    case HP_OK:
+        return "OK";
+    case HP_CREATED:
+        return "Created";
+    case HP_NO_CONTENT:
+        return "No Content";
 
-        // --- 3xx Redirection ---
-        case HP_MOVED_PERMANENTLY:
-            return "Moved Permanently";
+    // --- 3xx Redirection ---
+    case HP_MOVED_PERMANENTLY:
+        return "Moved Permanently";
 
-        // --- 4xx Client Error ---
-        case HP_BAD_REQUEST:
-            return "Bad Request";
-        case HP_FORBIDDEN:
-            return "Forbidden";
-        case HP_NOT_FOUND:
-            return "Not Found";
-        case HP_METHOD_NOT_ALLOWED:
-            return "Method Not Allowed";
-        case HP_PAYLOAD_TOO_LARGE:
-            return "Payload Too Large"; // Note: RFC 7231 changed this from "Request Entity Too Large"
+    // --- 4xx Client Error ---
+    case HP_BAD_REQUEST:
+        return "Bad Request";
+    case HP_FORBIDDEN:
+        return "Forbidden";
+    case HP_NOT_FOUND:
+        return "Not Found";
+    case HP_METHOD_NOT_ALLOWED:
+        return "Method Not Allowed";
+    case HP_PAYLOAD_TOO_LARGE:
+        return "Payload Too Large"; // Note: RFC 7231 changed this from "Request Entity Too Large"
 
-        // --- 5xx Server Error ---
-        case HP_INTERNAL_SERVER_ERROR:
-            return "Internal Server Error";
-        case HP_NOT_IMPLEMENTED:
-            return "Not Implemented";
-        case HP_VERSION_NOT_SUPPORTED:
-            return "HTTP Version Not Supported";
+    // --- 5xx Server Error ---
+    case HP_INTERNAL_SERVER_ERROR:
+        return "Internal Server Error";
+    case HP_NOT_IMPLEMENTED:
+        return "Not Implemented";
+    case HP_VERSION_NOT_SUPPORTED:
+        return "HTTP Version Not Supported";
 
-        // --- Default / Fallback ---
-        default:
-            return "Unknown Status";
+    // --- Default / Fallback ---
+    default:
+        return "Unknown Status";
     }
 }
 
@@ -64,12 +72,13 @@ std::string HttpResponse::getReasonPhrase(int code)
 // {
 //     HttpResponse response;
 //     // create response
-    
-    
-    
+
 //     //return response
 //     response.AddHeader(FIXED_LENGTH_HEADER , std::to_string(response.getBody().size()));
 //     return response;
 // }
 
-HttpResponse::~HttpResponse() {}
+HttpResponse::~HttpResponse() {
+    if (file != NULL)
+        delete file;
+}

@@ -1,12 +1,16 @@
 #ifndef CONFIG_HPP
 #define CONFIG_HPP
+#include <set>
+#include <map>
 
 #include "./parser.hpp"
 
 struct location {
 
-	std::unordered_set<std::string>	allowMethods;
+	std::set<std::string>	allowMethods;
+	std::string rootPath;
 	size_t							clientMaxSizeBody;
+
 
 };
 
@@ -17,8 +21,8 @@ struct serverConfig {
 	std::vector<std::string>						ServerNames;
 	std::string										rootPath;
 	std::vector<std::string>						indexFiles;
-    std::unordered_map<int, std::string>    		errorPage;
-	std::unordered_map<std::string, location *>		Locations;
+    std::map<int, std::string>    		errorPage;
+	std::map<std::string, location *>		Locations;
 
 };
 

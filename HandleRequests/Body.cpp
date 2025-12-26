@@ -4,9 +4,9 @@ Body::Body() : to_read(0) {}
 
 void Body::setToRead(size_t to_read) { this->to_read = to_read; }
 void Body::setType(enum ReadingType type) { this->type = type; }
-void Body::setBody(std::string chunk) { this->body =this->body  + chunk; }
+void Body::setBody(std::vector<char> chunk) { this->body = chunk; }
 
-std::string Body::getBody() { return (this->body); }
+std::vector<char> Body::getBody() { return (this->body); }
 enum ReadingType Body::getType() { return (this->type); }
 size_t Body::getToRead() { return (this->to_read); }
 
@@ -19,12 +19,17 @@ enum ReadingType Body::discoverReadingType(HttpRequest &request)
     return (type);
 }
 
+void Body::appendChunkToBody(std::vector<char> chunk)
+{
+    body.insert(body.end(), chunk.begin(), chunk.end());
+}
+
 void Body::decrementToRead(size_t amount)
 {
     if (amount >= to_read)
         to_read = 0;
     else
-        to_read-= amount;
+        to_read -= amount;
 }
 
 Body::~Body() {}

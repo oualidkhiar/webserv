@@ -17,12 +17,11 @@ private:
     int response_code;
     Body *body;
     size_t available_data;
-    struct serverConfig * config;
+    struct serverConfig *config;
     int port;
-    
+    location *location;
 
 public:
-
     HttpRequest(std ::string &_request);
     enum RequestType getType();
     std::string getUri();
@@ -34,11 +33,13 @@ public:
     Body *getBody();
     int addHeader(std::string key, std::string value);
     size_t getAvailableData();
-    struct serverConfig * getConfig();
+    struct serverConfig *getConfig();
     int getPort();
+    struct location *  getLocation();
 
+    void setLocation(struct location *location);
     void setPort(int port);
-    void setConfig(struct serverConfig * config);
+    void setConfig(struct serverConfig *config);
     void setAvailableData(size_t available_data);
     void setBody(Body *body);
     void setResponseCode(int code);

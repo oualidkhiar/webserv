@@ -32,7 +32,7 @@ void RequestParser::read_body_fixed(HttpRequest &request)
     std::cout << available_data << " " << body_size << std::endl;
     if (body_size >= available_data)
     {
-        body->setBody(request_string);
+        body->appendChunkToBody(request_string);
         body->decrementToRead(request_string.length());
         request_string.clear();
     }

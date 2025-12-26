@@ -6,6 +6,7 @@ HttpRequest ::HttpRequest(std ::string &_request) : request(_request)
     response_code = 0;
     body = NULL;
     available_data = 0;
+    location = NULL;
 }
 
 int HttpRequest::getPort() { return (this->port); }
@@ -18,6 +19,7 @@ int HttpRequest::getResponseCode() { return (this->response_code); }
 Body *HttpRequest::getBody() { return (this->body); }
 size_t HttpRequest::getAvailableData() { return (this->available_data); }
 struct serverConfig *HttpRequest::getConfig() { return (this->config); }
+struct location * HttpRequest::getLocation(){return (this->location);}
 
 void HttpRequest::setPort(int port) { this->port = port; }
 void HttpRequest::setConfig(struct serverConfig *config) { this->config = config; }
@@ -28,6 +30,7 @@ void HttpRequest::setHeaders(std::map<std::string, std::string> headers) { this-
 void HttpRequest::setUri(std::string uri) { this->uri = uri; }
 void HttpRequest::setType(enum RequestType type) { this->type = type; }
 void HttpRequest::setResponseCode(int code) { this->response_code = code; }
+void HttpRequest::setLocation(struct location * location) {this->location = location;}
 
 std::string HttpRequest::getHeader(std::string key)
 {

@@ -89,3 +89,43 @@ void write_str(const char *des, const char *s)
     std::cout << s << std::endl;
     std::cout << "----------------------------------------------------------------------------" << std::endl;
 }
+
+std::vector<std::string> ft_split(std::string string, std::string delimiter)
+{
+    std::vector<std::string> words;
+    while (true)
+    {
+        size_t pos = string.find(delimiter);
+        if (pos == 0)
+            string.erase(0, delimiter.length());
+        else if (pos == std::string::npos)
+        {
+            words.push_back(string);
+            break;
+        }
+        else
+        {
+            words.push_back(string.substr(0, pos));
+            string.erase(0, pos + delimiter.length());
+        }
+    }
+    return (words);
+}
+
+int tokensSize(std::string string, std::string delimiter)
+{
+    int size = 0;
+    if (string.empty() == true)
+        return (0);
+    while (true)
+    {
+        size_t pos = string.find(delimiter);
+        if (pos == std::string::npos)
+            return (size + 1);
+        else if (pos == 0)
+            string.erase(0 , delimiter.length());
+        else 
+            size++;
+    }
+    return (size);
+}
