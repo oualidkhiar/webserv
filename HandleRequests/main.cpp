@@ -26,18 +26,33 @@ void cout_request(HttpRequest &request)
     if (request.getType() == POST)
     {
         std::cout << "---BODY-----" << std::endl;
-        std::cout << request.getBody()->getBody() << std::endl;
+        for (std::vector<char>::const_iterator it = request.getBody()->getBody().begin(); it < request.getBody()->getBody().end(); ++it)
+        {
+            std::cout << *it;
+        }
+        std::cout << std::endl;
     }
 }
 
 int main()
 {
-    std::string raw_delete =
-        "DELETE /images/photo.jpg HTTP/1.1\r\n"
+#include <string>
+
+    char *chunkedPost =
+        "POST /api/users/create HTTP/1.1\r\n"
         "Host: localhost:8080\r\n"
+        "Content-Type: application/json\r\n"
+        "Transfer-Encoding: chunked\r\n"
         "User-Agent: TestingClient/1.0\r\n"
-        "\r\n";
-    HttpRequest request(raw_delete);
+        "\r\n"   // End of Headers (Double CRLF)
+        "17\r\n" // Chunk 1 size (23 in decimal)
+        "{\"username\": \"jdoe\",\r\n"
+        "2D\r\n" // Chunk 2 size (45 in decimal)
+        "\"email\": \"jane.doe@example.com\", \"role\": \"admin\"}\r\n"
+        "0\r\n" // Final Chunk (End of data)
+        "\r\n"; // Final CRLF to terminate the message
+    HttpRequest request;
+    request.appendRequestData(chunkedPost, sizeof(chunkedPost));
     RequestParser request_parser;
     while (request.getStatus() != FINISHED)
         request_parser.create_request(request);

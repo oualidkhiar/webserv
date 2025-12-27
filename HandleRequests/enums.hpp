@@ -39,7 +39,7 @@ struct getInfos
     int fd;
     
 
-}
+};
 
 
 #define CONTENT_TYPE_HEADER "Content-Type"
@@ -65,4 +65,3 @@ struct getInfos
 #define HP_INTERNAL_SERVER_ERROR 500 // CGI Error: Script crashed or system call (read/write) failed
 #define HP_NOT_IMPLEMENTED       501 // Parser Error: Method is not GET, POST, or DELETE
 #define HP_VERSION_NOT_SUPPORTED 505 // Parser Error: Request is not HTTP/1.1
-

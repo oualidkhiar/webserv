@@ -6,12 +6,41 @@
 
 RequestParser ::RequestParser() {}
 
-bool RequestParser::get_chunked(std::string &chunked, std::string &request_string, int size)
+size_t RequestParser::findEndOfHeader(HttpRequest &request)
 {
-    chunked = request_string.substr(0, size);
-    if (request_string[size] == '\n' || request_string[size] == '\r')
-        return (true);
-    return (false);
+
+    size_t pos = 0;
+    while (pos < request.getRequest().size() - 3)
+    {
+        if (request.getRequest().at(pos) == '\r' && request.getRequest().at(pos + 1) == '\n' &&
+            request.getRequest().at(pos + 2) == '\r' && request.getRequest().at(pos + 3) == '\n')
+            return (pos);
+        pos++;
+    }
+    return (std::string::npos);
+}
+
+bool RequestParser::get_chunked(HttpRequest &request, int size)
+{
+
+    if (!(request.getCharFromRequest(size) == '\n' && request.getCharFromRequest(size + 1) == '\r'))
+        return (false);
+    request.getBody()->appendChunkToBody(request.getChunk(0, size));
+    request.eraseFromRequest(0, size + 2);
+    return (true);
+}
+
+size_t RequestParser::findCrlfPos(HttpRequest &request)
+
+{
+    size_t pos = 0;
+    while (pos < request.getRequest().size() - 1)
+    {
+        if (request.getRequest().at(pos) == '\r' && request.getRequest().at(pos + 1) == '\n')
+            return (pos);
+        pos++;
+    }
+    return (std::string::npos);
 }
 
 bool RequestParser::setBufferFixed(HttpRequest &request, Body *body)
@@ -25,25 +54,24 @@ bool RequestParser::setBufferFixed(HttpRequest &request, Body *body)
 
 void RequestParser::read_body_fixed(HttpRequest &request)
 {
-    std::string &request_string = request.getRequest();
+
     Body *body = request.getBody();
     size_t body_size = body->getToRead();
-    size_t available_data = request_string.length();
-    std::cout << available_data << " " << body_size << std::endl;
+    size_t available_data = request.requestSize();
     if (body_size >= available_data)
     {
-        body->appendChunkToBody(request_string);
-        body->decrementToRead(request_string.length());
-        request_string.clear();
+        body->appendChunkToBody(request.getChunk(0, available_data));
+        body->decrementToRead(available_data);
+        request.clear();
     }
     else if (available_data > body_size)
     {
-        body->setBody(request_string.substr(0, body_size));
-        request_string.clear();
+        body->appendChunkToBody(request.getChunk(0, body_size));
+        request.clear();
         body->setToRead(0);
     }
     if (body->getToRead() == 0)
-        request.setStatus(FINISHED);
+        request.setStatus((status)FINISHED);
 }
 
 void RequestParser::read_body_chunked(HttpRequest &request)
@@ -52,32 +80,28 @@ void RequestParser::read_body_chunked(HttpRequest &request)
     size_t pos;
     int size;
     std::string chunk;
-    std::string &request_string = request.getRequest();
-    pos = request_string.find("\r\n");
-    size = hex_to_num(request_string.substr(0, pos));
+    pos = findCrlfPos(request);
+    size = hex_to_num(request.extractString(0, pos));
     if (size <= -1)
         exit_error("read_body_chunked ERROR:: size <= -1 \n");
     else if (size == 0)
     {
-        request.setStatus(FINISHED);
+        request.setStatus((status)FINISHED);
         return;
     }
-    request_string.erase(0, pos + 2);
-    if (get_chunked(chunk, request_string, size) == false)
+    request.eraseFromRequest(0, pos + 2);
+    if (get_chunked(request, size) == false)
         exit_error("read_body_chunked ERROR:: Chunked[size]!= 'new_line' \n");
-    body->setBody(chunk);
-    request_string.erase(0, size + 2);
 }
 
 void RequestParser::read_body(HttpRequest &request)
 {
-    std::string &request_string = request.getRequest();
     Body *body = request.getBody();
     if (body == NULL)
     {
         size_t pos;
-        pos = request_string.find("\r\n\r\n");
-        request_string.erase(0, pos + 4);
+        pos = findEndOfHeader(request);
+        request.eraseFromRequest(0, pos + 4);
         body = new Body();
         body->discoverReadingType(request);
         request.setBody(body);
@@ -93,11 +117,10 @@ void RequestParser::reading_request_line(HttpRequest &request)
 {
     int token_numbers = 0;
 
-    std::string &request_string = request.getRequest();
-    size_t pos = request_string.find("\n");
+    size_t pos = findCrlfPos(request);
     if (pos == std::string::npos)
         return;
-    std::string line = request_string.substr(0, pos);
+    std::string line = request.extractString(0, pos);
     std::string token;
     while ((token = StringManip::get_token(line, ' ')).empty() == false)
     {
@@ -120,18 +143,18 @@ void RequestParser::reading_request_line(HttpRequest &request)
     }
     if (token_numbers == 3)
         request.setStatus(READ_HEADER);
-    request_string.erase(0, pos + 1);
+    request.eraseFromRequest(0, pos + 2);
 }
 
 void RequestParser::read_header(HttpRequest &request)
 {
-    std::string &request_string = request.getRequest();
+
     size_t pos;
-    pos = request_string.find("\r\n\r\n");
+    pos = findEndOfHeader(request);
     if (pos == std::string::npos)
         return;
-    std::string headers_string = request_string.substr(0, pos);
-    request_string.erase(0, pos);
+    std::string headers_string = request.extractString(0, pos);
+    request.eraseFromRequest(0, pos);
     std::string line;
     while ((line = StringManip::get_token(headers_string, '\n')).empty() == false)
     {
@@ -147,7 +170,7 @@ void RequestParser::read_header(HttpRequest &request)
         headers_string.erase(0, line.length() + 1);
     }
     if (request.getType() == GET || request.getType() == DELETE)
-        request.setStatus(FINISHED);
+        request.setStatus((status)FINISHED);
     else
         request.setStatus(READ_BODY);
 }
