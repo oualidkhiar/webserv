@@ -16,11 +16,10 @@ int main() {
     char buffer[500];
     int bread = read(fd, buffer, 500);
 
-    std::cout << bread << std::endl;
+    // std::cout << bread << std::endl;
 
-    // std::cout << buffer << std::endl;
-
-    close(fd);
-    bread = read(fd, buffer, 500);
-    std::cout << "second " << bread << std::endl;
+    for (int i = 0; i < bread; i++) {
+        std::cout << buffer[i];
+    }
+    std::cout << std::endl;
 }

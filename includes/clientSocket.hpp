@@ -11,28 +11,20 @@ enum ClientState {
     CLOSED
 };
 
-
-class requestHandler {
-
-};
-
 class ClientSocket: public socketsManager {
 private:
 
     ClientState     state;
-    std::string	    ReceiveBuffer;
-    std::string	    ResponseBuffer;
+    char	        *ReceiveBuffer;
+    char	        *ResponseBuffer;
 
-    requestHandler  request;
-
-    void continueReading( void );
+    void readingAndProcessingRequest( void );
+    void continueWriting(std::string& res);
 
 public:
 
 	ClientSocket(int fd ,serverConfig *conf, ServerManager *ptr);
-    void handleEvent();
-    void handleRequest( void );
-    void handleResponse( void );
+    void    handleEvent();
 
 };
 
