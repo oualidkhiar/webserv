@@ -1,25 +1,23 @@
 #include "../includes/server_manager.hpp"
 
-ServerManager::ServerManager(std::string FileConfigName): conf(FileConfigName), error(false) {
-    if (conf.CheckParse()) {
-        this->error = true;
-        return ;
-    }
-    epfd = epoll_create(0);
-}
+ServerManager::ServerManager(config& conf): conf(conf), error(false) {}
 
 ServerManager::~ServerManager() {
-
+    for (std::map<int, socketsManager *>::iterator it = socketHandler.begin(); it != socketHandler.end(); it++) {
+        close(it->first);
+        delete it->second;
+    }
+    close(epfd);
 }
 
-int ServerManager::ListeningSocketStart(serverConfig *serverConf)
+int ServerManager::ListeningSocketStart(int port)
 {
     int                 opt;
     int                 socketFd;
     struct sockaddr_in  address;
     socklen_t           addLen;
 
-    address.sin_port = htons(serverConf->Port);
+    address.sin_port = htons(port);
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = INADDR_ANY;
     addLen = sizeof(address);
@@ -29,7 +27,11 @@ int ServerManager::ListeningSocketStart(serverConfig *serverConf)
         perror("socket failed");
         return (-1);
     }
-    setsockopt(socketFd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+    if (setsockopt(socketFd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
+        perror("setsockopt failed");
+        close(socketFd);
+        return -1;
+    }
     if (bind(socketFd, (struct sockaddr *)(&address), addLen) == -1) {
         perror("bind failed");
         close(socketFd);
@@ -45,19 +47,36 @@ int ServerManager::ListeningSocketStart(serverConfig *serverConf)
 
 void ServerManager::StartAllServers()
 {
-    struct epoll_event  ev;
-    int sockFd;
+    struct epoll_event ev;
 
+    this->epfd = epoll_create(1);
+    if (this->epfd < 0) {
+        perror("epoll_create failed");
+        this->error = true;
+        return;
+    }
     for (int i = 0; i < conf.ServersNumber(); i++) {
-        if ((sockFd = ListeningSocketStart(conf.getSerevrConfig(i))) < 0) {
-            this->error = true;
-            return ;
+        serverConfig *serverconf = conf.getSerevrConfig(i);
+        for (size_t j = 0; j < serverconf->Port.size(); j++) {
+            int sockFd = ListeningSocketStart(serverconf->Port[j]);
+            if (sockFd < 0) {
+                this->error = true;
+                return;
+            }
+            int flags = fcntl(sockFd, F_GETFL, 0);
+            fcntl(sockFd, F_SETFL, flags | O_NONBLOCK);
+            socketsManager *sock = new ListeningSocket(serverconf, sockFd, this);
+            ev.events = EPOLLIN;
+            ev.data.ptr = sock;
+            if (epoll_ctl(this->epfd, EPOLL_CTL_ADD, sockFd, &ev) < 0) {
+                perror("epoll_ctl failed");
+                close(sockFd);
+                delete sock;
+                this->error = true;
+                return;
+            }
+            this->socketHandler.insert(std::make_pair(sockFd, sock));
         }
-        socketsManager *sock = new ListeningSocket(conf.getSerevrConfig(i), sockFd, this);
-        ev.data.ptr = sock;
-        ev.events = EPOLLIN;
-        epoll_ctl(epfd, EPOLL_CTL_ADD, sockFd, &ev);
-        this->socketHandler.insert({sockFd, sock});
     }
 }
 
@@ -85,9 +104,14 @@ void ServerManager::removeConnection(int fd) {
     socketHandler.erase(fd);
 }
 
-void ServerManager::addConnection(struct epoll_event ev, int fd, socketsManager *sock) {
+void ServerManager::addConnection(struct epoll_event& ev, int fd, socketsManager *sock) {
     epoll_ctl(this->epfd, EPOLL_CTL_ADD, fd, &ev);
-    this->socketHandler.insert({fd, sock});
+    this->socketHandler.insert(std::make_pair(fd, sock));
+}
+
+void ServerManager::modifyEvent(int fd, struct epoll_event& ev)
+{
+    epoll_ctl(this->epfd, EPOLL_CTL_MOD, fd, &ev);
 }
 
 void ServerManager::setError() {

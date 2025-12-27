@@ -9,6 +9,8 @@ class HttpRequest
 
 {
 private:
+
+
     std::string &request;
     enum RequestType type;
     std::string uri;
@@ -47,6 +49,7 @@ public:
     void setUri(std::string uri);
     void setType(enum RequestType type);
     void setStatus(enum status status);
+    
 
     ~HttpRequest();
 };

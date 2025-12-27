@@ -7,14 +7,16 @@ int main(int ac, char **av)
         return 2;
     }
 
-    // ServerManager server(av[1]);
-
-    // server.StartAllServers();
-    // if (server.checkError())
-    //     return 2;
-    // server.TrackSocketsEvent();
-
     config conf(av[1]);
 
+    conf.buildServersConfig();
+    if (conf.CheckParse())
+        return (2);
+    // conf.printServer();
+    ServerManager server(conf);
+    server.StartAllServers();
+    if (server.checkError())
+        return 2;
+    server.TrackSocketsEvent();
     return (0);
 }

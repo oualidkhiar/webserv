@@ -1,25 +1,45 @@
 #include "../includes/tokenizer.hpp"
 
-tokenizer::tokenizer(std::string filename): file(filename){}
+tokenizer::tokenizer(std::string filename): file(filename.c_str()), error(false) {
+    if (!file.is_open()) {
+        std::cerr << "Error: failed to open config file\n";
+        this->error = true;
+        return ;
+    }
+}
 
 tokenizer::~tokenizer() {
-    for (int i = 0; i < tokens.size(); i++) {
+    for (size_t i = 0; i < tokens.size(); i++) {
         delete tokens[i];
     }
     file.close();
 }
 
-void tokenizer::createToren(type t, std::string data)
+bool tokenizer::checkTokenizeError() {
+    return this->error;
+}
+
+Token *tokenizer::getToken(size_t index) {
+    if (index < tokens.size())
+        return tokens[index];
+    return NULL;
+}
+
+int tokenizer::getTokensSize() {
+    return tokens.size();
+}
+
+void tokenizer::tokenizer::createToren(type t, std::string data)
 {
     Token *tok = new Token(t, data);
     this->tokens.push_back(tok);
 }
 
-void skipe_spaces(std::string& str, int& index) {
+void skipe_spaces(std::string& str, size_t& index) {
     while (str[index] == 32 || (str[index] >= 9 && str[index] <= 13)) {index++;}
 }
 
-std::string handleString(std::string& str, int& index)
+std::string handleString(std::string& str, size_t& index)
 {
 	int     start;
 
@@ -37,7 +57,7 @@ std::string handleString(std::string& str, int& index)
 	return str.substr(start, index - start);
 }
 
-void tokenizer::extructToken(std::string& line, int& index)
+void tokenizer::extructToken(std::string& line, size_t& index)
 {
     skipe_spaces(line, index);
     if (line[index] == '}') {
@@ -65,7 +85,7 @@ void tokenizer::tokenizerStart()
 {
     std::string line;
     std::string subline;
-    int         index;
+    size_t         index;
 
     while (getline(this->file, line))
     {
@@ -77,9 +97,11 @@ void tokenizer::tokenizerStart()
     }
 }
 
+//  print toknizer----------------------------------------------------
+
 void tokenizer::printTokens()
 {
-    int index = 0;
+    size_t index = 0;
 
     while (index < tokens.size())
     {

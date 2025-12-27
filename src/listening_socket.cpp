@@ -1,32 +1,32 @@
 #include "../includes/listeningSocket.hpp"
 #include "../includes/server_manager.hpp"
 
-ListeningSocket::ListeningSocket(serverConfig *conf, int fd, ServerManager *ptr): socketsManager(conf, fd, ptr) {}
+ListeningSocket::ListeningSocket(serverConfig *conf, int fd, ServerManager *ptr): socketsManager(conf, ptr, fd) {}
 
 ListeningSocket::~ListeningSocket() {}
 
 void ListeningSocket::handleEvent( void )
 {
     struct epoll_event  ev;
-    struct sockaddr     address;
+    struct sockaddr_in     address;
     socklen_t           addLen;
 
     addLen = sizeof(address);
     while (true) {
         int clientFd = accept(this->socketFd, (struct sockaddr *)(&address), &addLen);
-        socketsManager *sock = new ClientSocket(clientFd, this->serverConf, this->ptr);
-        ev.events = EPOLLIN;
-        ev.data.ptr = sock;
         if (clientFd < 0) {
             if (errno == EAGAIN || errno == EWOULDBLOCK) {
                 break ;
             }
             else {
                 perror ("accept failed");
-                // this->ptr->setError();  i wanna make sure first what we gonna do in this case (continue or exit) 
                 break ;
             }
         }
+        fcntl(clientFd, F_SETFL, O_NONBLOCK);
+        socketsManager *sock = new ClientSocket(clientFd, this->serverConf, this->ptr);
+        ev.events = EPOLLIN;
+        ev.data.ptr = sock;
         this->ptr->addConnection(ev, clientFd, sock);
     }
 }

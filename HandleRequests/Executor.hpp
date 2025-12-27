@@ -25,3 +25,10 @@ public:
     Executor(std::vector<serverConfig *> *servers);
     HttpResponse execute(HttpRequest &request);
 };
+
+
+vector<char> sele()
+{
+    
+    
+}

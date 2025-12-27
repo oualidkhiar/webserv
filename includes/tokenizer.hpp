@@ -2,10 +2,11 @@
 #define TOKENIZER_HPP
 
 #include <iostream>
+#include <cstdlib>
 #include <string>
 #include <vector>
-#include <unordered_map>
-#include <unordered_set>
+#include <map>
+#include <set>
 #include <sys/types.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -31,32 +32,28 @@ class tokenizer {
 protected:
 
     std::ifstream           file;
+    bool                    error;
     std::vector<Token *>    tokens;
 
     void createToren(type t, std::string data);
-    void extructToken(std::string& line, int& index);
+    void extructToken(std::string& line, size_t& index);
 
 public:
 
     tokenizer(std::string fileName);
-
-    Token *getToken(int index) {
-        if (index < tokens.size())
-            return tokens[index];
-        return NULL;
-    }
-
-    int getTokensSize() {
-        return tokens.size();
-    }
-
     ~tokenizer();
+
+    Token *getToken(size_t index);
+
+    int getTokensSize();
+
     void tokenizerStart();
     void printTokens();
+    bool checkTokenizeError();
 
 };
 
-void skipe_spaces(std::string& str, int& index);
-std::string handleString(std::string& str, int& index);
+void skipe_spaces(std::string& str, size_t& index);
+std::string handleString(std::string& str, size_t& index);
 
 #endif

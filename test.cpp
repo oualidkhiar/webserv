@@ -1,28 +1,26 @@
 
 #include "./includes/tokenizer.hpp"
 #include "./includes/parser.hpp"
+#include "./includes/config.hpp"
 #include <map>
 using namespace std;
 int main() {
-    
-    tokenizer tok("./config/test.config");
-    tok.tokenizerStart();
-    // tok.printTokens();
-    parser p(tok);
-    p.startParser();
-    // p.printParser();
+
+    // config conf("./config/test.config");
+    // conf.buildServersConfig();
+    // if (!conf.CheckParse())
+    //     conf.printServer();
+
+    int fd = open("README.md", O_RDONLY);
+
+    char buffer[500];
+    int bread = read(fd, buffer, 500);
+
+    std::cout << bread << std::endl;
+
+    // std::cout << buffer << std::endl;
+
+    close(fd);
+    bread = read(fd, buffer, 500);
+    std::cout << "second " << bread << std::endl;
 }
-
-// class Solution {
-// public:
-//     string countAndSay(int n) {
-        
-//     }
-// };
-
-// int main () {
-//     Solution sol;
-//     vector<string> ve = {"flower","flower","flower","flower"};
-
-//     cout << sol.longestCommonPrefix(ve) << endl;
-// }

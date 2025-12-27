@@ -16,10 +16,11 @@ protected:
 
 public:
 
-    socketsManager(serverConfig *conf, int fd, ServerManager *ptr);
+    socketsManager(serverConfig *conf, ServerManager *ptr, int fd);
     virtual ~socketsManager();
 
     virtual void handleEvent() = 0;
+    // virtual void printLog() = 0;
 
 };
 

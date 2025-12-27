@@ -9,24 +9,25 @@
 class ServerManager {
 private:
 
-    std::unordered_map<int, socketsManager *>   socketHandler;
+    std::map<int, socketsManager *>   socketHandler;
     struct epoll_event                          events[MAX_EVENTS];
-    config                                      conf;
+    config&                                     conf;
     int                                         epfd;
     bool                                        error;
 
-    int ListeningSocketStart(serverConfig *serverConf);
+    int ListeningSocketStart(int port);
 
 public:
 
-    ServerManager(std::string FileConfigName);
+    ServerManager(config& conf);
     ~ServerManager();
 
     void StartAllServers();
     void TrackSocketsEvent();
 
-    void addConnection(struct epoll_event ev, int fd, socketsManager *sock);
+    void addConnection(struct epoll_event& ev, int fd, socketsManager *sock);
     void removeConnection(int fd);
+    void modifyEvent(int fd, struct epoll_event& ev);
 
     void setError();
     bool checkError( void );

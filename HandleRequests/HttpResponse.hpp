@@ -6,6 +6,7 @@
 #include <FtFile.hpp>
 #include "HttpRequest.hpp"
 
+
 class HttpResponse
 {
 private:
@@ -14,6 +15,7 @@ private:
     std::vector<char> body;
     enum status state;
     FtFile *file;
+
 
 public:
     HttpResponse();

@@ -10,12 +10,16 @@ enum nodeType {
 };
 
 struct  AstNode {
-    nodeType type;
-    std::string name;
-    std::vector<std::string> args;
-    std::vector<AstNode *> children;
+    nodeType                    type;
+    std::string                 name;
+    std::vector<std::string>    args;
+    std::vector<AstNode *>      children;
 	AstNode() {}
-    AstNode(nodeType type, std::string name, std::vector<std::string> args): type(type), name(name), args(args) {}
+    AstNode(nodeType type, std::string name, std::vector<std::string> args){
+        this->type = type;
+        this->name = name;
+        this->args = args;
+    }
 };
 
 class parser {
@@ -23,10 +27,17 @@ private:
 
     tokenizer&  tokens;
     std::vector<AstNode *> serversBlock;
-	int			index;
     bool        error;
+	int			index;
+
 
 	bool expectedTokenType(type t);
+    AstNode *creatNode(AstNode node);
+	AstNode *parseData();
+	AstNode *parseLocationBlock();
+	AstNode *parseServerBlock();
+	void advanceToken();
+	Token *peekToken();
 
 public:
 
@@ -34,16 +45,10 @@ public:
     ~parser();
 
     void startParser();
-    AstNode *creatNode(AstNode node);
-
-	AstNode *parseData();
-	AstNode *parseLocationBlock();
-	AstNode *parseServerBlock();
-	void advanceToken();
-	Token *peekToken();
+    bool checkErrorParse();
 
     void printParser();
-
+    AstNode *peekNode(size_t index);
 };
 
 void clearAst(AstNode *root);
