@@ -25,12 +25,7 @@ void cout_request(HttpRequest &request)
     }
     if (request.getType() == POST)
     {
-        std::cout << "---BODY-----" << std::endl;
-        for (std::vector<char>::const_iterator it = request.getBody()->getBody().begin(); it < request.getBody()->getBody().end(); ++it)
-        {
-            std::cout << *it;
-        }
-        std::cout << std::endl;
+        request.printBody();
     }
 }
 
@@ -38,16 +33,16 @@ int main()
 {
 #include <string>
 
-    char *chunkedPost =
+    char chunkedPost[500] =
         "POST /api/users/create HTTP/1.1\r\n"
         "Host: localhost:8080\r\n"
         "Content-Type: application/json\r\n"
         "Transfer-Encoding: chunked\r\n"
         "User-Agent: TestingClient/1.0\r\n"
         "\r\n"   // End of Headers (Double CRLF)
-        "17\r\n" // Chunk 1 size (23 in decimal)
+        "14\r\n" // Chunk 1 size (23 in decimal)
         "{\"username\": \"jdoe\",\r\n"
-        "2D\r\n" // Chunk 2 size (45 in decimal)
+        "31\r\n" // Chunk 2 size (45 in decimal)
         "\"email\": \"jane.doe@example.com\", \"role\": \"admin\"}\r\n"
         "0\r\n" // Final Chunk (End of data)
         "\r\n"; // Final CRLF to terminate the message

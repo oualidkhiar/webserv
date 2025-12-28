@@ -123,9 +123,18 @@ int tokensSize(std::string string, std::string delimiter)
         if (pos == std::string::npos)
             return (size + 1);
         else if (pos == 0)
-            string.erase(0 , delimiter.length());
-        else 
+            string.erase(0, delimiter.length());
+        else
             size++;
     }
     return (size);
+}
+
+void printVector(std::vector<char> vec)
+{
+    size_t size = vec.size();
+    size_t i = 0;
+    while (i < size)
+        std::cout << vec[i++];
+    std::cout << std::endl;
 }

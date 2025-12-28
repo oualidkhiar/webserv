@@ -22,8 +22,8 @@ size_t RequestParser::findEndOfHeader(HttpRequest &request)
 
 bool RequestParser::get_chunked(HttpRequest &request, int size)
 {
-
-    if (!(request.getCharFromRequest(size) == '\n' && request.getCharFromRequest(size + 1) == '\r'))
+   
+    if (!(request.getCharFromRequest(size) == '\r' && request.getCharFromRequest(size + 1) == '\n'))
         return (false);
     request.getBody()->appendChunkToBody(request.getChunk(0, size));
     request.eraseFromRequest(0, size + 2);
@@ -76,10 +76,10 @@ void RequestParser::read_body_fixed(HttpRequest &request)
 
 void RequestParser::read_body_chunked(HttpRequest &request)
 {
-    Body *body = request.getBody();
     size_t pos;
     int size;
     std::string chunk;
+
     pos = findCrlfPos(request);
     size = hex_to_num(request.extractString(0, pos));
     if (size <= -1)
@@ -112,6 +112,7 @@ void RequestParser::read_body(HttpRequest &request)
         read_body_chunked(request);
     else
         read_body_fixed(request);
+  
 }
 void RequestParser::reading_request_line(HttpRequest &request)
 {

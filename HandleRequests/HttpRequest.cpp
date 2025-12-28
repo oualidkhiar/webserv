@@ -1,7 +1,7 @@
 #include "HttpRequest.hpp"
 #include "RequestParser.hpp"
 #include <algorithm>
-
+#include "StringManip.hpp"
 
 HttpRequest ::HttpRequest()
 {
@@ -22,9 +22,8 @@ size_t HttpRequest::getAvailableData() { return (this->available_data); }
 struct serverConfig *HttpRequest::getConfig() { return (this->config); }
 struct location *HttpRequest::getLocation() { return (this->location); }
 std::vector<char> HttpRequest::getRequest() { return (this->request); };
-char HttpRequest::getCharFromRequest(int index) {return (request.at(index));} 
-size_t HttpRequest::requestSize(){return (request.size());}
-
+char HttpRequest::getCharFromRequest(int index) { return (request.at(index)); }
+size_t HttpRequest::requestSize() { return (request.size()); }
 
 void HttpRequest::setPort(int port) { this->port = port; }
 void HttpRequest::setConfig(struct serverConfig *config) { this->config = config; }
@@ -36,7 +35,7 @@ void HttpRequest::setUri(std::string uri) { this->uri = uri; }
 void HttpRequest::setType(enum RequestType type) { this->type = type; }
 void HttpRequest::setResponseCode(int code) { this->response_code = code; }
 void HttpRequest::setLocation(struct location *location) { this->location = location; }
-void HttpRequest::clear(){request.clear();}
+void HttpRequest::clear() { request.clear(); }
 
 std::string HttpRequest::getHeader(std::string key)
 {
@@ -77,14 +76,32 @@ std::string HttpRequest::extractString(size_t pos, size_t len)
 
 std::vector<char> HttpRequest::getChunk(size_t start, size_t len)
 {
-    std::vector<char> :: const_iterator first = request.begin() + start;
+    std::vector<char>::const_iterator first = request.begin() + start;
     std::vector<char>::const_iterator last = request.begin() + len;
-    std::vector<char> chunk(first , last);
-
+    std::vector<char> chunk(first, last);
+    return (chunk);
 }
 
 HttpRequest ::~HttpRequest()
 {
     if (body != NULL)
         delete body;
+}
+
+// debuging funcs
+
+void HttpRequest::printHeaders()
+{
+    for (std::map<std::string, std::string>::iterator it = headers.begin(); it != headers.end(); ++it)
+        std::cout << it->first << " : " << it->second << std::endl;
+}
+
+void HttpRequest::printBody()
+{
+    printVector(this->body->getBody());
+}
+
+void HttpRequest::printRequest()
+{
+    printVector(request);
 }

@@ -5,8 +5,8 @@
 enum FileReadState
 {
     NOT_OPENED,
-    READING,
-    FINISHED
+    FILE_READING,
+    FILE_FINISHED
 };
 
 class FtFile

@@ -1,10 +1,13 @@
 #include "FtFile.hpp"
 
 FtFile::FtFile(const std::string &path)
-    : fd(-1),
-      sented_bytes(0),
-      path(path),
-      state(FileReadState::NOT_OPENED) {}
+
+{
+    state = NOT_OPENED;
+    sented_bytes = 0;
+    fd = -1;
+    this->path = path;
+}
 
 int FtFile::getFd() const
 {
@@ -51,5 +54,4 @@ void FtFile::incrementSentedBytes(size_t amount)
     sented_bytes += amount;
 }
 
-
-FtFile::~FtFile(){}
+FtFile::~FtFile() {}

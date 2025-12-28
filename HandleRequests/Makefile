@@ -12,7 +12,8 @@ SRCS         := main.cpp \
                 HttpResponse.cpp \
                 RequestParser.cpp \
                 StringManip.cpp    \
-				Body.cpp
+				Body.cpp \
+				FtFile.cpp
 
 # Object Files (Stored in a separate directory to keep root clean)
 OBJS         := $(SRCS:.cpp=.o)

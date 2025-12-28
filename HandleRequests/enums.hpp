@@ -22,7 +22,7 @@ enum status
 enum ResponseState
 {
     READING,
-    FINISHED
+    RESPONSE_FINISHED
 };
 
 enum ReadingType
