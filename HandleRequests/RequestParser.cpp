@@ -22,7 +22,7 @@ size_t RequestParser::findEndOfHeader(HttpRequest &request)
 
 bool RequestParser::get_chunked(HttpRequest &request, int size)
 {
-   
+
     if (!(request.getCharFromRequest(size) == '\r' && request.getCharFromRequest(size + 1) == '\n'))
         return (false);
     request.getBody()->appendChunkToBody(request.getChunk(0, size));
@@ -58,6 +58,12 @@ void RequestParser::read_body_fixed(HttpRequest &request)
     Body *body = request.getBody();
     size_t body_size = body->getToRead();
     size_t available_data = request.requestSize();
+    {
+        std::cout << "***************************************" << std::endl;
+        request.printRequest();
+        std::cout << "body_size = " << body_size << "  available_data = " << available_data << std::endl;
+        std::cout << "***************************************" << std::endl;
+    }
     if (body_size >= available_data)
     {
         body->appendChunkToBody(request.getChunk(0, available_data));
@@ -112,7 +118,6 @@ void RequestParser::read_body(HttpRequest &request)
         read_body_chunked(request);
     else
         read_body_fixed(request);
-  
 }
 void RequestParser::reading_request_line(HttpRequest &request)
 {

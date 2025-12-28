@@ -3,6 +3,14 @@
 #include <iostream>
 #include <map>
 
+size_t ft_strlen(char *s)
+{
+    int i = 0;
+    while (s[i])
+        i++;
+    return (i);
+}
+
 void cout_request(HttpRequest &request)
 {
     std::string types[3] = {"DELETE", "POST", "GET"};
@@ -33,23 +41,21 @@ int main()
 {
 #include <string>
 
-    char chunkedPost[500] =
+    char fixedPost[500] =
         "POST /api/users/create HTTP/1.1\r\n"
         "Host: localhost:8080\r\n"
         "Content-Type: application/json\r\n"
-        "Transfer-Encoding: chunked\r\n"
+        "Content-Length: 90\r\n" // Total bytes of the body string
         "User-Agent: TestingClient/1.0\r\n"
-        "\r\n"   // End of Headers (Double CRLF)
-        "14\r\n" // Chunk 1 size (23 in decimal)
-        "{\"username\": \"jdoe\",\r\n"
-        "31\r\n" // Chunk 2 size (45 in decimal)
-        "\"email\": \"jane.doe@example.com\", \"role\": \"admin\"}\r\n"
-        "0\r\n" // Final Chunk (End of data)
-        "\r\n"; // Final CRLF to terminate the message
+        "\r\n" // End of Headers
+        "{\"username\": \"jdoe\", \"email\": \"jane.doe@example.com\", \"role\": \"admin\"}";
     HttpRequest request;
-    request.appendRequestData(chunkedPost, sizeof(chunkedPost));
+    request.appendRequestData(fixedPost, ft_strlen(fixedPost));
     RequestParser request_parser;
     while (request.getStatus() != FINISHED)
+    {
+        char a[2] = "a";
         request_parser.create_request(request);
+    }
     cout_request(request);
 }
