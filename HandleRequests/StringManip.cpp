@@ -130,7 +130,7 @@ int tokensSize(std::string string, std::string delimiter)
     return (size);
 }
 
-void printVector(std::vector<char> vec)
+void printVector(std::vector<unsigned char> vec)
 {
     size_t size = vec.size();
     size_t i = 0;

@@ -7,14 +7,7 @@
 
 Executor::Executor(std::vector<serverConfig *> *servers) { this->servers = servers; }
 
-void Executor::setServer(HttpRequest &request)
-{
-    for (std::vector<serverConfig *>::iterator it = servers->begin(); it != servers->end(); ++it)
-    {
-        if ((*it)->Port == request.getPort())
-            request.setConfig(*it);
-    }
-}
+
 
 int Executor::checkPermession(const char *path)
 {
@@ -59,7 +52,6 @@ bool Executor::isAllowedMethod(HttpRequest &request)
 HttpResponse Executor::execute(HttpRequest &request)
 {
     HttpResponse response;
-    setServer(request);
     setLocation(request);
     if (!isAllowedMethod(request))
         return (response);

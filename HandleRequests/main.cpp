@@ -3,7 +3,7 @@
 #include <iostream>
 #include <map>
 
-size_t ft_strlen(char *s)
+size_t ft_strlen(unsigned char *s)
 {
     int i = 0;
     while (s[i])
@@ -41,11 +41,11 @@ int main()
 {
 #include <string>
 
-    char fixedPost[500] =
+    unsigned char fixedPost[500] =
         "POST /api/users/create HTTP/1.1\r\n"
         "Host: localhost:8080\r\n"
         "Content-Type: application/json\r\n"
-        "Content-Length: 90\r\n" // Total bytes of the body string
+        "Content-Length: 70\r\n" // Total bytes of the body string
         "User-Agent: TestingClient/1.0\r\n"
         "\r\n" // End of Headers
         "{\"username\": \"jdoe\", \"email\": \"jane.doe@example.com\", \"role\": \"admin\"}";
@@ -54,7 +54,6 @@ int main()
     RequestParser request_parser;
     while (request.getStatus() != FINISHED)
     {
-        char a[2] = "a";
         request_parser.create_request(request);
     }
     cout_request(request);

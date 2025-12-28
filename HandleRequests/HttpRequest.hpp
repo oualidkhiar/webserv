@@ -19,7 +19,7 @@ private:
     struct serverConfig *config;
     int port;
     location *location;
-    std::vector<char> request;
+    std::vector<unsigned char> request;
 
 public:
     HttpRequest();
@@ -35,14 +35,14 @@ public:
     struct serverConfig *getConfig();
     int getPort();
     struct location *getLocation();
-    std::vector<char> getRequest();
-    void appendRequestData(char *buffer, size_t buffer_size);
-    char getCharFromRequest(int index);
+    std::vector<unsigned char> getRequest();
+    void appendRequestData(unsigned char *buffer, size_t buffer_size);
+    unsigned char getCharFromRequest(int index);
     size_t requestSize();
 
     void eraseFromRequest(size_t start, size_t len);
     std::string extractString(size_t pos, size_t len);
-    std::vector<char> getChunk(size_t pos, size_t len);
+    std::vector<unsigned char> getChunk(size_t pos, size_t len);
 
     void clear();
     void setLocation(struct location *location);

@@ -21,8 +21,8 @@ Body *HttpRequest::getBody() { return (this->body); }
 size_t HttpRequest::getAvailableData() { return (this->available_data); }
 struct serverConfig *HttpRequest::getConfig() { return (this->config); }
 struct location *HttpRequest::getLocation() { return (this->location); }
-std::vector<char> HttpRequest::getRequest() { return (this->request); };
-char HttpRequest::getCharFromRequest(int index) { return (request.at(index)); }
+std::vector<unsigned char> HttpRequest::getRequest() { return (this->request); };
+unsigned char HttpRequest::getCharFromRequest(int index) { return (request.at(index)); }
 size_t HttpRequest::requestSize() { return (request.size()); }
 
 void HttpRequest::setPort(int port) { this->port = port; }
@@ -46,7 +46,7 @@ std::string HttpRequest::getHeader(std::string key)
     return "";
 }
 
-void HttpRequest::appendRequestData(char *buffer, size_t buffer_size)
+void HttpRequest::appendRequestData(unsigned char *buffer, size_t buffer_size)
 {
     RequestParser parser;
     this->request.insert(request.end(), buffer, buffer + buffer_size);
@@ -61,8 +61,8 @@ int HttpRequest::addHeader(std::string key, std::string value)
 
 void HttpRequest::eraseFromRequest(size_t start, size_t len)
 {
-    std::vector<char>::iterator start_it;
-    std::vector<char>::iterator end_it;
+    std::vector<unsigned char>::iterator start_it;
+    std::vector<unsigned char>::iterator end_it;
     start_it = request.begin() + start;
     end_it = start_it + len;
     request.erase(start_it, end_it);
@@ -70,15 +70,15 @@ void HttpRequest::eraseFromRequest(size_t start, size_t len)
 
 std::string HttpRequest::extractString(size_t pos, size_t len)
 {
-    std::string extracted_string(&request[pos], len);
+    std::string extracted_string((char *)&request[pos], len);
     return (extracted_string);
 }
 
-std::vector<char> HttpRequest::getChunk(size_t start, size_t len)
+std::vector<unsigned char> HttpRequest::getChunk(size_t start, size_t len)
 {
-    std::vector<char>::const_iterator first = request.begin() + start;
-    std::vector<char>::const_iterator last = request.begin() + len;
-    std::vector<char> chunk(first, last);
+    std::vector<unsigned char>::const_iterator first = request.begin() + start;
+    std::vector<unsigned char>::const_iterator last = request.begin() + len;
+    std::vector<unsigned char> chunk(first, last);
     return (chunk);
 }
 

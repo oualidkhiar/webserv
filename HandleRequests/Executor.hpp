@@ -14,7 +14,6 @@ private:
     int checkPermession(const char * path);
     std::string pathResolver(HttpRequest & request);
     bool isAllowedMethod(HttpRequest &request);
-    void setServer(HttpRequest &request);
     void setLocation(HttpRequest &request);
     int matchedScore(std::string uri, std::string key);
     HttpResponse executeGet(HttpRequest &request);
@@ -26,9 +25,3 @@ public:
     HttpResponse execute(HttpRequest &request);
 };
 
-
-vector<char> sele()
-{
-    
-    
-}
