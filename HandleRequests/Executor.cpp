@@ -5,7 +5,7 @@
 #include <unistd.h>
 #include "MimeTypes.hpp"
 
-Executor::Executor(std::vector<serverConfig *> *servers) { this->servers = servers; }
+Executor::Executor() {      }
 
 std::pair<int, FtFile *> Executor::extractFileInfos(const char *path)
 {
@@ -94,7 +94,7 @@ HttpResponse Executor::executeGet(HttpRequest &request)
     response.setFile(pair.second);
     file_content = response.getFile()->readFile();
     response.appendBodyToResponse(file_content);
-    
+
 }
 
 int Executor::matchedScore(std::string uri, std::string key)

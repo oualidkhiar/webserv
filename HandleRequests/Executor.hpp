@@ -5,7 +5,6 @@
 class Executor
 {
 private:
-    std::vector<serverConfig *> *servers; // pointer to all servers configs 
 
     // methods // 
     void setContentTpe(HttpResponse & response , const std::string &path);
@@ -19,7 +18,7 @@ private:
     location *getLongestMatchedLocation(HttpRequest &request, std::map<std::string, location *> map);
 
 public:
-    Executor(std::vector<serverConfig *> *servers);
+    Executor();
     HttpResponse execute(HttpRequest &request);
 };
 

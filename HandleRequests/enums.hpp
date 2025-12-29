@@ -21,7 +21,8 @@ enum status
 
 enum ResponseState
 {
-    READING,
+    FRESH,
+    READING_LARGE_FILE,
     RESPONSE_FINISHED
 };
 

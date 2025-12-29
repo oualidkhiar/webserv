@@ -7,25 +7,27 @@
 #include "HttpRequest.hpp"
 #include "Body.hpp"
 
-
 class HttpResponse
 {
 private:
+    RequestType type;
     int status;
     std::map<std::string, std::string> headers;
-    Body * body;
-    enum status state;
+    Body *body;
+    ResponseState state;
     FtFile *file;
-
 
 public:
     HttpResponse();
     void setStatus(int status);
     void AddHeader(std ::string key, std::string value);
     void setFile(FtFile *file);
-
+    void setState(ResponseState state);
+    
 
     void appendBodyToResponse(std::vector<unsigned char> &chunk);
+
+    ResponseState getState();
     FtFile *getFile();
     std::string getReasonPhrase(int code);
     int getStatus();

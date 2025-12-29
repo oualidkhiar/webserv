@@ -2,10 +2,14 @@
 
 HttpResponse::HttpResponse()
 {
+    this->state = FRESH;
     file = NULL;
     body = NULL;
 }
 void HttpResponse::setStatus(int status) { this->status = status; }
+void HttpResponse::setState(ResponseState state){this->state = state;}
+
+ResponseState HttpResponse::getState(){return this->state;}
 int HttpResponse::getStatus() { return (this->status); }
 
 void HttpResponse::AddHeader(std::string key, std::string value) { this->headers[key] = value; }
@@ -85,6 +89,7 @@ std::string HttpResponse::getReasonPhrase(int code)
 //     response.AddHeader(FIXED_LENGTH_HEADER , std::to_string(response.getBody().size()));
 //     return response;
 // }
+
 
 HttpResponse::~HttpResponse()
 {

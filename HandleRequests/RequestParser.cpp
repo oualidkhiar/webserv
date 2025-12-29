@@ -114,6 +114,7 @@ void RequestParser::read_body(HttpRequest &request)
         if (body->getType() == FIXED_LENGTH)
             setBufferFixed(request, body);
     }
+    // TO-DO READ BODY CHUNKED SHOULD READ ALL AVAILABE CHUNKS
     if (body->getType() == CHUNKED)
         read_body_chunked(request);
     else

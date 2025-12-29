@@ -8,4 +8,4 @@ class MimeTypes
     public :
     static void init();
     static std::string  getType(const std::string & extention);
-}
+};
