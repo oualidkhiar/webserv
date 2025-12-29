@@ -7,16 +7,17 @@
 
 Executor::Executor(std::vector<serverConfig *> *servers) { this->servers = servers; }
 
-
-
-int Executor::checkPermession(const char *path)
+std::pair<int, FtFile *> Executor::extractFileInfos(const char *path)
 {
+    FtFile *file;
     struct stat sb;
     if (stat(path, &sb) != 0)
-        return (HP_NOT_FOUND);
+        return (std::make_pair(HP_NOT_FOUND, (FtFile *)NULL));
     if (access(path, R_OK) != 0)
-        return (HP_FORBIDDEN);
-    return (1);
+        return (std::make_pair(HP_FORBIDDEN, (FtFile *)NULL));
+    file = new FtFile(path);
+    file->setFileSize(sb.st_size);
+    return (std::make_pair(1 , file));
 }
 
 void Executor::setLocation(HttpRequest &request)
@@ -74,27 +75,22 @@ void Executor::setContentTpe(HttpResponse &response, const std::string &path)
         response.AddHeader(CONTENT_TYPE_HEADER, DEFAULT_CONTENT_TYPE);
 }
 
-void Executor::setFile(HttpResponse & response , const std::string & path)
-{
-    FtFile *file  = new FtFile(path);
-    response.setFile(file);
-}
 
 HttpResponse Executor::executeGet(HttpRequest &request)
 {
     HttpResponse response;
     int code;
     std::string path = pathResolver(request);
-    if ((code = checkPermession(path.c_str())) != -1)
+    std::pair <int ,FtFile *> pair;
+    pair = extractFileInfos(path.c_str());
+    if (pair.first != -1)
     {
 
-        response.setStatus(code);
+        response.setStatus(pair.first);
         return (response);
     }
     setContentTpe(response, path);
-    setFile(response , path);
-
-    
+    response.setFile(pair.second);
 }
 
 int Executor::matchedScore(std::string uri, std::string key)

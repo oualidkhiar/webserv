@@ -39,7 +39,6 @@ void cout_request(HttpRequest &request)
 
 int main()
 {
-#include <string>
 
     unsigned char fixedPost[500] =
         "POST /api/users/create HTTP/1.1\r\n"

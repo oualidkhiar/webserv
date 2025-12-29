@@ -7,6 +7,7 @@ FtFile::FtFile(const std::string &path)
     sented_bytes = 0;
     fd = -1;
     this->path = path;
+    file_size = 0;
 }
 
 int FtFile::getFd() const
@@ -27,6 +28,16 @@ const std::string &FtFile::getPath() const
 FileReadState FtFile::getState() const
 {
     return state;
+}
+
+size_t FtFile::getFileSize()
+{
+    return (file_size);
+}
+
+void FtFile::setFileSize(size_t size)
+{
+    file_size = size;
 }
 
 void FtFile::setFd(int newFd)
@@ -52,6 +63,12 @@ void FtFile::setState(FileReadState newState)
 void FtFile::incrementSentedBytes(size_t amount)
 {
     sented_bytes += amount;
+}
+
+
+std::vector<unsigned char> FtFile::readFile()
+{
+    
 }
 
 FtFile::~FtFile() {}
