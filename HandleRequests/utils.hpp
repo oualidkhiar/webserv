@@ -5,8 +5,8 @@ std::string getStatusReponseLine(int code)
     std ::string statusLine;
     switch ()
 
-        200
+        HP_OK
         {
-            statusLine = 
+            statusLine = H
         }
 }
