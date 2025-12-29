@@ -1,10 +1,13 @@
 #include "HttpResponse.hpp"
 
-HttpResponse::HttpResponse() {file = NULL;}
+HttpResponse::HttpResponse()
+{
+    file = NULL;
+    body = NULL;
+}
 void HttpResponse::setStatus(int status) { this->status = status; }
 int HttpResponse::getStatus() { return (this->status); }
-std::vector<char> HttpResponse::getBody() { return this->body; }
-void HttpResponse::setBody(std::vector<char> body) { this->body = body; }
+
 void HttpResponse::AddHeader(std::string key, std::string value) { this->headers[key] = value; }
 
 void HttpResponse::setFile(FtFile *file)
@@ -24,6 +27,11 @@ std::string HttpResponse::getHeader(std::string key)
     if (it != this->headers.end())
         return it->second;
     return "NOT_FOUND";
+}
+
+void HttpResponse::appendBodyToResponse(std::vector<unsigned char>  & chunk)
+{
+    this->body->appendChunkToBody(chunk);
 }
 
 std::string HttpResponse::getReasonPhrase(int code)
@@ -78,7 +86,10 @@ std::string HttpResponse::getReasonPhrase(int code)
 //     return response;
 // }
 
-HttpResponse::~HttpResponse() {
+HttpResponse::~HttpResponse()
+{
     if (file != NULL)
         delete file;
+    if (body != NULL)
+        delete body;
 }

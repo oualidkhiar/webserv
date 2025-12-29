@@ -35,6 +35,7 @@ public:
     void setSentedBytes(size_t bytes);
     void setPath(const std::string &newPath);
     void setState(FileReadState newState);
+    void ft_close();
 
     ~FtFile();
 };

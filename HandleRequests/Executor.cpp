@@ -78,6 +78,7 @@ void Executor::setContentTpe(HttpResponse &response, const std::string &path)
 
 HttpResponse Executor::executeGet(HttpRequest &request)
 {
+    std::vector<unsigned char> file_content;
     HttpResponse response;
     int code;
     std::string path = pathResolver(request);
@@ -91,6 +92,9 @@ HttpResponse Executor::executeGet(HttpRequest &request)
     }
     setContentTpe(response, path);
     response.setFile(pair.second);
+    file_content = response.getFile()->readFile();
+    response.appendBodyToResponse(file_content);
+    
 }
 
 int Executor::matchedScore(std::string uri, std::string key)
