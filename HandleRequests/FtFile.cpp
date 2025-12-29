@@ -1,4 +1,8 @@
 #include "FtFile.hpp"
+#include "enums.hpp"
+#include <unistd.h>
+#include <fcntl.h>
+#include <StringManip.hpp>
 
 FtFile::FtFile(const std::string &path)
 
@@ -63,12 +67,35 @@ void FtFile::setState(FileReadState newState)
 void FtFile::incrementSentedBytes(size_t amount)
 {
     sented_bytes += amount;
+
+
 }
 
 
 std::vector<unsigned char> FtFile::readFile()
 {
-    
+    unsigned char buffer[MAX_FILE_READ];
+    int bytes_read;   
+    if (fd == -1)
+    {
+        fd = open(path .c_str(), O_RDONLY);
+        if (fd < 0 )
+        {
+            //handle failaire
+            exit_error("POPEN FAILED");
+        }
+    }
+    bytes_read = read(fd , buffer , MAX_FILE_READ);
+    if (bytes_read < MAX_FILE_READ)
+    {
+        close (fd);
+        this->state = 
+
+    }
+    else
+    {
+
+    }
 }
 
 FtFile::~FtFile() {}
