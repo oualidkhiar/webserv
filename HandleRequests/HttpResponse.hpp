@@ -23,7 +23,7 @@ public:
     void AddHeader(std ::string key, std::string value);
     void setFile(FtFile *file);
     void setState(ResponseState state);
-    
+
 
     void appendBodyToResponse(std::vector<unsigned char> &chunk);
 
