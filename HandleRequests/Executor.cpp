@@ -7,6 +7,16 @@
 
 Executor::Executor() {      }
 
+HttpResponse Executor::executeDelete(HttpRequest & request)
+{
+    HttpResponse response;
+    (void )request;
+    {
+        //definition here
+    }
+    return (response);
+}
+
 std::pair<int, FtFile *> Executor::extractFileInfos(const char *path)
 {
     FtFile *file;

@@ -1,6 +1,8 @@
 #include "MimeTypes.hpp"
 #include "enums.hpp"
 
+std::map<std::string, std::string> MimeTypes::types;
+
 void MimeTypes::init()
 {
     if (types.empty() == true)
