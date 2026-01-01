@@ -4,17 +4,15 @@
 #include "enums.hpp"
 #include <unistd.h>
 #include "MimeTypes.hpp"
+#include <algorithm>
+Executor::Executor() {}
 
-Executor::Executor() {      }
-
-HttpResponse Executor::executeDelete(HttpRequest & request)
+void Executor::executeDelete(HttpRequest &request, HttpResponse &response)
 {
-    HttpResponse response;
-    (void )request;
+    (void)request;
     {
-        //definition here
+        // definition here
     }
-    return (response);
 }
 
 std::pair<int, FtFile *> Executor::extractFileInfos(const char *path)
@@ -27,13 +25,14 @@ std::pair<int, FtFile *> Executor::extractFileInfos(const char *path)
         return (std::make_pair(HP_FORBIDDEN, (FtFile *)NULL));
     file = new FtFile(path);
     file->setFileSize(sb.st_size);
-    return (std::make_pair(1 , file));
+    return (std::make_pair(1, file));
 }
 
 void Executor::setLocation(HttpRequest &request)
 {
     location *bestLocation;
     bestLocation = getLongestMatchedLocation(request, request.getConfig()->Locations);
+    std::cout << bestLocation->rootPath << std::endl;
     request.setLocation(bestLocation);
 }
 
@@ -60,17 +59,18 @@ bool Executor::isAllowedMethod(HttpRequest &request)
     return (true);
 }
 
-HttpResponse Executor::execute(HttpRequest &request)
+void Executor::execute(HttpRequest &request, HttpResponse &response)
 {
-    HttpResponse response;
     setLocation(request);
     if (!isAllowedMethod(request))
-        return (response);
+    {
+        response.setStatus(HP_FORBIDDEN);
+        return;
+    }
     if (request.getType() == DELETE)
-        return (executeDelete(request));
+        executeDelete(request, response);
     else if (request.getType() == GET)
-        return (executeGet(request));
-    return (response);
+        executeGet(request, response);
 }
 
 void Executor::setContentTpe(HttpResponse &response, const std::string &path)
@@ -86,50 +86,57 @@ void Executor::setContentTpe(HttpResponse &response, const std::string &path)
         response.AddHeader(CONTENT_TYPE_HEADER, DEFAULT_CONTENT_TYPE);
 }
 
-
-HttpResponse Executor::executeGet(HttpRequest &request)
+void Executor::executeGet(HttpRequest &request, HttpResponse &response)
 {
     std::vector<unsigned char> file_content;
-    HttpResponse response;
     std::string path = pathResolver(request);
-    std::pair <int ,FtFile *> pair;
+    std::cout << "PATH = " << path << std::endl;
+    std::pair<int, FtFile *> pair;
     pair = extractFileInfos(path.c_str());
-    if (pair.first != -1)
+    if (pair.first != 1)
     {
 
         response.setStatus(pair.first);
-        return (response);
+        exit_error("Stat Eroor");
     }
     setContentTpe(response, path);
     response.setFile(pair.second);
     file_content = response.getFile()->readFile();
+    printVector(file_content);
+    response.createBody();
+    std::cout << "passed create body" << std::endl;
     response.appendBodyToResponse(file_content);
-    return (response);
+    std::cout << "passed appanedBodyToResponse" << std::endl;
+    response.printBody();
 }
 
 int Executor::matchedScore(std::string uri, std::string key)
 {
-    int score = 0;
+
+    int score = 1;
+    int i = 0;
     std::vector<std::string> key_tokens;
     std::vector<std::string> uri_tokens;
     if ((tokensSize(key, PATH_DELIMITER) < tokensSize(uri, PATH_DELIMITER)))
     {
         key_tokens = ft_split(key, PATH_DELIMITER);
         uri_tokens = ft_split(uri, PATH_DELIMITER);
-        for (std::vector<std::string>::const_iterator it = key_tokens.begin(); it != key_tokens.end(); ++it)
+        int size = key_tokens.size();
+        while (i < size)
         {
-            if (uri_tokens.at(score).compare(*it) == 0)
-                score++;
-            else
-                return (score);
+            if (key_tokens.at(i).compare(uri_tokens.at(i)) != 0)
+                return (0);
+            i++;
         }
     }
-    return (0);
+    return (i);
 }
 location *Executor::getLongestMatchedLocation(HttpRequest &request, std::map<std::string, location *> map)
 {
     std::string uri = request.getUri();
-    int best_expected_score = tokensSize(uri, PATH_DELIMITER);
+    //  int best_expected_score = tokensSize(uri, PATH_DELIMITER);
+    // std::cout<<"best_expected_score  = "<<best_expected_score<<std::endl;
+
     location *best_match = NULL;
     int previous_score = 0;
     int score = -1;
@@ -138,11 +145,10 @@ location *Executor::getLongestMatchedLocation(HttpRequest &request, std::map<std
         score = matchedScore(uri, it->first);
         if (score > previous_score)
         {
-            if (score == best_expected_score)
-                return (it->second);
             best_match = it->second;
             previous_score = score;
         }
     }
+
     return (best_match);
 }

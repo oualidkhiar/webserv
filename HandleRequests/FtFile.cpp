@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include "StringManip.hpp"
+#include <iostream>
 
 FtFile::FtFile(const std::string &path)
 

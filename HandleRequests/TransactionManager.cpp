@@ -27,14 +27,14 @@ void TransactionManager::appendToRequest(unsigned char *buffer, size_t size)
     if (request.getStatus() == FINISHED)
     {
         Executor executor;
-        executor.execute(request);
+        executor.execute(request , response);
     }
 }
 
 void TransactionManager::executeRequest()
 {
     Executor execute;
-    response = execute.execute(request);
+    execute.execute(request , response);
 }
 
 void TransactionManager::readChunk()
@@ -42,6 +42,11 @@ void TransactionManager::readChunk()
     std::vector<unsigned char> chunk;
     chunk = response.getFile()->readFile();
     response.appendBodyToResponse(chunk);
+}
+
+void TransactionManager::setServer(serverConfig * config)
+{
+    this->request.setConfig(config);
 }
 
 std::pair<unsigned char *, size_t> TransactionManager::getResponse()

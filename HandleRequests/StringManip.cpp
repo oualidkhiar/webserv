@@ -125,13 +125,17 @@ int tokensSize(std::string string, std::string delimiter)
         else if (pos == 0)
             string.erase(0, delimiter.length());
         else
+        {
             size++;
+            string.erase(0, pos + 1);
+        }
     }
     return (size);
 }
 
 void printVector(std::vector<unsigned char> vec)
 {
+    std::cout<<"INside PRint VECTIOR"<<std::endl;
     size_t size = vec.size();
     size_t i = 0;
     while (i < size)

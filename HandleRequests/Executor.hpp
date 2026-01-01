@@ -13,12 +13,12 @@ private:
     bool isAllowedMethod(HttpRequest &request);
     void setLocation(HttpRequest &request);
     int matchedScore(std::string uri, std::string key);
-    HttpResponse executeGet(HttpRequest &request);
-    HttpResponse executeDelete(HttpRequest &request);
+    void executeGet(HttpRequest &request, HttpResponse & response);
+    void executeDelete(HttpRequest &request, HttpResponse & response);
     location *getLongestMatchedLocation(HttpRequest &request, std::map<std::string, location *> map);
 
 public:
     Executor();
-    HttpResponse execute(HttpRequest &request);
+    void execute(HttpRequest &request , HttpResponse & response);
 };
 

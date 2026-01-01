@@ -23,6 +23,11 @@ enum ReadingType Body::discoverReadingType(HttpRequest &request)
 
 void Body::appendChunkToBody(std::vector<unsigned char> chunk)
 {
+    if (bodySize() == 0)
+    {
+        body = chunk;
+        return;
+    }
     body.insert(body.end(), chunk.begin(), chunk.end());
 }
 
@@ -36,11 +41,11 @@ void Body::clearBody()
     this->body.clear();
 }
 
-unsigned char * Body::getCharVector()
+unsigned char *Body::getCharVector()
 {
     size_t chunkSize = bodySize();
-    unsigned char * chunk = new unsigned char[chunkSize];
-    std::memcpy(chunk ,body.data() , chunkSize );
+    unsigned char *chunk = new unsigned char[chunkSize];
+    std::memcpy(chunk, body.data(), chunkSize);
     return (chunk);
 }
 
@@ -57,9 +62,10 @@ void Body::printBody()
     size_t i = 0;
     while (i < bodySize())
     {
-        std::cout<<body.at(i++);
+        std::cout << body.at(i++);
     }
-    std::cout<<std::endl;
+    std::cout << std::endl;
 }
 
-Body::~Body() {}
+Body::~Body() {
+}

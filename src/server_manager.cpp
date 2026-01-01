@@ -88,6 +88,7 @@ void ServerManager::TrackSocketsEvent()
     {
         nfds = epoll_wait(epfd, events, MAX_EVENTS, -1);
         for (int i = 0; i < nfds; i++) {
+            this->currentEv = events[i];
             socketsManager *sock = (socketsManager *)events[i].data.ptr;
             sock->handleEvent();
             if (this->error)
@@ -109,9 +110,15 @@ void ServerManager::addConnection(struct epoll_event& ev, int fd, socketsManager
     this->socketHandler.insert(std::make_pair(fd, sock));
 }
 
-void ServerManager::modifyEvent(int fd, struct epoll_event& ev)
+void ServerManager::modifyEvent(int state, int fd)
 {
-    epoll_ctl(this->epfd, EPOLL_CTL_MOD, fd, &ev);
+    if (state == EPOLLOUT) {
+        this->currentEv.events = EPOLLOUT;
+    }
+    else if (state == EPOLLIN) {
+        this->currentEv.events = EPOLLIN;
+    }
+    epoll_ctl(this->epfd, EPOLL_CTL_MOD, fd, &currentEv);
 }
 
 void ServerManager::setError() {

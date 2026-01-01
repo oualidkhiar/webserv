@@ -13,7 +13,9 @@ private:
     char * getRequestBuffer();
     size_t getRequestSize();
 public:
+    
     TransactionManager();
+    void setServer(serverConfig * configg);
     RequestType getRequestType();
     status getRequestStatus();
     ResponseState getResponseState();

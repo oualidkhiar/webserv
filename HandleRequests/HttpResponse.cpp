@@ -116,10 +116,28 @@ std::string HttpResponse::getReasonPhrase(int code)
 //     return response;
 // }
 
+void HttpResponse::createBody()
+{
+    Body *body = new Body();
+    this->body = body;
+}
+
+void HttpResponse::setBody(Body *body)
+{
+    this->body = body;
+}
+
 HttpResponse::~HttpResponse()
 {
+    std::cout << "call ~HttpResponse()" << std::endl;
     if (file != NULL)
+    {
+        std::cout<<"Deleting file and body"<<std::endl;
         delete file;
+    }
     if (body != NULL)
+    {
+        std::cout<<"Deleting file and body"<<std::endl;
         delete body;
+    }
 }
