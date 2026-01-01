@@ -6,10 +6,10 @@ HttpResponse::HttpResponse()
     file = NULL;
     body = NULL;
 }
-void HttpResponse::setStatus(int status) { this->status = status; }
-void HttpResponse::setState(ResponseState state){this->state = state;}
 
-ResponseState HttpResponse::getState(){return this->state;}
+void HttpResponse::setStatus(int status) { this->status = status; }
+void HttpResponse::setState(ResponseState state) { this->state = state; }
+ResponseState HttpResponse::getState() { return this->state; }
 int HttpResponse::getStatus() { return (this->status); }
 
 void HttpResponse::AddHeader(std::string key, std::string value) { this->headers[key] = value; }
@@ -24,6 +24,19 @@ FtFile *HttpResponse::getFile()
     return file;
 }
 
+std::pair<unsigned char *, size_t> HttpResponse::getChunkFromRequest()
+{
+    size_t chunkSize = bodySize();
+    unsigned char *chunk = body->getCharVector();
+    this->body->clearBody();
+    return (std::make_pair(chunk, chunkSize));
+}
+
+size_t HttpResponse::bodySize()
+{
+    return (this->body->bodySize());
+}
+
 std::string HttpResponse::getHeader(std::string key)
 {
     std::map<std::string, std::string>::iterator it = this->headers.find(key);
@@ -33,10 +46,23 @@ std::string HttpResponse::getHeader(std::string key)
     return "NOT_FOUND";
 }
 
-void HttpResponse::appendBodyToResponse(std::vector<unsigned char>  & chunk)
+void HttpResponse::appendBodyToResponse(std::vector<unsigned char> &chunk)
 {
     this->body->appendChunkToBody(chunk);
 }
+
+//------------ debug---------------
+void HttpResponse::printBody()
+{
+    this->body->printBody();
+}
+
+void HttpResponse::printHeaders()
+{
+    for (std::map<std::string, std::string>::const_iterator it = headers.begin(); it != headers.end(); ++it)
+        std::cout << it->first << " : " << it->second << std::endl;
+}
+//---------------------------------
 
 std::string HttpResponse::getReasonPhrase(int code)
 {
@@ -89,7 +115,6 @@ std::string HttpResponse::getReasonPhrase(int code)
 //     response.AddHeader(FIXED_LENGTH_HEADER , std::to_string(response.getBody().size()));
 //     return response;
 // }
-
 
 HttpResponse::~HttpResponse()
 {

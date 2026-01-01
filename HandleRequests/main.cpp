@@ -2,6 +2,8 @@
 #include "RequestParser.hpp"
 #include <iostream>
 #include <map>
+#include "HttpResponse.hpp"
+#include "TransactionManager.hpp"
 
 size_t ft_strlen(unsigned char *s)
 {
@@ -11,6 +13,13 @@ size_t ft_strlen(unsigned char *s)
     return (i);
 }
 
+void cout_response(HttpResponse &response)
+{
+    // std::cout << "status = " << response.getStatus() << std::endl;
+
+    //  response.printHeaders();
+    response.printBody();
+}
 void cout_request(HttpRequest &request)
 {
     std::string types[3] = {"DELETE", "POST", "GET"};
@@ -48,12 +57,17 @@ int main()
         "User-Agent: TestingClient/1.0\r\n"
         "\r\n" // End of Headers
         "{\"username\": \"jdoe\", \"email\": \"jane.doe@example.com\", \"role\": \"admin\"}";
-    HttpRequest request;
-    request.appendRequestData(fixedPost, ft_strlen(fixedPost));
-    RequestParser request_parser;
-    while (request.getStatus() != FINISHED)
-    {
-        request_parser.create_request(request);
-    }
-    cout_request(request);
+    TransactionManager manager;
+    manager.appendToRequest(fixedPost, ft_strlen(fixedPost));
+    std::pair<unsigned char * , size_t> response  = manager.getResponse();
+    write(1,response.first , response.second);
+
+    // HttpRequest request;
+    // request.appendRequestData(fixedPost, ft_strlen(fixedPost));
+    // RequestParser request_parser;
+    // while (request.getStatus() != FINISHED)
+    // {
+    //     request_parser.create_request(request);
+    // }
+    // cout_request(request);
 }

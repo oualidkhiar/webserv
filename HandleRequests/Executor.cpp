@@ -60,6 +60,7 @@ HttpResponse Executor::execute(HttpRequest &request)
         return (executeDelete(request));
     else if (request.getType() == GET)
         return (executeGet(request));
+    return (response);
 }
 
 void Executor::setContentTpe(HttpResponse &response, const std::string &path)
@@ -80,7 +81,6 @@ HttpResponse Executor::executeGet(HttpRequest &request)
 {
     std::vector<unsigned char> file_content;
     HttpResponse response;
-    int code;
     std::string path = pathResolver(request);
     std::pair <int ,FtFile *> pair;
     pair = extractFileInfos(path.c_str());
@@ -94,7 +94,7 @@ HttpResponse Executor::executeGet(HttpRequest &request)
     response.setFile(pair.second);
     file_content = response.getFile()->readFile();
     response.appendBodyToResponse(file_content);
-
+    return (response);
 }
 
 int Executor::matchedScore(std::string uri, std::string key)

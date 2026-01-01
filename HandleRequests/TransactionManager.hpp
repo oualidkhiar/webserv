@@ -18,5 +18,8 @@ public:
     status getRequestStatus();
     ResponseState getResponseState();
     void appendToRequest(unsigned char *buffer, size_t size);
-    std::pair<char *, size_t> getRequest();
+    std::pair<unsigned char *, size_t> getResponse();
+    // BOOL IS_KEEP_ALIVE
+    // SET CONFIG
+    
 };

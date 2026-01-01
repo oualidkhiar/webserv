@@ -17,7 +17,10 @@ public:
     void setBody(std::vector<unsigned char> chunk);
     void decrementToRead(size_t amount);
     void appendChunkToBody(std::vector<unsigned char> chunk);
-
+    void clearBody();
+    void printBody();
+    unsigned char * getCharVector();
+    size_t bodySize();
     enum ReadingType discoverReadingType(HttpRequest &request);
     enum ReadingType getType();
     size_t getToRead();

@@ -7,13 +7,7 @@ RM           := rm -rf
 NAME         := webserv
 
 # Source Files
-SRCS         := main.cpp \
-                HttpRequest.cpp \
-                HttpResponse.cpp \
-                RequestParser.cpp \
-                StringManip.cpp    \
-				Body.cpp \
-				FtFile.cpp
+SRCS         := Body.cpp  ContainersManip.cpp  Executor.cpp  FilesManip.cpp FtFile.cpp  HttpRequest.cpp  HttpResponse.cpp  main.cpp  MimeTypes.cpp  RequestParser.cpp  StringManip.cpp  TransactionManager.cpp  utils.cpp
 
 # Object Files (Stored in a separate directory to keep root clean)
 OBJS         := $(SRCS:.cpp=.o)

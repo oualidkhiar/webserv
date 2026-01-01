@@ -18,7 +18,6 @@ enum status
     ERROR
 };
 
-
 enum ResponseState
 {
     FRESH,

@@ -24,9 +24,9 @@ public:
     void setFile(FtFile *file);
     void setState(ResponseState state);
 
-
+    size_t bodySize();
     void appendBodyToResponse(std::vector<unsigned char> &chunk);
-
+    std::pair<unsigned char *, size_t> getChunkFromRequest();
     ResponseState getState();
     FtFile *getFile();
     std::string getReasonPhrase(int code);
@@ -34,4 +34,7 @@ public:
     std::string getHeader(std::string key);
     static HttpResponse getResponse(HttpRequest &request);
     ~HttpResponse();
+    void printHeaders();
+
+    void printBody();
 };

@@ -1,5 +1,7 @@
 #include "Body.hpp"
 #include "HttpRequest.hpp"
+#include <cstring>
+
 Body::Body() : to_read(0) {}
 
 void Body::setToRead(size_t to_read) { this->to_read = to_read; }
@@ -24,12 +26,40 @@ void Body::appendChunkToBody(std::vector<unsigned char> chunk)
     body.insert(body.end(), chunk.begin(), chunk.end());
 }
 
+size_t Body::bodySize()
+{
+    return (this->body.size());
+}
+
+void Body::clearBody()
+{
+    this->body.clear();
+}
+
+unsigned char * Body::getCharVector()
+{
+    size_t chunkSize = bodySize();
+    unsigned char * chunk = new unsigned char[chunkSize];
+    std::memcpy(chunk ,body.data() , chunkSize );
+    return (chunk);
+}
+
 void Body::decrementToRead(size_t amount)
 {
     if (amount >= to_read)
         to_read = 0;
     else
         to_read -= amount;
+}
+
+void Body::printBody()
+{
+    size_t i = 0;
+    while (i < bodySize())
+    {
+        std::cout<<body.at(i++);
+    }
+    std::cout<<std::endl;
 }
 
 Body::~Body() {}
