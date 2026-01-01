@@ -1,16 +1,22 @@
 # Compiler and Flags
 CXX          := c++
-CXXFLAGS     := -Wall -Wextra -Werror -std=c++98 # Change to -std=c++11 or higher if preferred
+CXXFLAGS     := -Wall -Wextra -Werror -std=c++98
 RM           := rm -rf
 
 # Executable Name
 NAME         := webserv
 
 # Source Files
-SRCS         := Body.cpp  ContainersManip.cpp  Executor.cpp  FilesManip.cpp FtFile.cpp  HttpRequest.cpp  HttpResponse.cpp  main.cpp  MimeTypes.cpp  RequestParser.cpp  StringManip.cpp  TransactionManager.cpp  utils.cpp
+SRCS         := Body.cpp ContainersManip.cpp Executor.cpp FilesManip.cpp \
+                FtFile.cpp HttpRequest.cpp HttpResponse.cpp main.cpp \
+                MimeTypes.cpp RequestParser.cpp StringManip.cpp \
+                TransactionManager.cpp utils.cpp
 
-# Object Files (Stored in a separate directory to keep root clean)
-OBJS         := $(SRCS:.cpp=.o)
+# Object Directory
+OBJDIR       := obj
+
+# Object Files (Now actually stored in obj/)
+OBJS         := $(addprefix $(OBJDIR)/, $(SRCS:.cpp=.o))
 
 # Default Rule
 all: $(NAME)
@@ -19,13 +25,14 @@ all: $(NAME)
 $(NAME): $(OBJS)
 	$(CXX) $(CXXFLAGS) $(OBJS) -o $(NAME)
 
-# Compile Source Files into Object Files
-%.o: %.cpp
+# Compile Source Files into Object Files (with directory creation)
+$(OBJDIR)/%.o: %.cpp
+	@mkdir -p $(OBJDIR)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-# Clean Object Files
+# Clean Object Files and Directory
 clean:
-	$(RM) $(OBJS)
+	$(RM) $(OBJDIR)
 
 # Clean Everything
 fclean: clean
@@ -34,4 +41,5 @@ fclean: clean
 # Rebuild
 re: fclean all
 
+# Phony targets to prevent conflicts with files of the same name
 .PHONY: all clean fclean re
