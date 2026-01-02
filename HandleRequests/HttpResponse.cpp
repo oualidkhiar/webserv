@@ -166,15 +166,12 @@ std::map<std::string, std::string>::const_iterator HttpResponse::headersEnd()
 
 HttpResponse::~HttpResponse()
 {
-    std::cout << "call ~HttpResponse()" << std::endl;
     if (file != NULL)
     {
-        std::cout << "Deleting file and body" << std::endl;
         delete file;
     }
     if (body != NULL)
     {
-        std::cout << "Deleting file and body" << std::endl;
         delete body;
     }
 }

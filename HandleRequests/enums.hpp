@@ -1,7 +1,7 @@
 #pragma once
 #define CHUNKED_HEADER "Transfer-Encoding"
 #define FIXED_LENGTH_HEADER "Content-Length"
-#define MAX_FILE_READ 8000
+#define MAX_FILE_READ 10
 
 enum RequestType
 {

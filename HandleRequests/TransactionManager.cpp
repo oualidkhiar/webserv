@@ -21,8 +21,7 @@ std::pair<unsigned char *, size_t> TransactionManager::getRoofResponse()
     roofBuffer = new unsigned char[pair.second];
     std::copy(roof.c_str(), roof.c_str() + pair.second, roofBuffer);
     pair.first = roofBuffer;
-    std::cout << "_------------------------------------ roof-------------------------" << std::endl;
-    write(1,pair.first , pair.second);
+
 
     return (pair);
 }
@@ -87,6 +86,8 @@ void TransactionManager::readChunk()
     std::vector<unsigned char> chunk;
     chunk = response.getFile()->readFile();
     response.appendBodyToResponse(chunk);
+    if (response.getFile()->getState() == FILE_FINISHED)   
+        response.setState(RESPONSE_FINISHED);
 }
 
 void TransactionManager::setServer(serverConfig *config)
@@ -112,6 +113,8 @@ std::pair<unsigned char *, size_t> TransactionManager::getResponse()
         readChunk();
     if (responsed == false)
         return (firstResponse());
+    else
+        return (response.getChunkFromRequest());
 
     std::cout << "NO CONDTION IS TRUE IN TransactionManager::getResponse" << std::endl;
 }

@@ -83,7 +83,9 @@ std::vector<unsigned char> FtFile::readFile()
     int bytes_read;
     if (fd == -1)
     {
+        std::cout << "\nft_file readFile opened " << path << std::endl;
         fd = open(path.c_str(), O_RDONLY);
+        this->state = FILE_READING;
         if (fd < 0)
         {
             // handle failair
@@ -92,7 +94,10 @@ std::vector<unsigned char> FtFile::readFile()
     }
     bytes_read = read(fd, buffer, MAX_FILE_READ);
     if (bytes_read < MAX_FILE_READ)
+    {
+        this->state = FILE_FINISHED;
         ft_close();
+    }
     if (bytes_read > 0)
         chunk.assign(buffer, buffer + bytes_read);
     return (chunk);

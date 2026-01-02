@@ -32,7 +32,6 @@ void Executor::setLocation(HttpRequest &request)
 {
     location *bestLocation;
     bestLocation = getLongestMatchedLocation(request, request.getConfig()->Locations);
-    std::cout << bestLocation->rootPath << std::endl;
     request.setLocation(bestLocation);
 }
 
@@ -90,7 +89,6 @@ void Executor::executeGet(HttpRequest &request, HttpResponse &response)
 {
     std::vector<unsigned char> file_content;
     std::string path = pathResolver(request);
-    std::cout << "PATH = " << path << std::endl;
     std::pair<int, FtFile *> pair;
     pair = extractFileInfos(path.c_str());
     if (pair.first != 1)
@@ -101,13 +99,9 @@ void Executor::executeGet(HttpRequest &request, HttpResponse &response)
     }
     setContentTpe(response, path);
     response.setFile(pair.second);
-    file_content = response.getFile()->readFile();
-    printVector(file_content);
+    if (response.getFile()->getFileSize() > MAX_FILE_READ)
+        response.setState(READING_LARGE_FILE);
     response.createBody();
-    std::cout << "passed create body" << std::endl;
-    response.appendBodyToResponse(file_content);
-    std::cout << "passed appanedBodyToResponse" << std::endl;
-    response.printBody();
 }
 
 int Executor::matchedScore(std::string uri, std::string key)

@@ -33,10 +33,12 @@ int main(int ac, char **av)
         "\r\n"; // End of Headers (No body follows)
     manager.appendToRequest(simpleGet, ft_strlen(simpleGet));
     //
-    std::pair<unsigned char *, size_t> response = manager.getResponse();
-    std::cout << "write yadink" << std::endl;
-    write(1, response.first, response.second);
-    delete [] response.first;
+   while (manager.getResponseState() != RESPONSE_FINISHED)
+   {
+    std::pair<unsigned char * , size_t> reponse  = manager.getResponse();
+    write(1, reponse.first , reponse.second);
+    delete [] reponse.first;
+   }
 
     // conf.printServer();
     // ServerManager server(conf);

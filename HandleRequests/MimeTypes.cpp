@@ -22,13 +22,11 @@ std::string MimeTypes::getType(const std::string &extention)
 {
     init();
     std::map<std::string, std::string>::const_iterator it;
-    std::cout << "EXTENTION '" << extention << std::endl;
     std::string content_type;
     it = types.find(extention);
     if (it != types.end())
         content_type = it->second;
     else
         content_type = DEFAULT_CONTENT_TYPE;
-    std::cout << "CONTENT_TYPE = " << content_type << std::endl;
     return (content_type);
 }
