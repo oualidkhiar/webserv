@@ -1,4 +1,5 @@
 #include "HttpResponse.hpp"
+#include <sstream>
 
 HttpResponse::HttpResponse()
 {
@@ -7,11 +8,10 @@ HttpResponse::HttpResponse()
     body = NULL;
 }
 
-void HttpResponse::setStatus(int status) { this->status = status; }
 void HttpResponse::setState(ResponseState state) { this->state = state; }
+std::string HttpResponse::getHeaderLine() { return (this->header); }
 ResponseState HttpResponse::getState() { return this->state; }
 int HttpResponse::getStatus() { return (this->status); }
-
 void HttpResponse::AddHeader(std::string key, std::string value) { this->headers[key] = value; }
 
 void HttpResponse::setFile(FtFile *file)
@@ -19,9 +19,29 @@ void HttpResponse::setFile(FtFile *file)
     this->file = file;
 }
 
+void HttpResponse::createHeaderLine()
+{
+    this->header = getReasonPhrase(this->status);
+}
+
 FtFile *HttpResponse::getFile()
 {
     return file;
+}
+
+void HttpResponse::setStatus(int status)
+{
+    this->status = status;
+    createHeaderLine();
+}
+
+void HttpResponse::createHeaders()
+{
+    std::ostringstream os;
+    os << this->file->getFileSize();
+    this->headers.insert(std::make_pair("Connection", "Closed"));
+    this->headers.insert(std::make_pair("server", "TestServer/1.1"));
+    this->headers.insert(std::make_pair(FIXED_LENGTH_HEADER, os.str()));
 }
 
 std::pair<unsigned char *, size_t> HttpResponse::getChunkFromRequest()
@@ -35,6 +55,12 @@ std::pair<unsigned char *, size_t> HttpResponse::getChunkFromRequest()
 size_t HttpResponse::bodySize()
 {
     return (this->body->bodySize());
+}
+
+void HttpResponse::initializeResponse()
+{
+    createHeaderLine();
+    createHeaders();
 }
 
 std::string HttpResponse::getHeader(std::string key)
@@ -132,12 +158,12 @@ HttpResponse::~HttpResponse()
     std::cout << "call ~HttpResponse()" << std::endl;
     if (file != NULL)
     {
-        std::cout<<"Deleting file and body"<<std::endl;
+        std::cout << "Deleting file and body" << std::endl;
         delete file;
     }
     if (body != NULL)
     {
-        std::cout<<"Deleting file and body"<<std::endl;
+        std::cout << "Deleting file and body" << std::endl;
         delete body;
     }
 }
