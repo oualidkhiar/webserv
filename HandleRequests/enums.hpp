@@ -44,7 +44,7 @@ struct getInfos
 
 #define CONTENT_TYPE_HEADER "Content-Type"
 #define PATH_DELIMITER "/"
-#define DEFAULT_CONTENT_TYPE "application/octet-stream"
+#define DEFAULT_CONTENT_TYPE "application/octet-stream\r\n"
 
                                  
 #define HP_OK               200  // Standard response for successful GET requests

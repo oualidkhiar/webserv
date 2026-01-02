@@ -8,14 +8,18 @@ class TransactionManager
 private:
     HttpRequest request;
     HttpResponse response;
+    bool responsed;
     void executeRequest();
     void readChunk();
-    char * getRequestBuffer();
+    char *getRequestBuffer();
     size_t getRequestSize();
+    std::pair<unsigned char *, size_t> getRoofResponse();
+    std::pair<unsigned char *, size_t> joinPairs(std::pair<unsigned char *, size_t> &, std::pair<unsigned char *, size_t> &);
+    std::pair<unsigned char *, size_t> firstResponse();
+
 public:
-    
     TransactionManager();
-    void setServer(serverConfig * configg);
+    void setServer(serverConfig *configg);
     RequestType getRequestType();
     status getRequestStatus();
     ResponseState getResponseState();
@@ -23,5 +27,4 @@ public:
     std::pair<unsigned char *, size_t> getResponse();
     // BOOL IS_KEEP_ALIVE
     // SET CONFIG
-    
 };

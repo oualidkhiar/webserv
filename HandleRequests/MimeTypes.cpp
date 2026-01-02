@@ -1,28 +1,34 @@
 #include "MimeTypes.hpp"
 #include "enums.hpp"
-
+#include <iostream>
 std::map<std::string, std::string> MimeTypes::types;
 
 void MimeTypes::init()
 {
-    if (types.empty() == true)
+    if (types.size() > 0)
         return;
-    types["html"] = "text/html";
-    types["htm"] = "text/html";
-    types["css"] = "text/css";
-    types["js"] = "text/javascript";
-    types["png"] = "image/png";
-    types["jpg"] = "image/jpeg";
-    types["jpeg"] = "image/jpeg";
-    types["gif"] = "image/gif";
-    types["json"] = "application/json";
-    types["txt"] = "text/plain";
+    types["html"] = "text/html\r\n";
+    types["htm"] = "text/html\r\n";
+    types["css"] = "text/css\r\n";
+    types["js"] = "text/javascript\r\n";
+    types["png"] = "image/png\r\n";
+    types["jpg"] = "image/jpeg\r\n";
+    types["jpeg"] = "image/jpeg\r\n";
+    types["gif"] = "image/gif\r\n";
+    types["json"] = "application/json\r\n";
+    types["txt"] = "text/plain\r\n";
 }
 std::string MimeTypes::getType(const std::string &extention)
 {
+    init();
     std::map<std::string, std::string>::const_iterator it;
+    std::cout << "EXTENTION '" << extention << std::endl;
+    std::string content_type;
     it = types.find(extention);
     if (it != types.end())
-        return (it->second);
-    return DEFAULT_CONTENT_TYPE;
+        content_type = it->second;
+    else
+        content_type = DEFAULT_CONTENT_TYPE;
+    std::cout << "CONTENT_TYPE = " << content_type << std::endl;
+    return (content_type);
 }

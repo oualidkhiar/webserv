@@ -21,7 +21,9 @@ void HttpResponse::setFile(FtFile *file)
 
 void HttpResponse::createHeaderLine()
 {
-    this->header = getReasonPhrase(this->status);
+    std::ostringstream os;
+    os << this->status;
+    this->header = "HTTP/1.1 " + os.str() + " " + getReasonPhrase(this->status) + "\r\n";
 }
 
 FtFile *HttpResponse::getFile()
@@ -39,9 +41,9 @@ void HttpResponse::createHeaders()
 {
     std::ostringstream os;
     os << this->file->getFileSize();
-    this->headers.insert(std::make_pair("Connection", "Closed"));
-    this->headers.insert(std::make_pair("server", "TestServer/1.1"));
-    this->headers.insert(std::make_pair(FIXED_LENGTH_HEADER, os.str()));
+    this->headers.insert(std::make_pair("Connection", "Closed\r\n"));
+    this->headers.insert(std::make_pair("server", "TestServer/1.1\r\n"));
+    this->headers.insert(std::make_pair(FIXED_LENGTH_HEADER, os.str() + "\r\n"));
 }
 
 std::pair<unsigned char *, size_t> HttpResponse::getChunkFromRequest()
@@ -151,6 +153,15 @@ void HttpResponse::createBody()
 void HttpResponse::setBody(Body *body)
 {
     this->body = body;
+}
+
+std::map<std::string, std::string>::const_iterator HttpResponse::headersBegin()
+{
+    return (this->headers.begin());
+}
+std::map<std::string, std::string>::const_iterator HttpResponse::headersEnd()
+{
+    return (this->headers.end());
 }
 
 HttpResponse::~HttpResponse()

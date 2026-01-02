@@ -22,7 +22,8 @@ private:
 
 public:
     HttpResponse();
-
+    std::map<std::string, std::string>::const_iterator headersBegin();
+    std::map<std::string, std::string>::const_iterator headersEnd();
     void setStatus(int status);
     void AddHeader(std ::string key, std::string value);
     void setFile(FtFile *file);
