@@ -25,7 +25,7 @@ int main(int ac, char **av)
     serverConfig *server = conf.getSerevrConfig(0);
     manager.setServer(server);
     unsigned char simpleGet[500] =
-        "GET /files/index.html HTTP/1.1\r\n"
+        "GET /files/test.png HTTP/1.1\r\n"
         "Host: localhost:8080\r\n"
         "Accept: application/json\r\n"
         "User-Agent: TestingClient/1.0\r\n"
@@ -39,12 +39,4 @@ int main(int ac, char **av)
     write(1, reponse.first , reponse.second);
     delete [] reponse.first;
    }
-
-    // conf.printServer();
-    // ServerManager server(conf);
-    // server.StartAllServers();
-    // if (server.checkError())
-    //     return 2;
-    // server.TrackSocketsEvent();
-    // return (0);
 }
