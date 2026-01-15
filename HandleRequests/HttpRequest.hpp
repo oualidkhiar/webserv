@@ -11,6 +11,7 @@ class HttpRequest
 private:
     enum RequestType type;
     std::string uri;
+    std::string query_string;
     std::map<std::string, std::string> headers;
     enum status status;
     int response_code;
@@ -39,6 +40,7 @@ public:
     void appendRequestData(unsigned char *buffer, size_t buffer_size);
     unsigned char getCharFromRequest(int index);
     size_t requestSize();
+    std::string getQuery( void );
 
     void eraseFromRequest(size_t start, size_t len);
     std::string extractString(size_t pos, size_t len);
@@ -55,6 +57,7 @@ public:
     void setUri(std::string uri);
     void setType(enum RequestType type);
     void setStatus(enum status status);
+    void setQuery(std::string query);
     ~HttpRequest();
 
     // DEBUGING FINCTIONS

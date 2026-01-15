@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include "MimeTypes.hpp"
 #include <algorithm>
+#include "handleCgi.hpp"
 Executor::Executor() {}
 
 void Executor::executeDelete(HttpRequest &request, HttpResponse &response)
@@ -52,7 +53,6 @@ bool Executor::isAllowedMethod(HttpRequest &request)
 {
     std::string methods[3] = {"DELETE", "POST", "GET"};
     std::set<std::string> *allowed_methods = &(request.getLocation()->allowMethods);
-
     if (allowed_methods->find(methods[request.getType()]) == allowed_methods->end())
         return (false);
     return (true);
@@ -68,8 +68,11 @@ void Executor::execute(HttpRequest &request, HttpResponse &response)
     }
     if (request.getType() == DELETE)
         executeDelete(request, response);
-    else if (request.getType() == GET)
+    else if (request.getType() == GET) {
         executeGet(request, response);
+        // Cgi c(request);
+        // c.executeCgi();
+    }
 }
 
 void Executor::setContentTpe(HttpResponse &response, const std::string &path)

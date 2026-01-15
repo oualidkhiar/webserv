@@ -78,9 +78,10 @@ void RequestParser::read_body_fixed(HttpRequest &request)
     }
     if (body->getToRead() == 0)
         request.setStatus((status)FINISHED);
-}std::string getDateValue()
-{
 }
+// std::string getDateValue()
+// {
+// }
 
 void RequestParser::read_body_chunked(HttpRequest &request)
 {
@@ -140,8 +141,16 @@ void RequestParser::reading_request_line(HttpRequest &request)
         token_numbers++;
         if (token_numbers == 1)
             set_request_type(request, token);
-        else if (token_numbers == 2)
+        else if (token_numbers == 2) {
+            size_t query_pos = token.find('?');
+            std::string qStr;
+            if (query_pos != std::string::npos) {
+                qStr = token.substr(query_pos + 1, token.length() - query_pos);
+                request.setQuery(qStr);
+                token.erase(query_pos, token.length() - query_pos);
+            }
             request.setUri(token);
+        }
         else if (token_numbers > 3)
         {
             request.setResponseCode(400);

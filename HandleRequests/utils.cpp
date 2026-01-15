@@ -52,14 +52,14 @@ std::string getStatusReponseLine(int code)
 }
 
 // Sat, 03 Jan 2026 11:10:45 GMT
-std::string getDateValue()
-{
-}
+// std::string getDateValue()
+// {
+// }
 
-int main()
-{
-    std::time_t result = std::time(NULL);
-    char *date;
-    date = std::asctime(std::localtime(&result));
-    std::cout << date << std::endl;
-}
+// int main()
+// {
+//     std::time_t result = std::time(NULL);
+//     char *date;
+//     date = std::asctime(std::localtime(&result));
+//     std::cout << date << std::endl;
+// }

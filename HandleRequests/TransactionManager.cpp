@@ -2,6 +2,7 @@
 #include "RequestParser.hpp"
 #include "Executor.hpp"
 #include <cstring>
+#include "handleCgi.hpp"
 
 TransactionManager::TransactionManager()
 {

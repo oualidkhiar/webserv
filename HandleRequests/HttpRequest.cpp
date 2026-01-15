@@ -36,6 +36,8 @@ void HttpRequest::setType(enum RequestType type) { this->type = type; }
 void HttpRequest::setResponseCode(int code) { this->response_code = code; }
 void HttpRequest::setLocation(struct location *location) { this->location = location; }
 void HttpRequest::clear() { request.clear(); }
+void HttpRequest::setQuery(std::string query) {this->query_string = query;}
+std::string HttpRequest::getQuery( void ) { return this->query_string;}
 
 std::string HttpRequest::getHeader(std::string key)
 {
