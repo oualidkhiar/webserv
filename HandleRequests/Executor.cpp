@@ -93,7 +93,6 @@ void Executor::executeGet(HttpRequest &request, HttpResponse &response)
     pair = extractFileInfos(path.c_str());
     if (pair.first != 1)
     {
-
         response.setStatus(pair.first);
         exit_error("Stat Eroor");
     }

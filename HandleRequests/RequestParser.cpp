@@ -78,6 +78,8 @@ void RequestParser::read_body_fixed(HttpRequest &request)
     }
     if (body->getToRead() == 0)
         request.setStatus((status)FINISHED);
+}std::string getDateValue()
+{
 }
 
 void RequestParser::read_body_chunked(HttpRequest &request)

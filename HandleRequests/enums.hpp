@@ -25,8 +25,8 @@ enum ResponseState
     RESPONSE_FINISHED
 };
 
-enum ReadingType
-    {
+enum ReadingType 
+{
     CHUNKED,
     FIXED_LENGTH
 };
