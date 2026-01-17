@@ -25,7 +25,7 @@ int main(int ac, char **av)
     serverConfig *server = conf.getSerevrConfig(0);
     manager.setServer(server);
     unsigned char simpleGet[500] =
-        "GET / HTTP/1.1\r\n"
+        "GET /cgi-bin/cgi_example.cgi HTTP/1.1\r\n"
         "Host: localhost:8080\r\n"
         "Accept: application/json\r\n"
         "User-Agent: TestingClient/1.0\r\n"

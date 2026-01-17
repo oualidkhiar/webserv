@@ -10,17 +10,21 @@ class Cgi {
 private:
 
     HttpRequest& request;
+    HttpResponse& response;
+    Executor&      ex;
     std::string http_Protocol;
     char        **envp;
     size_t      size;
 
 public:
-    Cgi(HttpRequest& request): request(request) {}
+    Cgi(HttpRequest& request, HttpResponse& resp, Executor& ex): request(request), response(resp), ex(ex) {
+        http_Protocol = "HTTP/1.1";
+    }
     ~Cgi() {
-        // for (size_t i = 0; i < size; i++) {
-        //     delete envp[i];
-        // }
-        // delete[] envp;
+        for (size_t i = 0; i < size; i++) {
+            delete envp[i];
+        }
+        delete[] envp;
     }
 
     void fill_char_array(char *c_str, std::string cppStr)
@@ -114,11 +118,41 @@ public:
         convertFromVectorStringtToDoubleArray(env);
     }
 
+    void writeHeadersFromCgiOut(int fd)
+    {
+        char buffer[1];
+        std::string header;
+
+        while (true)
+        {
+            int byte_read = read(fd, buffer, 1);
+            if (byte_read > 0) {
+                if (buffer[0] == '\r') {
+                    byte_read = read(fd, buffer, 1);
+                    if (buffer[0] == '\n') {break ;}
+                }
+                if (buffer[0] == '\n') {
+                    std::pair<std::string, std::string> key_val;
+                    size_t pos = header.find(':');
+                    if (pos != std::string::npos) {
+                        key_val.first = header.substr(0, pos);
+                        key_val.second = header.substr(pos+1, header.length() - pos);
+                        response.overWriteHeader(key_val.first, key_val.second);
+                    }
+                    header.clear();
+                    continue ;
+                }
+                header.push_back(buffer[0]);
+            }
+            else {break ;} // handle error
+        }
+        
+    }
+
     int executeCgi( void )
     {
         std::string path = pathResolver();
-        // path = "./www/cgi-bin/hello.cgi";
-        std::cout << "hnaaa" << path << std::endl;
+        std::cout << path << std::endl;
         int n = isValideFile(path);
         if (n != 0) {
             return n;
@@ -129,7 +163,10 @@ public:
         // }
         createEnvp();
         pid_t pid;
-        int fd = open("/home/oukhiar/goinfre/webserve/www/cgi_output/writehere.txt", O_RDWR | O_CREAT);
+        std::string filename = "oualid.txt"; // generate random name for each file
+        std::string outfile = "./www/cgi_output/"+filename;
+        std::cout << outfile << std::endl;
+        int fd = open(outfile.c_str(), O_CREAT | O_RDWR | O_TRUNC, 0644);
         if (fd < 0) {perror("open"), exit(1);}
         pid = fork();
         if (pid < 0) {perror("fork");exit(1);}
@@ -143,12 +180,14 @@ public:
         }
         else {
             waitpid(pid, NULL, 0);
-            std::remove("/home/oukhiar/goinfre/webserve/www/cgi_output/writehere.html");
-            exit(0);
+            request.setUri("/cgi_output/"+filename);
+            writeHeadersFromCgiOut(fd);
+            ex.executeGet(request, response);
+            response.getFile()->setFd(fd);
+            response.getFile()->setState(FILE_READING);
+            std::cout << response.getFile()->getFd() << std::endl;
         }
-        // redirect and call call execve
-        // call handle get;
-        return 0; // success
+        return 0;
     }
 };
 

@@ -69,9 +69,9 @@ void Executor::execute(HttpRequest &request, HttpResponse &response)
     if (request.getType() == DELETE)
         executeDelete(request, response);
     else if (request.getType() == GET) {
-        executeGet(request, response);
-        // Cgi c(request);
-        // c.executeCgi();
+        // executeGet(request, response);
+        Cgi c(request, response, *this);
+        c.executeCgi();
     }
 }
 
@@ -90,7 +90,7 @@ void Executor::setContentTpe(HttpResponse &response, const std::string &path)
 
 void Executor::executeGet(HttpRequest &request, HttpResponse &response)
 {
-    std::vector<unsigned char> file_content;
+    std::vector<unsigned char> file_content;  // not used ??
     std::string path = pathResolver(request);
     std::pair<int, FtFile *> pair;
     pair = extractFileInfos(path.c_str());

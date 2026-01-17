@@ -137,7 +137,7 @@ void RequestParser::reading_request_line(HttpRequest &request)
     {
 
         line.erase(0, token.length());
-
+        
         token_numbers++;
         if (token_numbers == 1)
             set_request_type(request, token);
