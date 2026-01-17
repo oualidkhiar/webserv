@@ -70,11 +70,11 @@ void Executor::execute(HttpRequest &request, HttpResponse &response)
         executeDelete(request, response);
     else if (request.getType() == GET) {
         // executeGet(request, response);
-        Cgi c(request, response, *this);
+        Cgi c(request, response);
         c.executeCgi();
-        // if (c.getResponseCode() != 0) {
-        //     // response with spicifique error 
-        // }
+        if (c.getResponseCode() != 0) {
+            // response with spicifique error 
+        }
     }
 }
 

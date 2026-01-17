@@ -1,19 +1,22 @@
 #include "handleCgi.hpp"
+#include <unistd.h>
+#include <sys/stat.h>
 
-Cgi::Cgi(HttpRequest &request, HttpResponse &resp, 
-    Executor &ex) : request(request), response(resp), 
-    ex(ex), responseCode(0), size(0)
+Cgi::Cgi(HttpRequest &request, HttpResponse &resp) : request(request), 
+response(resp), responseCode(0), size(0)
 {
 	http_Protocol = "HTTP/1.1";
 }
 
 Cgi::~Cgi()
 {
-	for (size_t i = 0; i < size; i++)
-	{
-		delete envp[i];
+	if (size > 0) {
+		for (size_t i = 0; i < size; i++)
+		{
+			delete[] envp[i];
+		}
+		delete[] envp;
 	}
-	delete[] envp;
 }
 
 void Cgi::fill_char_array(char *c_str, std::string cppStr)
@@ -134,24 +137,26 @@ std::pair<std::string, std::string> Cgi::exrtactKeyValue(std::string line, size_
 	return (ret);
 }
 
-void Cgi::shiftFileOffset(int fd, size_t len)
+void Cgi::shiftFileOffset(size_t len)
 {
 	char *buffer = new char[len];
 	if (!buffer)
 	{
 		this->responseCode = 500;
+		delete[] buffer;
 		return ;
 	}
-	int bytes_read = read(fd, buffer, len);
+	int bytes_read = read(response.getFile()->getFd(), buffer, len);
 	if (bytes_read < 0)
 	{
 		this->responseCode = 500;
 	}
+	delete[] buffer;
 }
 
-void Cgi::writeHeadersFromCgiOut(int fd, std::string filename)
+void Cgi::writeHeadersFromCgiOut( void )
 {
-	std::ifstream file(filename.c_str());
+	std::ifstream file(response.getFile()->getPath().c_str());
 	if (!file.is_open())
 	{
 		this->responseCode = 500;
@@ -207,17 +212,30 @@ void Cgi::writeHeadersFromCgiOut(int fd, std::string filename)
 		}
 	}
 	file.close();
-	shiftFileOffset(fd, offsetShiftedCounter);
+	shiftFileOffset(offsetShiftedCounter);
 }
 
-void Cgi::resetFileOffset(int& fd, std::string filename)
+void Cgi::resetFileOffset()
 {
-	close(fd);
-	fd = open(filename.c_str(), O_RDONLY);
+	int		fd;
+	struct stat sb;
+
+	close(response.getFile()->getFd());
+	fd = open(response.getFile()->getPath().c_str(), O_RDONLY);
     if (fd < 0) {
         perror("open");
         this->responseCode = 500;
     }
+	response.getFile()->setFd(fd);
+	response.getFile()->setState(FILE_READING);
+	response.getFile()->setRemoveFile(true);
+    if (stat(response.getFile()->getPath().c_str(), &sb) != 0) {
+		this->responseCode = 500;
+		return ;
+	}
+	response.getFile()->setFileSize(sb.st_size);
+	if (response.getFile()->getFileSize() > MAX_FILE_READ)
+        response.setState(READING_LARGE_FILE);
 }
 
 std::string Cgi::generateRandomName()
@@ -254,34 +272,43 @@ std::string Cgi::generateRandomName()
 	return name;
 }
 
+void Cgi::createResponse()
+{
+	std::string filename;
+	std::string outfile;
+	Executor	forGettingFile;
+	FtFile 		*file;
+	int			fd;
+
+	filename = generateRandomName(); // generate random
+	outfile = "/tmp/"+filename;
+	fd = open(outfile.c_str(), O_CREAT | O_WRONLY, 0644);
+	if (fd < 0) {
+		this->responseCode = 500;
+		return ;
+	}
+	else {
+		file = new FtFile(outfile);
+		file->setFd(fd);
+		response.setFile(file);
+		response.createBody();
+	}
+}
+
 void Cgi::executeCgi(void)
 {
 	std::string path = pathResolver();
 	isValideFile(path);
-	if (this->responseCode != 0)
-	{
+	if (this->responseCode != 0) {
 		return ;
 	}
 	pid_t pid;
-	std::string filename;
-	std::string outfile;
 
-	// n = matchConfigFileRules();
-	// if (n != 0) {
-	//     return (n);
-	// }
-	std::cout << "herererer\n\n" << std::endl;
-	filename = generateRandomName(); // generate random
-	outfile = "./www/cgi_output/" + filename;
-
-	createEnvp();
-	int fd = open(outfile.c_str(), O_CREAT | O_RDWR | O_TRUNC, 0644);
-	if (fd < 0)
-	{
-		perror("open");
-        this->responseCode = 500;
-        return ;
+	createResponse();
+	if (this->responseCode != 0) {
+		return ;
 	}
+	createEnvp();
 	pid = fork();
 	if (pid < 0)
 	{
@@ -293,20 +320,18 @@ void Cgi::executeCgi(void)
 		char *argv[2];
 		argv[0] = (char *)path.c_str();
 		argv[1] = NULL;
-		dup2(fd, STDOUT_FILENO);
+		dup2(response.getFile()->getFd(), STDOUT_FILENO);
 		execve(path.c_str(), argv, envp);
 	}
 	else
 	{
 		waitpid(pid, NULL, 0);
-		// request.setUri("/cgi_output/" + filename);
-		ex.executeGet(request, response);
-		resetFileOffset(fd, outfile);
-        if (this->responseCode != 0) {return ;}
-		response.getFile()->setFd(fd);
-		response.getFile()->setState(FILE_READING);
-		response.getFile()->setRemoveFile(true);
-		writeHeadersFromCgiOut(fd, outfile);
+		resetFileOffset();
+        if (this->responseCode != 0) {
+			return ;
+		}
+		writeHeadersFromCgiOut();
+		std::cout << response.getFile()->getPath() << std::endl;
 	}
 }
 

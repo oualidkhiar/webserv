@@ -83,7 +83,7 @@ void FtFile::ft_close()
 {
     close(fd);
     if (this->remove_file) {
-        // std::remove(this->path.c_str());
+        std::remove(this->path.c_str());
     }
     this->state = FILE_FINISHED;
 }

@@ -14,7 +14,6 @@ private:
 
 	HttpRequest		&request;
 	HttpResponse	&response;
-	Executor		&ex;
 	std::string		http_Protocol;
 	size_t			size;
 	char			**envp;
@@ -30,17 +29,17 @@ private:
 	void createEnvp();
 
 	std::pair<std::string, std::string> exrtactKeyValue(std::string line, size_t endOfValue);
-	void shiftFileOffset(int fd, size_t len);
+	void shiftFileOffset(size_t len);
 
-	void writeHeadersFromCgiOut(int fd, std::string filename);
+	void writeHeadersFromCgiOut();
 
-	void resetFileOffset(int& fd, std::string filename);
+	void resetFileOffset();
 	std::string generateRandomName();
-	void createFile();
+	void createResponse();
 
 public:
 
-	Cgi(HttpRequest &request, HttpResponse &resp, Executor &ex);
+	Cgi(HttpRequest &request, HttpResponse &resp);
 	~Cgi();
 
 	void executeCgi(void);
