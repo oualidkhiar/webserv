@@ -6,7 +6,7 @@ enum FileReadState
 {
     NOT_OPENED,
     FILE_READING,
-    FILE_FINISHED
+    FILE_FINISHED,
 };
 
 class FtFile
@@ -17,10 +17,12 @@ private:
     std::string path;
     FileReadState state;
     size_t file_size;
+    bool remove_file;
 
 public:
     FtFile(const std::string &path);
-
+    void setRemoveFile(bool t_f);
+    bool shouldRemovingFile();
     // Getters
     size_t getFileSize();
     int getFd() const;

@@ -15,7 +15,7 @@ std::pair<unsigned char *, size_t> TransactionManager::getRoofResponse()
     std ::string roof;
     unsigned char *roofBuffer;
     roof = response.getHeaderLine();
-    for (std::map<std::string, std::string>::const_iterator it = response.headersBegin(); it != response.headersEnd(); ++it)
+    for (std::map<std::string, std::string>::const_iterator it = response.headersBegin(); it != response.headersEnd(); it++)
         roof = roof + it->first + ": " + it->second;
     roof += "\r\n";
     pair.second = roof.length();

@@ -1,218 +1,49 @@
 #pragma once
-#include "HttpRequest.hpp"
-#include "HttpResponse.hpp"
 #include "../includes/config.hpp"
 #include "Executor.hpp"
+#include "HttpRequest.hpp"
+#include "HttpResponse.hpp"
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <sstream>
+
+#define NAME_LEN 5
 
 class Cgi {
 private:
 
-    HttpRequest& request;
-    HttpResponse& response;
-    Executor&      ex;
-    std::string http_Protocol;
-    char        **envp;
-    size_t      size;
+	HttpRequest		&request;
+	HttpResponse	&response;
+	Executor		&ex;
+	std::string		http_Protocol;
+	size_t			size;
+	char			**envp;
+	int				responseCode;
+
+	void fill_char_array(char *c_str, std::string cppStr);
+	void convertFromVectorStringtToDoubleArray(std::vector<std::string> &env);
+
+	std::string pathResolver();
+
+	void isValideFile(std::string &path);
+
+	void createEnvp();
+
+	std::pair<std::string, std::string> exrtactKeyValue(std::string line, size_t endOfValue);
+	void shiftFileOffset(int fd, size_t len);
+
+	void writeHeadersFromCgiOut(int fd, std::string filename);
+
+	void resetFileOffset(int& fd, std::string filename);
+	std::string generateRandomName();
+	void createFile();
 
 public:
-    Cgi(HttpRequest& request, HttpResponse& resp, Executor& ex): request(request), response(resp), ex(ex) {
-        http_Protocol = "HTTP/1.1";
-    }
-    ~Cgi() {
-        for (size_t i = 0; i < size; i++) {
-            delete envp[i];
-        }
-        delete[] envp;
-    }
 
-    void fill_char_array(char *c_str, std::string cppStr)
-    {
-        for (int i = 0; i < cppStr.length(); i++) 
-        {
-            c_str[i] = cppStr[i];
-        }
-        c_str[cppStr.length()] = '\0';
-    }
+	Cgi(HttpRequest &request, HttpResponse &resp, Executor &ex);
+	~Cgi();
 
-    void convertFromVectorStringtToDoubleArray(std::vector<std::string>& env)
-    {
-        envp = new char *[env.size() + 1];
+	void executeCgi(void);
+	int getResponseCode();
 
-        for (int i = 0; i < env.size(); i++) {
-            envp[i] = new char[env[i].length() + 1];
-            fill_char_array(envp[i] ,env[i]);
-        }
-        envp[env.size()] = NULL;
-        size = env.size();
-    }
-
-    std::string pathResolver()
-    {
-        std::string path;
-        if (request.getLocation() != NULL)
-        {
-            if (request.getLocation()->rootPath.empty() == false)
-                path = request.getLocation()->rootPath + request.getUri();
-            else
-                path = request.getConfig()->rootPath + request.getUri();
-        }
-        return (path);
-    }
-
-    int isValideFile(std::string& path)
-    {
-        if (access(path.c_str(), F_OK) != 0) {
-            return 404; // path not found error response generate 404
-        }
-        if (access(path.c_str(), X_OK) != 0) {
-            return 403; // file not executeble error response permession denid
-        }
-        return 0;
-    }
-
-    void createEnvp()
-    {
-        std::vector<std::string> env;
-        std::string value;
-
-        value = request.getType();
-        value = "REQUEST_METHOD="+value;
-        env.push_back(value);
-    
-        if (request.getQuery().length() > 0) {
-            value = "QUERY_STRING="+request.getQuery();
-            env.push_back(value);
-        }
-
-        value = "SCRIPT_NAME="+request.getUri();
-        env.push_back(value);
-
-        value = "SERVER_PROTOCOL="+http_Protocol;
-        env.push_back(value);
-
-        value = request.getHeader("Content-Type");
-        if (value.length() > 0) {
-            value = "CONTENT_TYPE="+value;
-            env.push_back(value);
-        }
-
-        value = request.getHeader("Content-Length");
-        if (value.length() > 0) {
-            value = "CONTENT_LENGTH="+value;
-            env.push_back(value);
-        }
-
-        value = request.getHeader("Host");
-        if (value.length() > 0) {
-            value = "HTTP_HOST="+value;
-            env.push_back(value);
-        }
-
-        value = request.getHeader("User-Agent");
-        if (value.length() > 0) {
-            value = "HTTP_USER_AGENT="+value;
-            env.push_back(value);
-        }
-        convertFromVectorStringtToDoubleArray(env);
-    }
-
-    void writeHeadersFromCgiOut(int fd)
-    {
-        char buffer[1];
-        std::string header;
-
-        while (true)
-        {
-            int byte_read = read(fd, buffer, 1);
-            if (byte_read > 0) {
-                if (buffer[0] == '\r') {
-                    byte_read = read(fd, buffer, 1);
-                    if (buffer[0] == '\n') {break ;}
-                }
-                if (buffer[0] == '\n') {
-                    std::pair<std::string, std::string> key_val;
-                    size_t pos = header.find(':');
-                    if (pos != std::string::npos) {
-                        key_val.first = header.substr(0, pos);
-                        key_val.second = header.substr(pos+1, header.length() - pos);
-                        response.overWriteHeader(key_val.first, key_val.second);
-                    }
-                    header.clear();
-                    continue ;
-                }
-                header.push_back(buffer[0]);
-            }
-            else {break ;} // handle error
-        }
-        
-    }
-
-    int executeCgi( void )
-    {
-        std::string path = pathResolver();
-        std::cout << path << std::endl;
-        int n = isValideFile(path);
-        if (n != 0) {
-            return n;
-        }
-        // n = matchConfigFileRules();
-        // if (n != 0) {
-        //     return n;
-        // }
-        createEnvp();
-        pid_t pid;
-        std::string filename = "oualid.txt"; // generate random name for each file
-        std::string outfile = "./www/cgi_output/"+filename;
-        std::cout << outfile << std::endl;
-        int fd = open(outfile.c_str(), O_CREAT | O_RDWR | O_TRUNC, 0644);
-        if (fd < 0) {perror("open"), exit(1);}
-        pid = fork();
-        if (pid < 0) {perror("fork");exit(1);}
-        else if (pid == 0)
-        {
-            char *argv[2];
-            argv[0] = (char *)path.c_str();
-            argv[1] = NULL;
-            dup2(fd, STDOUT_FILENO);
-            execve(path.c_str(), argv, envp);
-        }
-        else {
-            waitpid(pid, NULL, 0);
-            request.setUri("/cgi_output/"+filename);
-            writeHeadersFromCgiOut(fd);
-            ex.executeGet(request, response);
-            response.getFile()->setFd(fd);
-            response.getFile()->setState(FILE_READING);
-            std::cout << response.getFile()->getFd() << std::endl;
-        }
-        return 0;
-    }
 };
-
-
-
-            //   cgi request example
-
-
-//              POST /cgi-bin/login.cgi?debug=true HTTP/1.1     |
-//              Host: example.com:8080                          |   
-//              User-Agent: curl/8.4.0                          |
-//              Accept: */*                                     |
-//              Content-Type: application/x-www-form-urlencoded |
-//              Content-Length: 27                              |
-//              Cookie: session=abc123                          |
-//                                                              |                                                               
-//              username=walid&pwd=42                           |                                                               
-//                                                              |
-
-
-                // REQUEST_METHOD=POST
-                // SCRIPT_NAME=/cgi-bin/test.cgi
-                // QUERY_STRING=x=42
-                // SERVER_PROTOCOL=HTTP/1.1
-                // CONTENT_TYPE=application/json
-                // CONTENT_LENGTH=15
-                // HTTP_HOST=localhost:8080
-                // HTTP_USER_AGENT=curl

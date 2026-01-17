@@ -25,14 +25,14 @@ int main(int ac, char **av)
     serverConfig *server = conf.getSerevrConfig(0);
     manager.setServer(server);
     unsigned char simpleGet[500] =
-        "GET /cgi-bin/cgi_example.cgi HTTP/1.1\r\n"
+        "GET /cgi-bin/test.cgi HTTP/1.1\r\n"
         "Host: localhost:8080\r\n"
         "Accept: application/json\r\n"
         "User-Agent: TestingClient/1.0\r\n"
         "Connection: close\r\n"
         "\r\n"; // End of Headers (No body follows)
     manager.appendToRequest(simpleGet, ft_strlen(simpleGet));
-    
+
    while (manager.getResponseState() != RESPONSE_FINISHED)
    {
     std::pair<unsigned char * , size_t> reponse  = manager.getResponse();

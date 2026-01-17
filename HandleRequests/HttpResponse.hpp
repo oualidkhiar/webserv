@@ -26,7 +26,7 @@ public:
     std::map<std::string, std::string>::const_iterator headersEnd();
     void setStatus(int status);
     void AddHeader(std ::string key, std::string value);
-    void overWriteHeader(std::string key, std::string value);
+    void overWriteHeader(std::pair<std::string, std::string> p);
 
     void setFile(FtFile *file);
     void setState(ResponseState state);

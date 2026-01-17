@@ -13,7 +13,7 @@ std::string HttpResponse::getHeaderLine() { return (this->header); }
 ResponseState HttpResponse::getState() { return this->state; }
 int HttpResponse::getStatus() { return (this->status); }
 void HttpResponse::AddHeader(std::string key, std::string value) { this->headers.insert(std::make_pair(key, value)); }
-void HttpResponse::overWriteHeader(std::string key, std::string value) {this->headers[key] = value; }
+void HttpResponse::overWriteHeader(std::pair<std::string, std::string> p) {this->headers[p.first] = p.second; }
 
 void HttpResponse::setFile(FtFile *file)
 {

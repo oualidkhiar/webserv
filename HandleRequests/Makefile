@@ -10,7 +10,7 @@ NAME         := webserv
 SRCS         := Body.cpp ContainersManip.cpp Executor.cpp FilesManip.cpp \
                 FtFile.cpp HttpRequest.cpp HttpResponse.cpp main.cpp \
                 MimeTypes.cpp RequestParser.cpp StringManip.cpp \
-                TransactionManager.cpp 
+                TransactionManager.cpp handleCgi.cpp
 
 # Object Directory
 OBJDIR       := obj

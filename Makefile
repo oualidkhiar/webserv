@@ -17,7 +17,7 @@ SRCS =  src/main.cpp\
 	${REQDIR}Body.cpp ${REQDIR}ContainersManip.cpp ${REQDIR}Executor.cpp ${REQDIR}FilesManip.cpp \
                 ${REQDIR}FtFile.cpp ${REQDIR}HttpRequest.cpp ${REQDIR}HttpResponse.cpp  \
                 ${REQDIR}MimeTypes.cpp ${REQDIR}RequestParser.cpp ${REQDIR}StringManip.cpp \
-                ${REQDIR}TransactionManager.cpp ${REQDIR}utils.cpp
+                ${REQDIR}TransactionManager.cpp ${REQDIR}utils.cpp ${REQDIR}handleCgi.cpp
 
 
 

@@ -9,10 +9,19 @@ FtFile::FtFile(const std::string &path)
 
 {
     state = NOT_OPENED;
+    remove_file = false;
     sented_bytes = 0;
     fd = -1;
     this->path = path;
     file_size = 0;
+}
+
+void FtFile::setRemoveFile(bool t_f) {
+    this->remove_file = t_f;
+}
+
+bool FtFile::shouldRemovingFile() {
+    return this->remove_file;
 }
 
 int FtFile::getFd() const
@@ -73,6 +82,9 @@ void FtFile::incrementSentedBytes(size_t amount)
 void FtFile::ft_close()
 {
     close(fd);
+    if (this->remove_file) {
+        // std::remove(this->path.c_str());
+    }
     this->state = FILE_FINISHED;
 }
 
@@ -95,7 +107,6 @@ std::vector<unsigned char> FtFile::readFile()
     bytes_read = read(fd, buffer, MAX_FILE_READ);
     if (bytes_read < MAX_FILE_READ)
     {
-        this->state = FILE_FINISHED;
         ft_close();
     }
     if (bytes_read > 0)

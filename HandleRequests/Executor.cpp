@@ -72,6 +72,9 @@ void Executor::execute(HttpRequest &request, HttpResponse &response)
         // executeGet(request, response);
         Cgi c(request, response, *this);
         c.executeCgi();
+        // if (c.getResponseCode() != 0) {
+        //     // response with spicifique error 
+        // }
     }
 }
 
