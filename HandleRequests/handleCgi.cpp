@@ -212,13 +212,13 @@ void Cgi::writeHeadersFromCgiOut( void )
 		}
 	}
 	file.close();
+	response.getFile()->setFileSize(sb.st_size - offsetShiftedCounter);
 	shiftFileOffset(offsetShiftedCounter);
 }
 
 void Cgi::resetFileOffset()
 {
 	int		fd;
-	struct stat sb;
 
 	close(response.getFile()->getFd());
 	fd = open(response.getFile()->getPath().c_str(), O_RDONLY);
@@ -233,9 +233,7 @@ void Cgi::resetFileOffset()
 		this->responseCode = 500;
 		return ;
 	}
-	response.getFile()->setFileSize(sb.st_size);
-	if (response.getFile()->getFileSize() > MAX_FILE_READ)
-        response.setState(READING_LARGE_FILE);
+    response.setState(READING_LARGE_FILE);
 }
 
 std::string Cgi::generateRandomName()
@@ -251,7 +249,7 @@ std::string Cgi::generateRandomName()
 		if (bytes_read > 0) {
 			int p = 0;
 			while (p < bytes_read) {
-				if (std::isprint(buffer[p])) {
+				if (std::isprint(buffer[p]) && buffer[p] != '/') {
 					name.push_back(buffer[p]);
 					if (name.length() >= NAME_LEN) {break;}
 				}
@@ -284,6 +282,7 @@ void Cgi::createResponse()
 	outfile = "/tmp/"+filename;
 	fd = open(outfile.c_str(), O_CREAT | O_WRONLY, 0644);
 	if (fd < 0) {
+		perror("open");
 		this->responseCode = 500;
 		return ;
 	}
@@ -295,47 +294,82 @@ void Cgi::createResponse()
 	}
 }
 
+void Cgi::redirectOutOnly()
+{
+	dup2(response.getFile()->getFd(), STDOUT_FILENO);
+	close(response.getFile()->getFd());
+}
+
+void Cgi::redirectInOut()
+{
+	// dup2(request.outfile()->getFd(), STDIN_FILENO);
+	dup2(response.getFile()->getFd(), STDOUT_FILENO);
+	close(response.getFile()->getFd());
+	// close(infile)
+}
+
+void Cgi::parentPs(pid_t pid)
+{
+	int status;
+	waitpid(pid, &status, 0);
+	if (status != 0) {
+		this->responseCode = 500;
+		return ;
+	}
+	resetFileOffset();
+    if (this->responseCode != 0) {return ;}
+	writeHeadersFromCgiOut();
+	if (response.getHeader(CONTENT_TYPE_HEADER) == "NOT_FOUND") {
+		response.AddHeader(CONTENT_TYPE_HEADER, DEFAULT_CONTENT_TYPE);
+	}
+	if (request.getType() == POST) {
+		// close(infile);
+		// remove it 
+	}
+}
+
+void Cgi::childPs(pid_t pid, std::string path)
+{
+	char *argv[2];
+	argv[0] = (char *)path.c_str();
+	argv[1] = NULL;
+	if (request.getType() == GET || request.getType() == DELETE) {
+		redirectOutOnly();
+	}
+	else {
+		redirectInOut();
+	}
+	execve(path.c_str(), argv, envp);
+	exit(1);
+}
+
 void Cgi::executeCgi(void)
 {
 	std::string path = pathResolver();
 	isValideFile(path);
-	if (this->responseCode != 0) {
+	if (this->responseCode == 0) {
+		this->responseCode = 10;
 		return ;
 	}
 	pid_t pid;
-
+	
 	createResponse();
 	if (this->responseCode != 0) {
+		std::cout << path << std::endl;
 		return ;
 	}
 	createEnvp();
 	pid = fork();
-	if (pid < 0)
-	{
+	if (pid < 0) {
 		perror("fork");
 		this->responseCode = 500;
 	}
-	else if (pid == 0)
-	{
-		char *argv[2];
-		argv[0] = (char *)path.c_str();
-		argv[1] = NULL;
-		dup2(response.getFile()->getFd(), STDOUT_FILENO);
-		execve(path.c_str(), argv, envp);
+	else if (pid == 0) {
+		childPs(pid, path);
 	}
-	else
-	{
-		waitpid(pid, NULL, 0);
-		resetFileOffset();
-        if (this->responseCode != 0) {
-			return ;
-		}
-		writeHeadersFromCgiOut();
-		std::cout << response.getFile()->getPath() << std::endl;
+	else {
+		parentPs(pid);
 	}
 }
 
-int Cgi::getResponseCode()
-{
-	return (this->responseCode);
-}
+int Cgi::getResponseCode() {return (this->responseCode);}

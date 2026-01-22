@@ -32,11 +32,10 @@ int main(int ac, char **av)
         "Connection: close\r\n"
         "\r\n"; // End of Headers (No body follows)
     manager.appendToRequest(simpleGet, ft_strlen(simpleGet));
-
-   while (manager.getResponseState() != RESPONSE_FINISHED)
-   {
-    std::pair<unsigned char * , size_t> reponse  = manager.getResponse();
-    write(1, reponse.first , reponse.second);
-    delete [] reponse.first;
-   }
+    while (manager.getResponseState() != RESPONSE_FINISHED)
+    {
+        std::pair<unsigned char * , size_t> reponse  = manager.getResponse();
+        write(1, reponse.first , reponse.second);
+        delete [] reponse.first;
+    }
 }

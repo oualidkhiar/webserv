@@ -74,6 +74,7 @@ void Executor::execute(HttpRequest &request, HttpResponse &response)
         c.executeCgi();
         if (c.getResponseCode() != 0) {
             // response with spicifique error 
+            response.setStatus(c.getResponseCode());
         }
     }
 }
@@ -104,8 +105,7 @@ void Executor::executeGet(HttpRequest &request, HttpResponse &response)
     }
     setContentTpe(response, path);
     response.setFile(pair.second);
-    if (response.getFile()->getFileSize() > MAX_FILE_READ)
-        response.setState(READING_LARGE_FILE);
+    response.setState(READING_LARGE_FILE);
     response.createBody();
 }
 

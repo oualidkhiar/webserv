@@ -18,6 +18,7 @@ private:
 	size_t			size;
 	char			**envp;
 	int				responseCode;
+	struct stat		sb;
 
 	void fill_char_array(char *c_str, std::string cppStr);
 	void convertFromVectorStringtToDoubleArray(std::vector<std::string> &env);
@@ -36,6 +37,13 @@ private:
 	void resetFileOffset();
 	std::string generateRandomName();
 	void createResponse();
+
+	void redirectOutOnly();
+	void redirectInOut();
+	void parentPs(pid_t pid);
+	void childPs(pid_t pid, std::string path);
+
+
 
 public:
 

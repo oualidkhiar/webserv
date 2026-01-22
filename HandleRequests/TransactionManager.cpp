@@ -69,11 +69,6 @@ void TransactionManager::appendToRequest(unsigned char *buffer, size_t size)
     RequestParser parser;
     this->request.appendRequestData(buffer, size);
     parser.create_request(request);
-    if (request.getStatus() == FINISHED)
-    {
-        Executor executor;
-        executor.execute(request, response);
-    }
 }
 
 void TransactionManager::executeRequest()
@@ -87,7 +82,7 @@ void TransactionManager::readChunk()
     std::vector<unsigned char> chunk;
     chunk = response.getFile()->readFile();
     response.appendBodyToResponse(chunk);
-    if (response.getFile()->getState() == FILE_FINISHED)   
+    if (response.getFile()->getState() == FILE_FINISHED)
         response.setState(RESPONSE_FINISHED);
 }
 
@@ -108,10 +103,18 @@ std::pair<unsigned char *, size_t> TransactionManager::firstResponse()
 std::pair<unsigned char *, size_t> TransactionManager::getResponse()
 {
 
-    if (getResponseState() == FRESH)
+    if (getResponseState() == FRESH) {
         executeRequest();
-    else if (getResponseState() == READING_LARGE_FILE)
+    }
+    if (response.getStatus() != 0) {
+        std::cout << "build the target response error here" << std::endl;
+        this->response.setState(RESPONSE_FINISHED);
+        std::pair<unsigned char *, size_t> p; // build response error to the client
+        return p;
+    }
+    else if (getResponseState() == READING_LARGE_FILE) {
         readChunk();
+    }
     if (responsed == false)
         return (firstResponse());
     else
