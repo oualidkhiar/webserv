@@ -19,7 +19,7 @@ private:
     size_t available_data;
     struct serverConfig *config;
     int port;
-    location *location;
+    struct location *location;
     std::vector<unsigned char> request;
 
 public:
