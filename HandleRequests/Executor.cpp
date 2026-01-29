@@ -112,7 +112,7 @@ void Executor::executeGet(HttpRequest &request, HttpResponse &response)
 int Executor::matchedScore(std::string uri, std::string key)
 {
 
-    int score = 1;
+    // int score = 1;
     int i = 0;
     std::vector<std::string> key_tokens;
     std::vector<std::string> uri_tokens;
