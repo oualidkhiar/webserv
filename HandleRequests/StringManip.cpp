@@ -15,6 +15,7 @@ std::string StringManip::get_token(std::string string, char delimiter)
     return (StringManip::strtrim(string));
 }
 
+// this is modified to not trim the first string
 std::pair<std::string, std::string> StringManip::split_two(std::string line, char delimiter)
 {
     std::pair<std::string, std::string> pair;
@@ -22,7 +23,8 @@ std::pair<std::string, std::string> StringManip::split_two(std::string line, cha
 
     if (pos != std::string::npos)
     {
-        pair.first = StringManip::strtrim(line.substr(0, pos));
+        // pair.first = StringManip::strtrim(line.substr(0, pos));
+        pair.first = line.substr(0, pos);
         pair.second = StringManip::strtrim(line.substr(pos + 1));
     }
     return pair;
@@ -39,6 +41,14 @@ std::string StringManip::strtrim(const std ::string s)
     while (end > start && std::isspace((s[end - 1])))
         end--;
     return s.substr(start, end - start);
+}
+
+std::string StringManip::toLowerCase(const std::string s)
+{
+    std::string result = s;
+    for (size_t i = 0; i < result.length(); i++)
+        result[i] = std::tolower(result[i]);
+    return result;
 }
 
 int hex_to_num(const std::string hex)

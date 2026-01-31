@@ -12,10 +12,14 @@ private:
     enum RequestType type;
     std::string uri;
     std::string query_string;
+	std::string http_version;
     std::map<std::string, std::string> headers;
-    enum status status;
-    int response_code;
     Body *body;
+
+    int status_code;
+	std::string	reason_phrase;
+
+    enum status status;
     size_t available_data;
     struct serverConfig *config;
     int port;
@@ -26,6 +30,7 @@ public:
     HttpRequest();
     enum RequestType getType();
     std::string getUri();
+    std::string getHttpVersion();
     std::map<std::string, std::string> getHeaders();
     std::string getHeader(std::string key);
     enum status getStatus();
@@ -47,17 +52,19 @@ public:
     std::vector<unsigned char> getChunk(size_t pos, size_t len);
 
     void clear();
+	void setHttpVersion(const std::string &http_version);
     void setLocation(struct location *location);
     void setPort(int port);
     void setConfig(struct serverConfig *config);
     void setAvailableData(size_t available_data);
     void setBody(Body *body);
-    void setResponseCode(int code);
+    void setResponseCode(const int status_code, const std::string &reason_phrase);
     void setHeaders(std::map<std::string, std::string> headers);
     void setUri(std::string uri);
     void setType(enum RequestType type);
     void setStatus(enum status status);
     void setQuery(std::string query);
+	bool hasError();
     ~HttpRequest();
 
     // DEBUGING FINCTIONS

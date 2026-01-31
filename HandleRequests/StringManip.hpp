@@ -8,6 +8,7 @@ public:
     static std::string get_token(std::string string, char delimiter);
     static std::pair<std::string , std::string> split_two (std::string string , char delimiter);
     static std::string strtrim(const std :: string string);
+    static std::string toLowerCase(const std::string string);
 
 };
 

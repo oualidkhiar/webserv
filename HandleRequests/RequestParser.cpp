@@ -5,6 +5,11 @@
 #include <cstdlib>
 
 RequestParser ::RequestParser() {}
+/* ************************************************************************** */
+/*                                                                            */
+/*                           UTILS FUNCTIONS 					  			  */
+/*                                                                            */
+/* ************************************************************************** */
 
 size_t RequestParser::findEndOfHeader(HttpRequest &request)
 {
@@ -20,18 +25,7 @@ size_t RequestParser::findEndOfHeader(HttpRequest &request)
     return (std::string::npos);
 }
 
-bool RequestParser::get_chunked(HttpRequest &request, int size)
-{
-
-    if (!(request.getCharFromRequest(size) == '\r' && request.getCharFromRequest(size + 1) == '\n'))
-        return (false);
-    request.getBody()->appendChunkToBody(request.getChunk(0, size));
-    request.eraseFromRequest(0, size + 2);
-    return (true);
-}
-
 size_t RequestParser::findCrlfPos(HttpRequest &request)
-
 {
     size_t pos = 0;
     while (pos < request.getRequest().size() - 1)
@@ -43,12 +37,28 @@ size_t RequestParser::findCrlfPos(HttpRequest &request)
     return (std::string::npos);
 }
 
+/* ************************************************************************** */
+/*                                                                            */
+/*                           BODY functions 								  */
+/*                                                                            */
+/* ************************************************************************** */
+
 bool RequestParser::setBufferFixed(HttpRequest &request, Body *body)
 {
     int content_length = stringToNumber(request.getHeader(FIXED_LENGTH_HEADER));
     if (content_length <= -1)
         exit_error("RequestParser::setBufferFixed ERROR content_length Bad fornat\n");
     body->setToRead((size_t)content_length);
+    return (true);
+}
+
+bool RequestParser::get_chunked(HttpRequest &request, int size)
+{
+
+    if (!(request.getCharFromRequest(size) == '\r' && request.getCharFromRequest(size + 1) == '\n'))
+        return (false);
+    request.getBody()->appendChunkToBody(request.getChunk(0, size));
+    request.eraseFromRequest(0, size + 2);
     return (true);
 }
 
@@ -79,9 +89,6 @@ void RequestParser::read_body_fixed(HttpRequest &request)
     if (body->getToRead() == 0)
         request.setStatus((status)FINISHED);
 }
-// std::string getDateValue()
-// {
-// }
 
 void RequestParser::read_body_chunked(HttpRequest &request)
 {
@@ -124,46 +131,12 @@ void RequestParser::read_body(HttpRequest &request)
     else
         read_body_fixed(request);
 }
-void RequestParser::reading_request_line(HttpRequest &request)
-{
-    int token_numbers = 0;
 
-    size_t pos = findCrlfPos(request);
-    if (pos == std::string::npos)
-        return;
-    std::string line = request.extractString(0, pos);
-    std::string token;
-    while ((token = StringManip::get_token(line, ' ')).empty() == false)
-    {
-
-        line.erase(0, token.length());
-        
-        token_numbers++;
-        if (token_numbers == 1)
-            set_request_type(request, token);
-        else if (token_numbers == 2) {
-            size_t query_pos = token.find('?');
-            std::string qStr;
-            if (query_pos != std::string::npos) {
-                qStr = token.substr(query_pos + 1, token.length() - query_pos);
-                request.setQuery(qStr);
-                token.erase(query_pos, token.length() - query_pos);
-            }
-            request.setUri(token);
-        }
-        else if (token_numbers > 3)
-        {
-            request.setResponseCode(400);
-            request.setStatus(ERROR);
-            std::cout << "reading_request_line::ERROR ARGS MORE THAN EXEPECTED" << std::endl;
-            return;
-        }
-        line = StringManip::strtrim(line);
-    }
-    if (token_numbers == 3)
-        request.setStatus(READ_HEADER);
-    request.eraseFromRequest(0, pos + 2);
-}
+/* ************************************************************************** */
+/*                                                                            */
+/*                           HEADER functions 								  */
+/*                                                                            */
+/* ************************************************************************** */
 
 void RequestParser::read_header(HttpRequest &request)
 {
@@ -172,42 +145,31 @@ void RequestParser::read_header(HttpRequest &request)
     pos = findEndOfHeader(request);
     if (pos == std::string::npos)
         return;
+
     std::string headers_string = request.extractString(0, pos);
     request.eraseFromRequest(0, pos);
     std::string line;
+
     while ((line = StringManip::get_token(headers_string, '\n')).empty() == false)
     {
         std::pair<std::string, std::string> header = StringManip::split_two(line, ':');
-        if (header.second.empty() == true || header.first.empty() == true)
+		
+        if (header.first.empty() == true || StringManip::strtrim(header.first) != header.first)
         {
-            request.setResponseCode(400);
-            request.setStatus(ERROR);
-            std::cout << "read_header::ERROR HEADER NOT VALID" << std::endl;
+			request.setResponseCode(400, "Bad Request");
             return;
         }
-        request.addHeader(header.first, header.second);
+        request.addHeader(StringManip::toLowerCase(header.first), header.second);
         headers_string.erase(0, line.length() + 1);
     }
-    if (request.getType() == GET || request.getType() == DELETE)
-        request.setStatus((status)FINISHED);
-    else
-        request.setStatus(READ_BODY);
+    request.setStatus(READ_BODY);
 }
-void RequestParser::create_request(HttpRequest &request)
-{
-    if (request.getStatus() == FINISHED)
-        return;
-    else if (request.getStatus() == READ_HEADER)
-        read_header(request);
-    else if (request.getStatus() == READ_BODY && request.getType() == POST)
-        read_body(request);
-    else if (request.getStatus() == READING_REQUEST_LINE)
-    {
-        reading_request_line(request);
-    }
-    else
-        read_body(request);
-}
+
+/* ************************************************************************** */
+/*                                                                            */
+/*                           REQUEST_LINE functions 						  */
+/*                                                                            */
+/* ************************************************************************** */
 
 void RequestParser::set_request_type(HttpRequest &request, std::string token)
 {
@@ -218,8 +180,73 @@ void RequestParser::set_request_type(HttpRequest &request, std::string token)
     else if (token.compare("DELETE") == 0)
         request.setType(DELETE);
     else
-    {
-        std::cout << "set_request_type::ERROR METHOD NOT KNOWN" << std::endl;
-        // HANDLE ERROR
-    }
+		request.setResponseCode(405, "Method Not Allowed");
+}
+
+void RequestParser::reading_request_line(HttpRequest &request)
+{
+	int token_numbers = 0;
+
+	size_t pos = findCrlfPos(request);
+	if (pos == std::string::npos)
+		return;
+
+	std::string line = request.extractString(0, pos);
+	std::string token;
+	while ((token = StringManip::get_token(line, ' ')).empty() == false)
+	{
+		line.erase(0, token.length());
+		token_numbers++;
+
+		if (token_numbers == 1)
+			set_request_type(request, token);
+
+		else if (token_numbers == 2)
+		{
+			size_t query_pos = token.find('?');
+			std::string qStr;
+			if (query_pos != std::string::npos) {
+				qStr = token.substr(query_pos + 1, token.length() - query_pos);
+				request.setQuery(qStr);
+				token.erase(query_pos, token.length() - query_pos);
+			}
+			request.setUri(token);
+		}
+
+		else if (token_numbers == 3)
+		{
+			request.setHttpVersion(token);
+		}
+
+		else if (token_numbers > 3)
+		{
+			request.setResponseCode(400, "Bad Request");
+			return;
+		}
+		if (request.hasError())
+			return;
+		line = StringManip::strtrim(line);
+	}
+	if (token_numbers != 3)
+	{
+		request.setResponseCode(400, "Bad Request");
+		return;
+	}
+	request.setStatus(READ_HEADER);
+	request.eraseFromRequest(0, pos + 2);
+}
+
+// changing the order of the function (request-line -> header -> body)
+void RequestParser::create_request(HttpRequest &request)
+{
+	if (request.getStatus() == FINISHED)
+        return;
+    else if (request.getStatus() == READING_REQUEST_LINE)
+        reading_request_line(request);
+    else if (request.getStatus() == READ_HEADER)
+        read_header(request);
+    else if (request.getStatus() == READ_BODY && request.getType() == POST)
+        read_body(request);
+    else
+        read_body(request);
 }
