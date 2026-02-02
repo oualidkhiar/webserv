@@ -112,12 +112,7 @@ void ServerManager::addConnection(struct epoll_event& ev, int fd, socketsManager
 
 void ServerManager::modifyEvent(int state, int fd)
 {
-    if (state == EPOLLOUT) {
-        this->currentEv.events = EPOLLOUT;
-    }
-    else if (state == EPOLLIN) {
-        this->currentEv.events = EPOLLIN;
-    }
+    this->currentEv.events = state;
     epoll_ctl(this->epfd, EPOLL_CTL_MOD, fd, &currentEv);
 }
 

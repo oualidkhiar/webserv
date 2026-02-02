@@ -2,9 +2,8 @@
 #include "RequestParser.hpp"
 #include "Executor.hpp"
 #include <cstring>
-#include "handleCgi.hpp"
 
-TransactionManager::TransactionManager()
+TransactionManager::TransactionManager() : c(request, response)
 {
     responsed = false;
 }
@@ -74,7 +73,7 @@ void TransactionManager::appendToRequest(unsigned char *buffer, size_t size)
 void TransactionManager::executeRequest()
 {
     Executor execute;
-    execute.execute(request, response);
+    execute.execute(request, response, c);
 }
 
 void TransactionManager::readChunk()
@@ -106,8 +105,16 @@ std::pair<unsigned char *, size_t> TransactionManager::getResponse()
     if (getResponseState() == FRESH) {
         executeRequest();
     }
+    if (getResponseState() == WAITING_FOR_CGI)
+    {
+        c.isChildFinishExecute_Cgi();
+        if (getResponseState() == WAITING_FOR_CGI)
+        {
+            return std::make_pair((unsigned char *)"", 0); // if child proccess still running cgi don't do anything go handle the other clients
+        }
+    }
     if (response.getStatus() != 0) {
-        std::cout << "build the target response error here" << std::endl;
+        std::cout << "build the target response error here: response code = " << response.getStatus() << std::endl;
         this->response.setState(RESPONSE_FINISHED);
         std::pair<unsigned char *, size_t> p; // build response error to the client
         return p;

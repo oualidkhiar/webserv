@@ -1,9 +1,11 @@
 #include "handleCgi.hpp"
 #include <unistd.h>
 #include <sys/stat.h>
+#include <ctime>
+#include "Executor.hpp"
 
 Cgi::Cgi(HttpRequest &request, HttpResponse &resp) : request(request), 
-response(resp), responseCode(0), size(0)
+response(resp), responseCode(0), size(0), pid(-1)
 {
 	http_Protocol = "HTTP/1.1";
 }
@@ -139,6 +141,7 @@ std::pair<std::string, std::string> Cgi::exrtactKeyValue(std::string line, size_
 
 void Cgi::shiftFileOffset(size_t len)
 {
+	std::cout << len << std::endl;
 	char *buffer = new char[len];
 	if (!buffer)
 	{
@@ -308,27 +311,47 @@ void Cgi::redirectInOut()
 	// close(infile)
 }
 
-void Cgi::parentPs(pid_t pid)
+bool timeOut()
 {
-	int status;
-	waitpid(pid, &status, 0);
-	if (status != 0) {
-		this->responseCode = 500;
+	static time_t 	startTime;
+	time_t			currentTime;
+
+	if (startTime == 0) {
+		startTime = time(NULL);
+	}
+	currentTime = time(NULL) - startTime;
+	return currentTime >= MAX_TIME_RUN;
+}
+
+void Cgi::parentPs()
+{
+	int		status;
+	pid_t	result;
+	result = waitpid(pid, &status, WNOHANG);
+	if (result != 0) {
+		if (status != 0 || result == -1) {
+			this->responseCode = 500;
+			return ;
+		}
+		resetFileOffset();
+    	if (this->responseCode != 0) {return ;}
+		writeHeadersFromCgiOut();
+		if (response.getHeader(CONTENT_TYPE_HEADER) == "NOT_FOUND") {
+			response.AddHeader(CONTENT_TYPE_HEADER, DEFAULT_CONTENT_TYPE);
+		}
+		if (request.getType() == POST) {
+			// close(infile);
+			// remove it 
+		}
 		return ;
 	}
-	resetFileOffset();
-    if (this->responseCode != 0) {return ;}
-	writeHeadersFromCgiOut();
-	if (response.getHeader(CONTENT_TYPE_HEADER) == "NOT_FOUND") {
-		response.AddHeader(CONTENT_TYPE_HEADER, DEFAULT_CONTENT_TYPE);
-	}
-	if (request.getType() == POST) {
-		// close(infile);
-		// remove it 
+	if (timeOut()) {
+		kill(pid, SIGKILL);
+		this->responseCode = 504; // Gateway timeout error response 
 	}
 }
 
-void Cgi::childPs(pid_t pid, std::string path)
+void Cgi::childPs(std::string path)
 {
 	char *argv[2];
 	argv[0] = (char *)path.c_str();
@@ -347,11 +370,9 @@ void Cgi::executeCgi(void)
 {
 	std::string path = pathResolver();
 	isValideFile(path);
-	if (this->responseCode == 0) {
-		this->responseCode = 10;
+	if (this->responseCode != 0) {
 		return ;
 	}
-	pid_t pid;
 	
 	createResponse();
 	if (this->responseCode != 0) {
@@ -365,10 +386,23 @@ void Cgi::executeCgi(void)
 		this->responseCode = 500;
 	}
 	else if (pid == 0) {
-		childPs(pid, path);
+		childPs(path);
 	}
 	else {
-		parentPs(pid);
+		this->response.setState(WAITING_FOR_CGI);
+		usleep(1000); // sleep parent 1000 microsecond maybe child will finish fast
+		parentPs();
+	}
+}
+
+
+void Cgi::isChildFinishExecute_Cgi()
+{
+	this->parentPs();
+	if (this->responseCode != 0)
+	{
+		this->response.setStatus(this->responseCode);
+		this->response.setState(RESPONSE_FINISHED);
 	}
 }
 

@@ -2,12 +2,14 @@
 #include "HttpRequest.hpp"
 #include "HttpResponse.hpp"
 #include "enums.hpp"
+#include "handleCgi.hpp"
 
 class TransactionManager
 {
 private:
     HttpRequest request;
     HttpResponse response;
+    Cgi          c;
     bool responsed;
     void executeRequest();
     void readChunk();

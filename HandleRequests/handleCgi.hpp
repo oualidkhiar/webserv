@@ -1,6 +1,5 @@
 #pragma once
 #include "../includes/config.hpp"
-#include "Executor.hpp"
 #include "HttpRequest.hpp"
 #include "HttpResponse.hpp"
 #include <sys/types.h>
@@ -8,6 +7,7 @@
 #include <sstream>
 
 #define NAME_LEN 5
+#define MAX_TIME_RUN 5; // 5 SECOND 
 
 class Cgi {
 private:
@@ -19,6 +19,7 @@ private:
 	char			**envp;
 	int				responseCode;
 	struct stat		sb;
+	pid_t			pid;
 
 	void fill_char_array(char *c_str, std::string cppStr);
 	void convertFromVectorStringtToDoubleArray(std::vector<std::string> &env);
@@ -40,10 +41,8 @@ private:
 
 	void redirectOutOnly();
 	void redirectInOut();
-	void parentPs(pid_t pid);
-	void childPs(pid_t pid, std::string path);
-
-
+	void parentPs();
+	void childPs(std::string path);
 
 public:
 
@@ -51,6 +50,7 @@ public:
 	~Cgi();
 
 	void executeCgi(void);
+	void isChildFinishExecute_Cgi();
 	int getResponseCode();
 
 };

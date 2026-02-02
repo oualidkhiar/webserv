@@ -5,7 +5,7 @@
 #include <unistd.h>
 #include "MimeTypes.hpp"
 #include <algorithm>
-#include "handleCgi.hpp"
+
 Executor::Executor() {}
 
 void Executor::executeDelete(HttpRequest &request, HttpResponse &response)
@@ -58,7 +58,7 @@ bool Executor::isAllowedMethod(HttpRequest &request)
     return (true);
 }
 
-void Executor::execute(HttpRequest &request, HttpResponse &response)
+void Executor::execute(HttpRequest &request, HttpResponse &response, Cgi& c)
 {
     setLocation(request);
     if (!isAllowedMethod(request))
@@ -70,7 +70,6 @@ void Executor::execute(HttpRequest &request, HttpResponse &response)
         executeDelete(request, response);
     else if (request.getType() == GET) {
         // executeGet(request, response);
-        Cgi c(request, response);
         c.executeCgi();
         if (c.getResponseCode() != 0) {
             // response with spicifique error 

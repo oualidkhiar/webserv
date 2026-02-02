@@ -2,6 +2,9 @@
 #include "HttpRequest.hpp"
 #include "HttpResponse.hpp"
 #include "../includes/config.hpp"
+#include "handleCgi.hpp"
+
+
 class Executor
 {
 private:
@@ -19,6 +22,6 @@ private:
 
     public:
     Executor();
-    void execute(HttpRequest &request , HttpResponse & response);
+    void execute(HttpRequest &request , HttpResponse & response, Cgi& c);
 };
 

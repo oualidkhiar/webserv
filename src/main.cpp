@@ -35,6 +35,9 @@ int main(int ac, char **av)
     while (manager.getResponseState() != RESPONSE_FINISHED)
     {
         std::pair<unsigned char * , size_t> reponse  = manager.getResponse();
+        if (reponse.second == 0 || manager.getResponseState() == WAITING_FOR_CGI) {
+            continue ;
+        }
         write(1, reponse.first , reponse.second);
         delete [] reponse.first;
     }

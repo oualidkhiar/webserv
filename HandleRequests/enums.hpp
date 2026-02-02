@@ -22,6 +22,7 @@ enum ResponseState
 {
     FRESH,
     READING_LARGE_FILE,
+    WAITING_FOR_CGI,
     RESPONSE_FINISHED
 };
 

@@ -13,6 +13,7 @@ void ListeningSocket::handleEvent( void )
 
     addLen = sizeof(address);
     while (true) {
+
         int clientFd = accept(this->socketFd, (struct sockaddr *)(&address), &addLen);
         if (clientFd < 0) {
             if (errno == EAGAIN || errno == EWOULDBLOCK) {

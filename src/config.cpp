@@ -291,7 +291,7 @@ void config::buildServersConfig( void )
         this->error = true;
         return ;
     }
-	
+
     parser p(tok);
     p.startParser();
     if (p.checkErrorParse()) {

@@ -10,6 +10,7 @@
 class HttpResponse
 {
 private:
+
     std::string header;
     RequestType type;
     int status;
@@ -21,6 +22,7 @@ private:
     void createHeaders();
 
 public:
+
     HttpResponse();
     std::map<std::string, std::string>::const_iterator headersBegin();
     std::map<std::string, std::string>::const_iterator headersEnd();

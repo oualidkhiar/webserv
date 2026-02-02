@@ -1,24 +1,11 @@
 #include <stdio.h>
-
+#include <sys/time.h>
+#include <unistd.h>
 int main()
 {
-    printf("header: line\r\n");
-    printf("beader: line2\r\n");
-    printf("ceader: line2\r\n");
+    sleep(7);
+    printf("Content-Type: html\r\n");
+    printf("Content-Length: 29\r\n");
     printf("\r\n");
-    printf("body");
-    printf("body");
-    printf("body");
-    printf("body");
-    printf("body");
-    printf("body");
-    printf("body");
-    printf("body");
-    printf("body");
-    printf("body");
-    printf("body");
-    printf("body\r\n");
-    printf("body");
-    printf("body");
-    printf("body");
+    printf("hwllo im walid khiar welcome");
 }
