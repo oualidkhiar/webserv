@@ -14,7 +14,7 @@ private:
     std::string query_string;
 	std::string http_version;
     std::map<std::string, std::string> headers;
-    Body *body;
+    Body body;
 
     int status_code;
 	std::string	reason_phrase;
@@ -35,7 +35,7 @@ public:
     std::string getHeader(std::string key);
     enum status getStatus();
     int getResponseCode();
-    Body *getBody();
+    Body &getBody();
     int addHeader(std::string key, std::string value);
     size_t getAvailableData();
     struct serverConfig *getConfig();
@@ -52,18 +52,18 @@ public:
     std::vector<unsigned char> getChunk(size_t pos, size_t len);
 
     void clear();
-	void setHttpVersion(const std::string &http_version);
     void setLocation(struct location *location);
     void setPort(int port);
     void setConfig(struct serverConfig *config);
     void setAvailableData(size_t available_data);
-    void setBody(Body *body);
+    void setBody(Body &body);
     void setResponseCode(const int status_code, const std::string &reason_phrase);
     void setHeaders(std::map<std::string, std::string> headers);
-    void setUri(std::string uri);
+    bool setUri(const std::string &uri);
     void setType(enum RequestType type);
     void setStatus(enum status status);
     void setQuery(std::string query);
+	bool setHttpVersion(const std::string &http_version);
 	bool hasError();
     ~HttpRequest();
 

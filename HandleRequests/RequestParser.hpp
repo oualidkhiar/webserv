@@ -8,7 +8,7 @@ private:
     void reading_request_line(HttpRequest &request);
     void read_header(HttpRequest &request);
     void read_body(HttpRequest &request);
-    void set_request_type(HttpRequest &request, std::string token);
+    bool set_request_type(HttpRequest &request, std::string token);
     void read_body_chunked(HttpRequest &request);
     bool get_chunked(HttpRequest & request,int size);
     void read_body_fixed(HttpRequest &request);

@@ -8,7 +8,6 @@ HttpRequest ::HttpRequest()
     status = READING_REQUEST_LINE;
     status_code = 200;
     reason_phrase = "OK";
-    body = NULL;
     available_data = 0;
     location = NULL;
 }
@@ -19,7 +18,7 @@ std::string HttpRequest::getUri() { return (this->uri); }
 std::string HttpRequest::getHttpVersion() { return (this->http_version); }
 std::map<std::string, std::string> HttpRequest::getHeaders() { return (this->headers); }
 enum status HttpRequest::getStatus() { return (this->status); }
-Body *HttpRequest::getBody() { return (this->body); }
+Body &HttpRequest::getBody() { return (this->body); }
 size_t HttpRequest::getAvailableData() { return (this->available_data); }
 struct serverConfig *HttpRequest::getConfig() { return (this->config); }
 struct location *HttpRequest::getLocation() { return (this->location); }
@@ -30,7 +29,7 @@ size_t HttpRequest::requestSize() { return (request.size()); }
 void HttpRequest::setPort(int port) { this->port = port; }
 void HttpRequest::setConfig(struct serverConfig *config) { this->config = config; }
 void HttpRequest::setAvailableData(size_t amount) { this->available_data += amount; };
-void HttpRequest::setBody(Body *body) { this->body = body; }
+void HttpRequest::setBody(Body &body) { this->body = body; }
 void HttpRequest::setStatus(enum status status) { this->status = status; }
 void HttpRequest::setHeaders(std::map<std::string, std::string> headers) { this->headers = headers; }
 void HttpRequest::setType(enum RequestType type) { this->type = type; }
@@ -41,14 +40,15 @@ std::string HttpRequest::getQuery( void ) { return this->query_string;}
 bool HttpRequest::hasError() { return (this->status == ERROR); }
 
 
-void HttpRequest::setUri(std::string uri)
+bool HttpRequest::setUri(const std::string &uri)
 {
 	if (uri.empty() || uri[0] != '/')
     {
         this->setResponseCode(400, "Bad Request");
-        return;
+        return false;
     }
 	this->uri = uri;
+	return true;
 }
 
 void HttpRequest::setResponseCode(const int status_code, const std::string &reason_phrase)
@@ -59,13 +59,13 @@ void HttpRequest::setResponseCode(const int status_code, const std::string &reas
 		this->status = ERROR;
 }
 
-// all this function is added by saad
-void HttpRequest::setHttpVersion(const std::string &http_version)
+// this function is added by saad
+bool HttpRequest::setHttpVersion(const std::string &http_version)
 {
 	if (http_version == "HTTP/1.1" || http_version == "HTTP/1.0")
 	{
 		this->http_version = http_version;
-		return ;
+		return true;
 	}
 
 	if (http_version.size() != 8 || http_version.compare(0, 5, "HTTP/") != 0 ||
@@ -73,10 +73,12 @@ void HttpRequest::setHttpVersion(const std::string &http_version)
 	std::isdigit(http_version[7]) == false)
 	{
 		this->setResponseCode(400, "Bad Request");
+		return false;
 	}
 	else
 	{
 		this->setResponseCode(505, "HTTP Version Not Supported");
+		return false;
 	}
 }
 
@@ -126,10 +128,7 @@ std::vector<unsigned char> HttpRequest::getChunk(size_t start, size_t len)
 }
 
 HttpRequest ::~HttpRequest()
-{
-    if (body != NULL)
-        delete body;
-}
+{}
 
 // debuging funcs
 
@@ -141,7 +140,7 @@ void HttpRequest::printHeaders()
 
 void HttpRequest::printBody()
 {
-    printVector(this->body->getBody());
+    printVector(this->body.getBody());
 }
 
 void HttpRequest::printRequest()

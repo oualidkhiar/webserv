@@ -2,24 +2,53 @@
 #include "HttpRequest.hpp"
 #include <cstring>
 
-Body::Body() : to_read(0) {}
+Body::Body() : type(EMPTY), to_read(0) {}
 
 void Body::setToRead(size_t to_read) { this->to_read = to_read; }
-void Body::setType(enum ReadingType type) { this->type = type; }
 void Body::setBody(std::vector<unsigned char> chunk) { this->body = chunk; }
+void Body::setType(enum ReadingType type) { this->type = type;}
 
 std::vector<unsigned char> Body::getBody() { return (this->body); }
 enum ReadingType Body::getType() { return (this->type); }
 size_t Body::getToRead() { return (this->to_read); }
 
-enum ReadingType Body::discoverReadingType(HttpRequest &request)
+enum ReadingType Body::discoverReadingType(HttpRequest &request) 
 {
-    if (request.getHeader(CHUNKED_HEADER).empty() == false)
-        setType(CHUNKED);
-    else if (request.getHeader(FIXED_LENGTH_HEADER).empty() == false)
-        setType(FIXED_LENGTH);
-    return (type);
+    bool has_chunked = !request.getHeader(CHUNKED_HEADER).empty();
+    bool has_content_length = !request.getHeader(FIXED_LENGTH_HEADER).empty();
+    
+    //if both are present, return EMPTY (security: request smuggling)
+    if (has_chunked && has_content_length)
+    {
+        request.setResponseCode(400, "Bad Request");
+        this->type = EMPTY;
+        return EMPTY;
+    }
+    
+    if (has_chunked)
+	{
+		setType(CHUNKED);
+        return CHUNKED;
+	}
+    if (has_content_length)
+	{
+		setType(FIXED_LENGTH);
+		return FIXED_LENGTH;
+	}
+    
+    this->type = EMPTY;
+    return EMPTY;  //no body is present
 }
+
+
+// enum ReadingType Body::discoverReadingType(HttpRequest &request)
+// {
+//     if (request.getHeader(CHUNKED_HEADER).empty() == false)
+//         setType(CHUNKED);
+//     else if (request.getHeader(FIXED_LENGTH_HEADER).empty() == false)
+//         setType(FIXED_LENGTH);
+//     return (type);
+// }
 
 void Body::appendChunkToBody(std::vector<unsigned char> chunk)
 {
@@ -67,5 +96,4 @@ void Body::printBody()
     std::cout << std::endl;
 }
 
-Body::~Body() {
-}
+Body::~Body() {}

@@ -24,7 +24,7 @@ std::pair<std::string, std::string> StringManip::split_two(std::string line, cha
     if (pos != std::string::npos)
     {
         // pair.first = StringManip::strtrim(line.substr(0, pos));
-        pair.first = line.substr(0, pos);
+        pair.first = line.substr(0, pos); // no trim.
         pair.second = StringManip::strtrim(line.substr(pos + 1));
     }
     return pair;

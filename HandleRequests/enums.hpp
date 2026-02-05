@@ -1,6 +1,6 @@
 #pragma once
-#define CHUNKED_HEADER "Transfer-Encoding"
-#define FIXED_LENGTH_HEADER "Content-Length"
+#define CHUNKED_HEADER "transfer-encoding"
+#define FIXED_LENGTH_HEADER "content-length"
 #define MAX_FILE_READ 10
 
 enum RequestType
@@ -29,7 +29,8 @@ enum ResponseState
 enum ReadingType 
 {
     CHUNKED,
-    FIXED_LENGTH
+    FIXED_LENGTH,
+	EMPTY
 };
 
 
