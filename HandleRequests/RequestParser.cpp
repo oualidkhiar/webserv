@@ -61,7 +61,7 @@ void RequestParser::read_body_chunked(HttpRequest &request)
 
     std::string line = request.extractString(0, pos);
     size_t i = 0;
-    while (i < line.size() && std::isxdigit(static_cast<unsigned char>(line[i])))
+    while (i < line.size() && std::isxdigit((line[i])))
         i++;
     std::string hex_part = line.substr(0, i);
     if (hex_part.empty())
@@ -94,19 +94,19 @@ void RequestParser::read_body_chunked(HttpRequest &request)
 void RequestParser::read_body_fixed(HttpRequest &request)
 {
     Body	&body = request.getBody();
-    size_t	content_length = body.getToRead();
+    size_t	to_read = body.getToRead();
     size_t	available_data = request.requestSize();
 
-    if (content_length >= available_data)
+    if (to_read >= available_data)
     {
         body.appendChunkToBody(request.getChunk(0, available_data));
         body.decrementToRead(available_data);
 	    request.clear();
     }
-    else if (available_data > content_length)
+    else
     {
-        body.appendChunkToBody(request.getChunk(0, content_length));
-        request.eraseFromRequest(0, content_length);
+        body.appendChunkToBody(request.getChunk(0, to_read));
+        request.eraseFromRequest(0, to_read);
         body.setToRead(0);
     }
     if (body.getToRead() == 0)
@@ -128,13 +128,8 @@ bool RequestParser::setBufferFixed(HttpRequest &request, Body *body)
 
 void RequestParser::read_body(HttpRequest &request)
 {
-
 	Body &body = request.getBody();
-	if (body.getType() == EMPTY)
-	{
-		request.setStatus(FINISHED);
-		return;
-	}
+
 	
 	if (body.getType() == FIXED_LENGTH)
 	{
@@ -163,7 +158,6 @@ void RequestParser::read_header(HttpRequest &request)
     pos = findEndOfHeader(request);
     if (pos == std::string::npos)
         return;
-
     std::string headers_string = request.extractString(0, pos);
     request.eraseFromRequest(0, pos + 4);
     std::string line;
@@ -180,6 +174,13 @@ void RequestParser::read_header(HttpRequest &request)
         request.addHeader(StringManip::toLowerCase(header.first), header.second);
         headers_string.erase(0, line.length() + 1);
     }
+	// after reading headers, seting the body type 
+	//if the body is empty, set the status to finished
+	if (request.getHttpVersion() == HTTP_1_1 && request.getHeader("host").empty())
+	{
+		request.setResponseCode(400, "Bad Request");
+		return;
+	}
 	if (request.getBody().discoverReadingType(request) == EMPTY)
 	{
 		request.setStatus(FINISHED);
@@ -196,12 +197,18 @@ void RequestParser::read_header(HttpRequest &request)
 
 bool RequestParser::set_request_type(HttpRequest &request, std::string token)
 {
+
     if (token.compare("GET") == 0)
         request.setType(GET);
     else if (token.compare("POST") == 0)
         request.setType(POST);
     else if (token.compare("DELETE") == 0)
         request.setType(DELETE);
+	else if (!StringManip::isAllUppercase(token))
+	{
+		request.setResponseCode(400, "Bad Request");
+		return false;
+	}
     else
 	{
 		request.setResponseCode(405, "Method Not Allowed");
@@ -233,7 +240,12 @@ void RequestParser::reading_request_line(HttpRequest &request)
 
         else if (token_numbers == 2)
 		{
-            size_t query_pos = token.find('?');
+			if (token.size() > BUFFER_SIZE - 18) //18 is the size of largest method (DELETE) +  (space) + 2 (HTTP/1.1) + 2 (CRLF)
+			{
+				request.setResponseCode(414, "URI Too Long");
+				return;
+			}
+			size_t query_pos = token.find('?');
             std::string qStr;
             if (query_pos != std::string::npos) {
                 qStr = token.substr(query_pos + 1, token.length() - query_pos);

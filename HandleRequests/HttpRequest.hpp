@@ -9,13 +9,16 @@ class HttpRequest
 
 {
 private:
+    std::vector<unsigned char> request;
+
     enum RequestType type;
     std::string uri;
     std::string query_string;
-	std::string http_version;
+	enum HttpVersion http_version;
+
     std::map<std::string, std::string> headers;
     Body body;
-
+	enum CGIType cgi_type;
     int status_code;
 	std::string	reason_phrase;
 
@@ -24,13 +27,14 @@ private:
     struct serverConfig *config;
     int port;
     struct location *location;
-    std::vector<unsigned char> request;
 
 public:
     HttpRequest();
+    enum CGIType getCGIType();
+    void setCGIType(enum CGIType cgi_type);
     enum RequestType getType();
     std::string getUri();
-    std::string getHttpVersion();
+    enum HttpVersion getHttpVersion();
     std::map<std::string, std::string> getHeaders();
     std::string getHeader(std::string key);
     enum status getStatus();
@@ -46,7 +50,7 @@ public:
     unsigned char getCharFromRequest(int index);
     size_t requestSize();
     std::string getQuery( void );
-
+    void checkCGI(const std::string &uri);
     void eraseFromRequest(size_t start, size_t len);
     std::string extractString(size_t pos, size_t len);
     std::vector<unsigned char> getChunk(size_t pos, size_t len);

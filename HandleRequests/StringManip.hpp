@@ -9,7 +9,7 @@ public:
     static std::pair<std::string , std::string> split_two (std::string string , char delimiter);
     static std::string strtrim(const std :: string string);
     static std::string toLowerCase(const std::string string);
-
+    static bool isAllUppercase(const std::string &string);
 };
 
 

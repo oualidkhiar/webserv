@@ -2,6 +2,7 @@
 #define CHUNKED_HEADER "transfer-encoding"
 #define FIXED_LENGTH_HEADER "content-length"
 #define MAX_FILE_READ 10
+#define BUFFER_SIZE 8192
 
 enum RequestType
 {
@@ -33,7 +34,19 @@ enum ReadingType
 	EMPTY
 };
 
+enum CGIType
+{
+	NO_CGI,
+	PHP_CGI,
+	PYTHON_CGI,
+	SHELL_CGI
+};
 
+enum HttpVersion
+{
+	HTTP_1_0,
+	HTTP_1_1
+};
 
 struct getInfos 
 {

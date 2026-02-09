@@ -10,12 +10,13 @@ HttpRequest ::HttpRequest()
     reason_phrase = "OK";
     available_data = 0;
     location = NULL;
+	cgi_type = NO_CGI;
 }
 
 int HttpRequest::getPort() { return (this->port); }
 enum RequestType HttpRequest::getType() { return (this->type); };
 std::string HttpRequest::getUri() { return (this->uri); }
-std::string HttpRequest::getHttpVersion() { return (this->http_version); }
+enum HttpVersion HttpRequest::getHttpVersion() { return (this->http_version); }
 std::map<std::string, std::string> HttpRequest::getHeaders() { return (this->headers); }
 enum status HttpRequest::getStatus() { return (this->status); }
 Body &HttpRequest::getBody() { return (this->body); }
@@ -33,20 +34,61 @@ void HttpRequest::setBody(Body &body) { this->body = body; }
 void HttpRequest::setStatus(enum status status) { this->status = status; }
 void HttpRequest::setHeaders(std::map<std::string, std::string> headers) { this->headers = headers; }
 void HttpRequest::setType(enum RequestType type) { this->type = type; }
+void HttpRequest::setCGIType(enum CGIType cgi_type) { this->cgi_type = cgi_type; }
 void HttpRequest::setLocation(struct location *location) { this->location = location; }
 void HttpRequest::clear() { request.clear(); }
 void HttpRequest::setQuery(std::string query) {this->query_string = query;}
 std::string HttpRequest::getQuery( void ) { return this->query_string;}
 bool HttpRequest::hasError() { return (this->status == ERROR); }
 
+void HttpRequest::checkCGI(const std::string &uri)
+{
+	size_t dot_pos = uri.find_last_of('.');
+	if (dot_pos == std::string::npos)
+	{
+		this->setCGIType(NO_CGI);
+		return;
+	}
+
+	std::string extension = uri.substr(dot_pos);
+
+	if (this->location != NULL && !this->location->cgi_extension.empty())
+	{
+		for (size_t i = 0; i < this->location->cgi_extension.size(); i++)
+		{
+			if (this->location->cgi_extension[i] == extension)
+			{
+				if (extension == ".php")
+					this->setCGIType(PHP_CGI);
+				else if (extension == ".py")
+					this->setCGIType(PYTHON_CGI);
+				else if (extension == ".sh")
+					this->setCGIType(SHELL_CGI);
+				else
+					this->setCGIType(NO_CGI);
+				return;
+			}
+		}
+	}
+	this->setCGIType(NO_CGI);
+}
 
 bool HttpRequest::setUri(const std::string &uri)
 {
-	if (uri.empty() || uri[0] != '/')
-    {
-        this->setResponseCode(400, "Bad Request");
-        return false;
-    }
+	if (uri.empty())
+	{
+		this->setResponseCode(400, "Bad Request");
+		return false;
+	}
+
+	bool is_origin = (uri[0] == '/');
+	bool is_asterisk = (uri == "*");
+	if (!is_origin && !is_asterisk)
+	{
+		this->setResponseCode(400, "Bad Request");
+		return false;
+	}
+	checkCGI(uri);	
 	this->uri = uri;
 	return true;
 }
@@ -62,9 +104,14 @@ void HttpRequest::setResponseCode(const int status_code, const std::string &reas
 // this function is added by saad
 bool HttpRequest::setHttpVersion(const std::string &http_version)
 {
-	if (http_version == "HTTP/1.1" || http_version == "HTTP/1.0")
+	if (http_version == "HTTP/1.1")
 	{
-		this->http_version = http_version;
+		this->http_version = HTTP_1_1;
+		return true;
+	}
+	if (http_version == "HTTP/1.0")
+	{
+		this->http_version = HTTP_1_0;
 		return true;
 	}
 

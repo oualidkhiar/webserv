@@ -152,3 +152,11 @@ void printVector(std::vector<unsigned char> vec)
         std::cout << vec[i++];
     std::cout << std::endl;
 }
+
+bool StringManip::isAllUppercase(const std::string &string)
+{
+	for (size_t i = 0; i < string.size(); i++)
+		if (std::islower(string[i]))
+			return false;
+	return true;
+}

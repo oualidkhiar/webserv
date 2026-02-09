@@ -1,5 +1,6 @@
 #include <cstddef>
 #include <map>
+#include <string>
 
 class ErrorResponse
 {
