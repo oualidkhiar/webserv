@@ -65,7 +65,7 @@ void ServerManager::StartAllServers()
             }
             int flags = fcntl(sockFd, F_GETFL, 0);
             fcntl(sockFd, F_SETFL, flags | O_NONBLOCK);
-            socketsManager *sock = new ListeningSocket(serverconf, sockFd, this);
+            socketsManager *sock = new ListeningSocket(serverconf, sockFd);
             ev.events = EPOLLIN;
             ev.data.ptr = sock;
             if (epoll_ctl(this->epfd, EPOLL_CTL_ADD, sockFd, &ev) < 0) {
@@ -88,16 +88,50 @@ void ServerManager::TrackSocketsEvent()
     {
         nfds = epoll_wait(epfd, events, MAX_EVENTS, -1);
         for (int i = 0; i < nfds; i++) {
-            this->currentEv = events[i];
             socketsManager *sock = (socketsManager *)events[i].data.ptr;
             sock->handleEvent();
+            switch (sock->getAction())
+            {
+                case ADD_CONNECTIONS:
+                {
+                    std::vector<socketsManager *>& clients = sock->getNewClient();
+                    for (size_t j = 0; j < clients.size(); j++) {
+                        this->addConnection(clients[j]);
+                    }
+                    sock->clearVector();
+                    break;
+                }
+
+                case MODIFY_TO_WRITE:
+                {
+                    this->modifyEvent(EPOLLOUT, sock->getFd(), events[i]);
+                    break;
+                }
+
+                case MODIFY_TO_READ:
+                {
+                    this->modifyEvent(EPOLLIN, sock->getFd(), events[i]);
+                    break;
+                }
+
+                case CLOSE_CONNECTION:
+                {
+                    this->removeConnection(sock->getFd());
+                    continue;
+                }
+
+                default:
+                    break;
+            }
+            sock->setActionNone();
             if (this->error)
                 break ;
         }
     }
 }
 
-void ServerManager::removeConnection(int fd) {
+void ServerManager::removeConnection(int fd)
+{
     socketsManager *sock = socketHandler[fd];
     epoll_ctl(epfd, EPOLL_CTL_DEL, fd, NULL);
     close(fd);
@@ -105,15 +139,21 @@ void ServerManager::removeConnection(int fd) {
     socketHandler.erase(fd);
 }
 
-void ServerManager::addConnection(struct epoll_event& ev, int fd, socketsManager *sock) {
+void ServerManager::addConnection(socketsManager *client)
+{
+    struct epoll_event  ev;
+    struct sockaddr_in     address;
+    int fd = client->getFd();
+    ev.events = EPOLLIN;
+    ev.data.ptr = client;
     epoll_ctl(this->epfd, EPOLL_CTL_ADD, fd, &ev);
-    this->socketHandler.insert(std::make_pair(fd, sock));
+    this->socketHandler.insert(std::make_pair(fd, client));
 }
 
-void ServerManager::modifyEvent(int state, int fd)
+void ServerManager::modifyEvent(int state, int fd, struct epoll_event& ev)
 {
-    this->currentEv.events = state;
-    epoll_ctl(this->epfd, EPOLL_CTL_MOD, fd, &currentEv);
+    ev.events = state;
+    epoll_ctl(this->epfd, EPOLL_CTL_MOD, fd, &ev);
 }
 
 void ServerManager::setError() {

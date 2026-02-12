@@ -2,28 +2,30 @@
 #define CLIENTSOCKET_HPP
 
 #include "./socketsManager.hpp"
+#include "../HandleRequests/TransactionManager.hpp"
 
+#define MAX_BUFFER_SIZE 8192
 
 enum ClientState {
     READING_REQUEST,
-    PROCESSING,
     WRITING_RESPONSE,
-    CLOSED
+    ERROR_RESP
 };
 
 class ClientSocket: public socketsManager {
 private:
 
-    ClientState     state;
-    char	        *ReceiveBuffer;
-    char	        *ResponseBuffer;
+    ClientState         state;
+    TransactionManager  *transactionMgr;
 
     void readingAndProcessingRequest( void );
-    void continueWriting(std::string& res);
+    void continueWriting();
+    void errorResponse( void );
 
 public:
 
-	ClientSocket(int fd ,serverConfig *conf, ServerManager *ptr);
+	ClientSocket(int fd ,serverConfig *conf);
+    ~ClientSocket();
     void    handleEvent();
 
 };

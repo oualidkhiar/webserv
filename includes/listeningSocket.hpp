@@ -9,7 +9,7 @@
 class ListeningSocket: public socketsManager {
 public:
 
-    ListeningSocket(serverConfig *conf, int fd, ServerManager *ptr);
+    ListeningSocket(serverConfig *conf, int fd);
     ~ListeningSocket();
 
     void handleEvent();

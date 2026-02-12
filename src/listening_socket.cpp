@@ -1,13 +1,12 @@
 #include "../includes/listeningSocket.hpp"
 #include "../includes/server_manager.hpp"
 
-ListeningSocket::ListeningSocket(serverConfig *conf, int fd, ServerManager *ptr): socketsManager(conf, ptr, fd) {}
+ListeningSocket::ListeningSocket(serverConfig *conf, int fd): socketsManager(conf, fd) {}
 
 ListeningSocket::~ListeningSocket() {}
 
 void ListeningSocket::handleEvent( void )
 {
-    struct epoll_event  ev;
     struct sockaddr_in     address;
     socklen_t           addLen;
 
@@ -25,9 +24,8 @@ void ListeningSocket::handleEvent( void )
             }
         }
         fcntl(clientFd, F_SETFL, O_NONBLOCK);
-        socketsManager *sock = new ClientSocket(clientFd, this->serverConf, this->ptr);
-        ev.events = EPOLLIN;
-        ev.data.ptr = sock;
-        this->ptr->addConnection(ev, clientFd, sock);
+        socketsManager *sock = new ClientSocket(clientFd, this->serverConf);
+        this->newClientFds.push_back(sock);
     }
+    this->action = ADD_CONNECTIONS;
 }

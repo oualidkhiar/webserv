@@ -38,7 +38,7 @@ std::pair<unsigned char *, size_t> ErrorResponse::getErrorResponse(int code)
             file.close();
         }
     }
-    
+
     size_t size = content.size();
     unsigned char *response = new unsigned char[size]; // need to freethis.
     if (size > 0)

@@ -63,6 +63,11 @@ ResponseState TransactionManager::getResponseState()
     return (this->response.getState());
 }
 
+int TransactionManager::getResponseCode()
+{
+    return (this->response.getStatus());
+}
+
 void TransactionManager::appendToRequest(unsigned char *buffer, size_t size)
 {
     RequestParser parser;

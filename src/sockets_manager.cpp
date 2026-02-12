@@ -1,6 +1,6 @@
 #include "../includes/socketsManager.hpp"
 
-socketsManager::socketsManager(serverConfig *conf, ServerManager *ptr, int fd): 
-serverConf(conf), ptr(ptr), socketFd(fd) {}
+socketsManager::socketsManager(serverConfig *conf, int fd): 
+serverConf(conf), socketFd(fd) {}
 
 socketsManager::~socketsManager() {}

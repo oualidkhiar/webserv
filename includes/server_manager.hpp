@@ -14,7 +14,6 @@ private:
     config&                                     conf;
     int                                         epfd;
     bool                                        error;
-    struct epoll_event                          currentEv;
 
     int ListeningSocketStart(int port);
 
@@ -26,9 +25,9 @@ public:
     void StartAllServers();
     void TrackSocketsEvent();
 
-    void addConnection(struct epoll_event& ev, int fd, socketsManager *sock);
+    void addConnection(socketsManager * client);
     void removeConnection(int fd);
-    void modifyEvent(int state, int fd);
+    void modifyEvent(int state, int fd, struct epoll_event& ev);
 
     void setError();
     bool checkError( void );

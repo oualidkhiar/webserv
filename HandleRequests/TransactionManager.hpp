@@ -7,10 +7,11 @@
 class TransactionManager
 {
 private:
-    HttpRequest request;
-    HttpResponse response;
-    Cgi          c;
-    bool responsed;
+    HttpRequest     request;
+    HttpResponse    response;
+    Cgi             c;
+    bool            responsed;
+
     void executeRequest();
     void readChunk();
     char *getRequestBuffer();
@@ -27,6 +28,7 @@ public:
     ResponseState getResponseState();
     void appendToRequest(unsigned char *buffer, size_t size);
     std::pair<unsigned char *, size_t> getResponse();
+    int getResponseCode();
     // BOOL IS_KEEP_ALIVE
     // SET CONFIG
 };
