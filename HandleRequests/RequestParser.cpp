@@ -6,6 +6,7 @@
 #include <cctype>
 
 RequestParser ::RequestParser() {}
+
 /* ************************************************************************** */
 /*                                                                            */
 /*                           UTILS FUNCTIONS 					  			  */

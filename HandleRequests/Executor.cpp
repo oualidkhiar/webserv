@@ -5,16 +5,192 @@
 #include <unistd.h>
 #include "MimeTypes.hpp"
 #include <algorithm>
+#include <fstream>
+#include <sstream>
+#include <fcntl.h>
 
 Executor::Executor() {}
 
 void Executor::executeDelete(HttpRequest &request, HttpResponse &response)
 {
-    (void)request;
+    std::string path = pathResolver(request);
+    struct stat sb;
+    if (stat(path.c_str(), &sb) != 0)
     {
-        // definition here
+        response.setStatus(HP_NOT_FOUND);
+        return;
+    }
+    if (access(path.c_str(), W_OK) != 0)
+    {
+        response.setStatus(HP_FORBIDDEN);
+        return;
+    }
+    if (unlink(path.c_str()) != 0)
+    {
+        response.setStatus(HP_INTERNAL_SERVER_ERROR);
+        return;
+    }
+    // 0 is for success yak ? 
+    response.setStatus(0);
+
+    // here we sure thats request executed successfully so we can set the response header and body
+    response.AddHeader("Content-Length", "0\r\n");
+    response.AddHeader("Connection", "Closed\r\n");
+    response.AddHeader("server", "TestServer/1.1\r\n");
+    response.setState(RESPONSE_FINISHED);
+}
+
+// added by saad -------------------------------------------------------------
+std::string Executor::extractBoundary(const std::string &contentType)
+{
+    size_t pos = contentType.find("boundary=");
+    if (pos == std::string::npos)
+        return "";
+    
+    std::string boundary = contentType.substr(pos + 9);
+    size_t end = boundary.find_first_of("; \t\r\n");
+    if (end != std::string::npos)
+        boundary = boundary.substr(0, end);
+    
+    return boundary;
+}
+
+std::string Executor::extractHeaderValue(const std::string &headers, const std::string &key)
+{
+    size_t pos = headers.find(key);
+    if (pos == std::string::npos)
+        return "";
+    
+    pos = headers.find("\"", pos);
+    if (pos == std::string::npos)
+        return "";
+    
+    size_t end = headers.find("\"", pos + 1);
+    if (end == std::string::npos)
+        return "";
+    
+    return headers.substr(pos + 1, end - pos - 1);
+}
+
+bool Executor::saveUploadedFile(const std::string &uploadDir, const std::string &filename, 
+                                const std::vector<unsigned char> &content)
+{
+    std::string fullPath = uploadDir;
+    if (!fullPath.empty() && fullPath[fullPath.length() - 1] != '/')
+        fullPath += "/";
+    fullPath += filename;
+    
+    std::ofstream file(fullPath.c_str(), std::ios::binary | std::ios::trunc);
+    if (!file.is_open())
+        return false;
+    
+    file.write(reinterpret_cast<const char*>(&content[0]), content.size());
+    file.close();
+    
+    return true;
+}
+
+void Executor::parseMultipartBody(HttpRequest &request, HttpResponse &response, const std::string &boundary)
+{
+    const std::vector<unsigned char> &bodyData = request.getBody().getBody();
+    std::string bodyStr(bodyData.begin(), bodyData.end());
+    
+    std::string fullBoundary = "--" + boundary;
+    std::string endBoundary = "--" + boundary + "--";
+    
+    size_t pos = 0;
+    int filesUploaded = 0;
+    
+    while ((pos = bodyStr.find(fullBoundary, pos)) != std::string::npos)
+    {
+        pos += fullBoundary.length();
+        
+        if (bodyStr.substr(pos, 2) == "--")
+            break;
+        
+        if (bodyStr.substr(pos, 2) == "\r\n")
+            pos += 2;
+        
+        size_t nextBoundary = bodyStr.find(fullBoundary, pos);
+        if (nextBoundary == std::string::npos)
+            break;
+        
+        std::string part = bodyStr.substr(pos, nextBoundary - pos);
+        
+        size_t headerEnd = part.find("\r\n\r\n");
+        if (headerEnd == std::string::npos)
+        {
+            pos = nextBoundary;
+            continue;
+        }
+        
+        std::string headers = part.substr(0, headerEnd);
+        std::string content = part.substr(headerEnd + 4);
+        
+        if (content.size() >= 2 && content.substr(content.size() - 2) == "\r\n")
+            content = content.substr(0, content.size() - 2);
+        
+        if (headers.find("filename=") != std::string::npos)
+        {
+            std::string filename = extractHeaderValue(headers, "filename=");
+            
+            if (!filename.empty())
+            {
+                //read upload directory from config file, if not set, use default "uploads"
+                std::string uploadDir = request.getLocation()->upload_store;
+                if (uploadDir.empty())
+                    uploadDir = "temp";
+                
+                std::vector<unsigned char> fileContent(content.begin(), content.end());
+                
+                if (saveUploadedFile(uploadDir, filename, fileContent))
+                    filesUploaded++;
+                else
+                {
+                    response.setStatus(HP_INTERNAL_SERVER_ERROR);
+                    return;
+                }
+            }
+        }
+        
+        pos = nextBoundary;
+    }
+    
+    if (filesUploaded > 0)
+        response.setStatus(HP_CREATED);
+    else
+        response.setStatus(HP_OK);
+}
+
+void Executor::executePost(HttpRequest &request, HttpResponse &response)
+{
+    std::string contentType = request.getHeader("Content-Type");
+    
+    if (contentType.find("multipart/form-data") != std::string::npos)
+    {
+        std::string boundary = extractBoundary(contentType);
+        
+        if (boundary.empty())
+        {
+            response.setStatus(HP_BAD_REQUEST);
+            return;
+        }
+        
+        //the location must exist and have upload_store configured in the config file
+        if (request.getLocation() == NULL || request.getLocation()->upload_store.empty())
+        {
+            response.setStatus(HP_FORBIDDEN);
+            return;
+        }
+        
+        parseMultipartBody(request, response, boundary);
+    }
+    else
+    {
+        response.setStatus(HP_OK);
     }
 }
+// added by saad -------------------------------------------------------------
 
 std::pair<int, FtFile *> Executor::extractFileInfos(const char *path)
 {
@@ -68,6 +244,8 @@ void Executor::execute(HttpRequest &request, HttpResponse &response, Cgi& c)
     }
     if (request.getType() == DELETE)
         executeDelete(request, response);
+    else if (request.getType() == POST)
+        executePost(request, response);
     else if (request.getType() == GET) {
         // executeGet(request, response);
         c.executeCgi();

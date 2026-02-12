@@ -14,6 +14,7 @@ struct location {
 	bool											autoindex;
 	std::vector<std::string>						cgi_extension;
 	std::string										cgi_pass;
+	std::string										upload_store;
 	// std::pair<int, std::string>						redirect_return; 
 
 	location(): clientMaxSizeBody(0), autoindex(false) {}
