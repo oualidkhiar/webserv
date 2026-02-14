@@ -174,9 +174,9 @@ std::vector<unsigned char> HttpRequest::getChunk(size_t start, size_t len)
     return (chunk);
 }
 
+
 HttpRequest ::~HttpRequest()
 {}
-
 // debuging funcs
 
 void HttpRequest::printHeaders()

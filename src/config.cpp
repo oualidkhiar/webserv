@@ -265,7 +265,6 @@ void config::startEvaluation(parser& p)
 				std::cout << "Error: virtual host not implemented, dont use the same port number more then one server" << std::endl;
 				this->error = true;
 				clearServer(server);
-				std::cout << "here\n";
 				break ;
 			}
 			else {

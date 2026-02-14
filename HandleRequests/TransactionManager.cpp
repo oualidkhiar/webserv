@@ -1,3 +1,4 @@
+#include "../HandleRequests/ErrorResponse.hpp"
 #include "TransactionManager.hpp"
 #include "RequestParser.hpp"
 #include "Executor.hpp"
@@ -119,9 +120,8 @@ std::pair<unsigned char *, size_t> TransactionManager::getResponse()
         }
     }
     if (response.getStatus() != 0) {
-        std::cout << "build the target response error here: response code = " << response.getStatus() << std::endl;
         this->response.setState(RESPONSE_FINISHED);
-        std::pair<unsigned char *, size_t> p; // build response error to the client
+        std::pair<unsigned char *, size_t> p = ErrorResponse::getErrorResponse(response.getStatus());
         return p;
     }
     else if (getResponseState() == READING_LARGE_FILE) {

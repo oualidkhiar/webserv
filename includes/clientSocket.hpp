@@ -19,8 +19,8 @@ private:
     TransactionManager  *transactionMgr;
 
     void readingAndProcessingRequest( void );
-    void continueWriting();
-    void errorResponse( void );
+    void sendingResponse();
+    void ErrorParseRequest( void );
 
 public:
 

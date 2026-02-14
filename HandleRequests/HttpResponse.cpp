@@ -24,7 +24,10 @@ void HttpResponse::setFile(FtFile *file)
 void HttpResponse::createHeaderLine()
 {
     std::ostringstream os;
-    os << this->status;
+    if (this->status == 0)
+        os << 200;
+    else
+        os << this->status;
     this->header = "HTTP/1.1 " + os.str() + " " + getReasonPhrase(this->status) + "\r\n";
 }
 
@@ -43,7 +46,7 @@ void HttpResponse::createHeaders()
 {
     std::ostringstream os;
     os << this->file->getFileSize();
-    this->headers.insert(std::make_pair("Connection", "Closed\r\n"));
+    this->headers.insert(std::make_pair("Connection", "close\r\n"));
     this->headers.insert(std::make_pair("server", "TestServer/1.1\r\n"));
     this->headers.insert(std::make_pair(FIXED_LENGTH_HEADER, os.str() + "\r\n"));
 }

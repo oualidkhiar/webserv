@@ -17,6 +17,7 @@ void MimeTypes::init()
     types["gif"] = "image/gif\r\n";
     types["json"] = "application/json\r\n";
     types["txt"] = "text/plain\r\n";
+    types["mp4"] = "video/mp4\r\n";
 }
 std::string MimeTypes::getType(const std::string &extention)
 {

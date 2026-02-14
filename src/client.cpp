@@ -19,6 +19,7 @@ void ClientSocket::readingAndProcessingRequest()
     int bytesRead;
 
     bytesRead = read(this->socketFd, buffer, MAX_BUFFER_SIZE);
+
     if (bytesRead > 0) {
         this->transactionMgr->appendToRequest(buffer, bytesRead); 
         if (this->transactionMgr->getRequestStatus() == FINISHED) { 
@@ -37,16 +38,16 @@ void ClientSocket::readingAndProcessingRequest()
     }
 }
 
-void ClientSocket::continueWriting()
+void ClientSocket::sendingResponse()
 {
     int ret;
-
     std::pair<unsigned char *, size_t> response = this->transactionMgr->getResponse();
     if (response.second == 0) {
         if (this->transactionMgr->getResponseState() == WAITING_FOR_CGI) {
             return ;
         }
     }
+
     ret = write(socketFd, response.first, response.second);
     if (ret == -1) {
         this->action = CLOSE_CONNECTION;
@@ -60,7 +61,7 @@ void ClientSocket::continueWriting()
     delete[] response.first;
 }
 
-void ClientSocket::errorResponse() {
+void ClientSocket::ErrorParseRequest() {
     int error_code = this->transactionMgr->getResponseCode();
     std::pair<unsigned char *, size_t> error_response = ErrorResponse::getErrorResponse(error_code);
     int ret = write(socketFd, error_response.first, error_response.second);
@@ -79,9 +80,9 @@ void ClientSocket::handleEvent()
         readingAndProcessingRequest();
     }
     else if (this->state == WRITING_RESPONSE) {
-        continueWriting();
+        sendingResponse();
     }
     else if (this->state == ERROR_RESP) {
-        errorResponse();
+        ErrorParseRequest();
     }
 }

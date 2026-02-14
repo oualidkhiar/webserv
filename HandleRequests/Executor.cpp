@@ -30,7 +30,7 @@ void Executor::executeDelete(HttpRequest &request, HttpResponse &response)
         response.setStatus(HP_INTERNAL_SERVER_ERROR);
         return;
     }
-    // 0 is for success yak ? 
+    // 0 is for success yak ?
     response.setStatus(0);
 
     // here we sure thats request executed successfully so we can set the response header and body
@@ -215,7 +215,20 @@ void Executor::setLocation(HttpRequest &request)
 std::string Executor::pathResolver(HttpRequest &request)
 {
     std::string path;
-    if (request.getLocation() != NULL)
+    if (request.getLocation()->key == "/") {
+        if (request.getLocation()->autoindex) {
+            for (int i = 0; i < request.getLocation()->indexFiles.size(); i++) {
+                path = (request.getLocation()->rootPath+"/"+request.getLocation()->indexFiles[i]);
+                std::pair<int, FtFile *> p = extractFileInfos(path.c_str());
+                if (p.first == 1) {
+                    p.second->ft_close();
+                    break ;
+                }
+                path.clear();
+            }
+        }
+    }
+    else if (request.getLocation() != NULL)
     {
         if (request.getLocation()->rootPath.empty() == false)
             path = request.getLocation()->rootPath + request.getUri();
@@ -239,7 +252,7 @@ void Executor::execute(HttpRequest &request, HttpResponse &response, Cgi& c)
     setLocation(request);
     if (!isAllowedMethod(request))
     {
-        response.setStatus(HP_FORBIDDEN);
+        response.setStatus(HP_METHOD_NOT_ALLOWED);
         return;
     }
     if (request.getType() == DELETE)
@@ -247,12 +260,12 @@ void Executor::execute(HttpRequest &request, HttpResponse &response, Cgi& c)
     else if (request.getType() == POST)
         executePost(request, response);
     else if (request.getType() == GET) {
-        // executeGet(request, response);
-        c.executeCgi();
-        if (c.getResponseCode() != 0) {
-            // response with spicifique error 
-            response.setStatus(c.getResponseCode());
-        }
+        executeGet(request, response);
+        // c.executeCgi();
+        // if (c.getResponseCode() != 0) {
+        //     response with spicifique error 
+        //     response.setStatus(c.getResponseCode());
+        // }
     }
 }
 
@@ -277,11 +290,14 @@ void Executor::executeGet(HttpRequest &request, HttpResponse &response)
     pair = extractFileInfos(path.c_str());
     if (pair.first != 1)
     {
+        std::cout << pair.first << std::endl;
         response.setStatus(pair.first);
-        exit_error("Stat Eroor");
+        // exit_error("Stat Eroor");
     }
-    setContentTpe(response, path);
-    response.setFile(pair.second);
+    else {
+        setContentTpe(response, path);
+        response.setFile(pair.second);
+    }
     response.setState(READING_LARGE_FILE);
     response.createBody();
 }
@@ -325,6 +341,8 @@ location *Executor::getLongestMatchedLocation(HttpRequest &request, std::map<std
             previous_score = score;
         }
     }
-
+    if (best_match == NULL) { // this is not the solution it's just for testing
+        best_match = map["/"];
+    }
     return (best_match);
 }

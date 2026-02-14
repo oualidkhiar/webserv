@@ -1,4 +1,6 @@
 #include "ErrorResponse.hpp"
+#include "utils.hpp"
+#include <iostream>
 #include <fstream>
 #include <sstream>
 #include <cstring>
@@ -21,6 +23,19 @@ std::map<int, std::string> ErrorResponse::initErrorPages()
     return errorPages;
 }
 
+void mergeContentWithHeaders(size_t& bodyLen, std::string& content, int code) {
+    std::string headers;
+    std::ostringstream s;
+	s << bodyLen;
+    headers = getStatusReponseLine(code);
+    headers += "Content-Type: text/html\r\n"
+            "Content-Length: "+s.str()+"\r\n"
+            "Connection: close\r\n" // im not sure 
+            "\r\n";
+    content = headers+content;
+    bodyLen = content.size();
+}
+
 std::pair<unsigned char *, size_t> ErrorResponse::getErrorResponse(int code)
 {
     static std::map<int, std::string> errorPages = initErrorPages();
@@ -40,9 +55,10 @@ std::pair<unsigned char *, size_t> ErrorResponse::getErrorResponse(int code)
     }
 
     size_t size = content.size();
+    mergeContentWithHeaders(size, content, code);
     unsigned char *response = new unsigned char[size]; // need to freethis.
     if (size > 0)
         std::memcpy(response, content.c_str(), size);
-    
+
     return std::make_pair(response, size);
 }
