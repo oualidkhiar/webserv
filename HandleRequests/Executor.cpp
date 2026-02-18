@@ -46,12 +46,12 @@ std::string Executor::extractBoundary(const std::string &contentType)
     size_t pos = contentType.find("boundary=");
     if (pos == std::string::npos)
         return "";
-    
+
     std::string boundary = contentType.substr(pos + 9);
     size_t end = boundary.find_first_of("; \t\r\n");
     if (end != std::string::npos)
         boundary = boundary.substr(0, end);
-    
+
     return boundary;
 }
 
@@ -60,33 +60,33 @@ std::string Executor::extractHeaderValue(const std::string &headers, const std::
     size_t pos = headers.find(key);
     if (pos == std::string::npos)
         return "";
-    
+
     pos = headers.find("\"", pos);
     if (pos == std::string::npos)
         return "";
-    
+
     size_t end = headers.find("\"", pos + 1);
     if (end == std::string::npos)
         return "";
-    
+
     return headers.substr(pos + 1, end - pos - 1);
 }
 
-bool Executor::saveUploadedFile(const std::string &uploadDir, const std::string &filename, 
+bool Executor::saveUploadedFile(const std::string &uploadDir, const std::string &filename,
                                 const std::vector<unsigned char> &content)
 {
     std::string fullPath = uploadDir;
     if (!fullPath.empty() && fullPath[fullPath.length() - 1] != '/')
         fullPath += "/";
     fullPath += filename;
-    
+
     std::ofstream file(fullPath.c_str(), std::ios::binary | std::ios::trunc);
     if (!file.is_open())
         return false;
-    
-    file.write(reinterpret_cast<const char*>(&content[0]), content.size());
+
+    file.write(reinterpret_cast<const char *>(&content[0]), content.size());
     file.close();
-    
+
     return true;
 }
 
@@ -94,55 +94,55 @@ void Executor::parseMultipartBody(HttpRequest &request, HttpResponse &response, 
 {
     const std::vector<unsigned char> &bodyData = request.getBody().getBody();
     std::string bodyStr(bodyData.begin(), bodyData.end());
-    
+
     std::string fullBoundary = "--" + boundary;
     std::string endBoundary = "--" + boundary + "--";
-    
+
     size_t pos = 0;
     int filesUploaded = 0;
-    
+
     while ((pos = bodyStr.find(fullBoundary, pos)) != std::string::npos)
     {
         pos += fullBoundary.length();
-        
+
         if (bodyStr.substr(pos, 2) == "--")
             break;
-        
+
         if (bodyStr.substr(pos, 2) == "\r\n")
             pos += 2;
-        
+
         size_t nextBoundary = bodyStr.find(fullBoundary, pos);
         if (nextBoundary == std::string::npos)
             break;
-        
+
         std::string part = bodyStr.substr(pos, nextBoundary - pos);
-        
+
         size_t headerEnd = part.find("\r\n\r\n");
         if (headerEnd == std::string::npos)
         {
             pos = nextBoundary;
             continue;
         }
-        
+
         std::string headers = part.substr(0, headerEnd);
         std::string content = part.substr(headerEnd + 4);
-        
+
         if (content.size() >= 2 && content.substr(content.size() - 2) == "\r\n")
             content = content.substr(0, content.size() - 2);
-        
+
         if (headers.find("filename=") != std::string::npos)
         {
             std::string filename = extractHeaderValue(headers, "filename=");
-            
+
             if (!filename.empty())
             {
-                //read upload directory from config file, if not set, use default "uploads"
+                // read upload directory from config file, if not set, use default "uploads"
                 std::string uploadDir = request.getLocation()->upload_store;
                 if (uploadDir.empty())
                     uploadDir = "temp";
-                
+
                 std::vector<unsigned char> fileContent(content.begin(), content.end());
-                
+
                 if (saveUploadedFile(uploadDir, filename, fileContent))
                     filesUploaded++;
                 else
@@ -152,10 +152,10 @@ void Executor::parseMultipartBody(HttpRequest &request, HttpResponse &response, 
                 }
             }
         }
-        
+
         pos = nextBoundary;
     }
-    
+
     if (filesUploaded > 0)
         response.setStatus(HP_CREATED);
     else
@@ -165,24 +165,24 @@ void Executor::parseMultipartBody(HttpRequest &request, HttpResponse &response, 
 void Executor::executePost(HttpRequest &request, HttpResponse &response)
 {
     std::string contentType = request.getHeader("Content-Type");
-    
+
     if (contentType.find("multipart/form-data") != std::string::npos)
     {
         std::string boundary = extractBoundary(contentType);
-        
+
         if (boundary.empty())
         {
             response.setStatus(HP_BAD_REQUEST);
             return;
         }
-        
-        //the location must exist and have upload_store configured in the config file
+
+        // the location must exist and have upload_store configured in the config file
         if (request.getLocation() == NULL || request.getLocation()->upload_store.empty())
         {
             response.setStatus(HP_FORBIDDEN);
             return;
         }
-        
+
         parseMultipartBody(request, response, boundary);
     }
     else
@@ -215,14 +215,18 @@ void Executor::setLocation(HttpRequest &request)
 std::string Executor::pathResolver(HttpRequest &request)
 {
     std::string path;
-    if (request.getLocation()->key == "/") {
-        if (request.getLocation()->autoindex) {
-            for (int i = 0; i < request.getLocation()->indexFiles.size(); i++) {
-                path = (request.getLocation()->rootPath+"/"+request.getLocation()->indexFiles[i]);
+    if (request.getLocation()->key == "/")
+    {
+        if (request.getLocation()->autoindex)
+        {
+            for (int i = 0; i < request.getLocation()->indexFiles.size(); i++)
+            {
+                path = (request.getLocation()->rootPath + "/" + request.getLocation()->indexFiles[i]);
                 std::pair<int, FtFile *> p = extractFileInfos(path.c_str());
-                if (p.first == 1) {
+                if (p.first == 1)
+                {
                     p.second->ft_close();
-                    break ;
+                    break;
                 }
                 path.clear();
             }
@@ -247,9 +251,14 @@ bool Executor::isAllowedMethod(HttpRequest &request)
     return (true);
 }
 
-void Executor::execute(HttpRequest &request, HttpResponse &response, Cgi& c)
+void Executor::execute(HttpRequest &request, HttpResponse &response, Cgi &c)
 {
     setLocation(request);
+    if (request.getLocation() == NULL)
+    {
+        response.setStatus(HP_NOT_FOUND);
+        return;
+    }
     if (!isAllowedMethod(request))
     {
         response.setStatus(HP_METHOD_NOT_ALLOWED);
@@ -259,11 +268,12 @@ void Executor::execute(HttpRequest &request, HttpResponse &response, Cgi& c)
         executeDelete(request, response);
     else if (request.getType() == POST)
         executePost(request, response);
-    else if (request.getType() == GET) {
+    else if (request.getType() == GET)
+    {
         executeGet(request, response);
         // c.executeCgi();
         // if (c.getResponseCode() != 0) {
-        //     response with spicifique error 
+        //     response with spicifique error
         //     response.setStatus(c.getResponseCode());
         // }
     }
@@ -284,7 +294,7 @@ void Executor::setContentTpe(HttpResponse &response, const std::string &path)
 
 void Executor::executeGet(HttpRequest &request, HttpResponse &response)
 {
-    std::vector<unsigned char> file_content;  // not used ??
+    std::vector<unsigned char> file_content; // not used ??
     std::string path = pathResolver(request);
     std::pair<int, FtFile *> pair;
     pair = extractFileInfos(path.c_str());
@@ -294,7 +304,8 @@ void Executor::executeGet(HttpRequest &request, HttpResponse &response)
         response.setStatus(pair.first);
         // exit_error("Stat Eroor");
     }
-    else {
+    else
+    {
         setContentTpe(response, path);
         response.setFile(pair.second);
     }
@@ -326,10 +337,15 @@ int Executor::matchedScore(std::string uri, std::string key)
 location *Executor::getLongestMatchedLocation(HttpRequest &request, std::map<std::string, location *> map)
 {
     std::string uri = request.getUri();
+    location *best_match = NULL;
+    if (uri == "/")
+    {
+        best_match = map["/"];
+        return best_match;
+    }
     //  int best_expected_score = tokensSize(uri, PATH_DELIMITER);
     // std::cout<<"best_expected_score  = "<<best_expected_score<<std::endl;
 
-    location *best_match = NULL;
     int previous_score = 0;
     int score = -1;
     for (std::map<std::string, location *>::const_iterator it = map.begin(); it != map.end(); ++it)
@@ -341,8 +357,7 @@ location *Executor::getLongestMatchedLocation(HttpRequest &request, std::map<std
             previous_score = score;
         }
     }
-    if (best_match == NULL) { // this is not the solution it's just for testing
-        best_match = map["/"];
-    }
+
     return (best_match);
 }
+    
