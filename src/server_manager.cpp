@@ -57,8 +57,9 @@ void ServerManager::StartAllServers()
     }
     for (int i = 0; i < conf.ServersNumber(); i++) {
         serverConfig *serverconf = conf.getSerevrConfig(i);
-        for (size_t j = 0; j < serverconf->Port.size(); j++) {
-            int sockFd = ListeningSocketStart(serverconf->Port[j]);
+        std::vector<int> ports = serverconf->getPorts();
+        for (size_t j = 0; j < ports.size(); j++) {
+            int sockFd = ListeningSocketStart(ports[j]);
             if (sockFd < 0) {
                 this->error = true;
                 return;
@@ -75,6 +76,9 @@ void ServerManager::StartAllServers()
                 this->error = true;
                 return;
             }
+            std::ostringstream s;
+            s << ports[i];
+            DisplyLogs::printCurrentAtion("[INFO ] [SERVER ]", "Listening on port "+s.str(), GREEN);
             this->socketHandler.insert(std::make_pair(sockFd, sock));
         }
     }
@@ -142,7 +146,6 @@ void ServerManager::removeConnection(int fd)
 void ServerManager::addConnection(socketsManager *client)
 {
     struct epoll_event  ev;
-    struct sockaddr_in     address;
     int fd = client->getFd();
     ev.events = EPOLLIN;
     ev.data.ptr = client;

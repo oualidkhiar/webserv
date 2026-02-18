@@ -2,7 +2,6 @@
 #define CONFIG_HPP
 
 #include "./parser.hpp"
-#define DEFAULT_SIZE 1000000
 
 struct location {
 
@@ -22,17 +21,36 @@ struct location {
 };
 
 struct serverConfig {
+private:
 
     std::vector<int>								Port;
 	size_t											clientMaxSizeBody;
 	std::vector<std::string>						ServerNames;
 	std::string										rootPath;
 	std::vector<std::string>						indexFiles;
-    std::map<int, std::string>    					errorPage;
-	std::map<std::string, location *>				Locations;
 	bool											autoindex;
+	std::set<std::string>							allowMethods;
+	// std::pair<int, std::string>						redirect_return; 
 
+public:
+	std::map<std::string, location *>				Locations;
 	serverConfig(): clientMaxSizeBody(0), autoindex(false) {}
+	// geters for Global data
+	std::vector<int>& getPorts() {return this->Port;}
+	size_t getMaxBodySize() {return clientMaxSizeBody;}
+	std::vector<std::string>& getServerNames() {return this->ServerNames;}
+	std::string&	getRootPath() {return this->rootPath;}
+	std::vector<std::string>& getIndexFiles() {return this->indexFiles;}
+	bool getAutoIndexFlag() {return this->autoindex;}
+	std::set<std::string>& getAllowedMethods() {return this->allowMethods;}
+	// seters for Global data
+	void setPort(int port) {this->Port.push_back(port);}
+	void setMaxBodySize(size_t clientBody) {this->clientMaxSizeBody = clientBody;}
+	void setServerName(std::string serverName) {this->ServerNames.push_back(serverName);}
+	void setRootPath(std::string path) {this->rootPath = path;}
+	void setIndexFile(std::string indexFile) {this->indexFiles.push_back(indexFile);}
+	void setAutoIndexFlag() {this->autoindex = true;}
+	void setAllowedMethod(std::string method) {this->allowMethods.insert(method);}
 
 };
 

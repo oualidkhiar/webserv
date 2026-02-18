@@ -50,8 +50,6 @@ std::string Cgi::pathResolver()
 	{
 		if (request.getLocation()->rootPath.empty() == false)
 			path = request.getLocation()->rootPath + request.getUri();
-		else
-			path = request.getConfig()->rootPath + request.getUri();
 	}
 	return (path);
 }

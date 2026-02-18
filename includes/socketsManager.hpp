@@ -5,7 +5,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <ctime>
+#include "DisplyLogs.hpp"
 class ServerManager;
 
 enum Action {
@@ -35,7 +35,6 @@ public:
     int getFd() {return socketFd;}
     std::vector<socketsManager *>& getNewClient() {return this->newClientFds;}
     void clearVector() {newClientFds.clear();}
-    // virtual void printLog() = 0;
 
 };
 

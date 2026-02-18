@@ -25,17 +25,32 @@ void ClientSocket::readingAndProcessingRequest()
         if (this->transactionMgr->getRequestStatus() == FINISHED) { 
             this->state = WRITING_RESPONSE;
             this->action = MODIFY_TO_WRITE;
+            DisplyLogs::printCurrentAtion("[INFO ] [MODIFY]", "client finished processing request ready to write response", GREEN);
         }
         else if (this->transactionMgr->getRequestStatus() == ERROR) {
             this->state = ERROR_RESP;
             this->action = MODIFY_TO_WRITE;
+            DisplyLogs::printCurrentAtion("[ERROR] [REQ  ]", "request error parse", RED);
         }
-        delete[] buffer;
+        else {
+            std::ostringstream s;
+            s << bytesRead;
+            DisplyLogs::printCurrentAtion("[INFO ] [REQ  ]", "reading "+s.str()+" bytes from request", GREEN);
+        }
     }
     else {
-        delete[] buffer;
-        // i have to make sure what is the correct action here
+        if (bytesRead == 0) {
+            DisplyLogs::printCurrentAtion("[WRNIN] [REQ  ]", "client close connection", YELLOW);
+            this->action = CLOSE_CONNECTION;
+        }
+        if (errno == EAGAIN or errno == EWOULDBLOCK)
+            DisplyLogs::printCurrentAtion("[WARNIN] [REQ  ]", "read would block, no data available right now, try again later", YELLOW);
+        else if (errno != EINTR) {
+            DisplyLogs::printCurrentAtion("[ERROR] [REQ  ]", "syscall read failed", RED);
+            this->action = CLOSE_CONNECTION;
+        }
     }
+    delete[] buffer;
 }
 
 void ClientSocket::sendingResponse()
@@ -44,17 +59,23 @@ void ClientSocket::sendingResponse()
     std::pair<unsigned char *, size_t> response = this->transactionMgr->getResponse();
     if (response.second == 0) {
         if (this->transactionMgr->getResponseState() == WAITING_FOR_CGI) {
+            DisplyLogs::printCurrentAtion("[INFO ] [RESP ]", "waiting for CGI to finish execution...", GREEN);
             return ;
         }
     }
-
     ret = write(socketFd, response.first, response.second);
     if (ret == -1) {
-        this->action = CLOSE_CONNECTION;
-        // im not sure
+        if (errno == EPIPE or errno == ECONNRESET) {
+            DisplyLogs::printCurrentAtion("[INFO ] [RESP ]", "client close connection", GREEN);
+            this->action = CLOSE_CONNECTION;
+        }
+        else if (errno == EAGAIN) {
+            DisplyLogs::printCurrentAtion("[WRNING] [RESP ]", "write would block — send buffer full, try again later", YELLOW);
+        }
     }
     if (this->transactionMgr->getResponseState() == RESPONSE_FINISHED) {
         // if not keep-alive close the connection
+        DisplyLogs::printCurrentAtion("[INFO ] [RESP ]", "Response (HTTP 200) fully sent to client", GREEN);
         this->action = CLOSE_CONNECTION;
         // else i have to set action to MODIFY_TO_READ
     }
@@ -62,15 +83,26 @@ void ClientSocket::sendingResponse()
 }
 
 void ClientSocket::ErrorParseRequest() {
+    int ret;
     int error_code = this->transactionMgr->getResponseCode();
     std::pair<unsigned char *, size_t> error_response = ErrorResponse::getErrorResponse(error_code);
-    int ret = write(socketFd, error_response.first, error_response.second);
-    delete[] error_response.first;
+    ret = write(socketFd, error_response.first, error_response.second);
     if (ret == -1) {
-        this->action = CLOSE_CONNECTION;
+        if (errno == EINTR or errno == EWOULDBLOCK or errno == EAGAIN) {
+            DisplyLogs::printCurrentAtion("[WRNIN] [RESP ]", "read syscall temporarily unavailable (EAGAIN/EINTR)", YELLOW);
+            delete[] error_response.first;
+            return ;
+        }
+        else {
+            this->action = CLOSE_CONNECTION;
+            delete[] error_response.first;
+            DisplyLogs::printCurrentAtion("[ERROR] [RESP ]", "write syscall failed", RED);
+        }
     }
     else {
-        this->action = MODIFY_TO_READ;
+        delete[] error_response.first;
+        DisplyLogs::printCurrentAtion("[INFO ] [RESP ]", "Error response successfully delivered to client", GREEN);
+        this->action = CLOSE_CONNECTION;
     }
 }
 

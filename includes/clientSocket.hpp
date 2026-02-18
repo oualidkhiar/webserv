@@ -4,8 +4,6 @@
 #include "./socketsManager.hpp"
 #include "../HandleRequests/TransactionManager.hpp"
 
-#define MAX_BUFFER_SIZE 8192
-
 enum ClientState {
     READING_REQUEST,
     WRITING_RESPONSE,

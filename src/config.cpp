@@ -116,12 +116,13 @@ void config::customDataServer(AstNode *node, serverConfig *server)
 					return ;
 				}
 			}
-			server->Port.push_back(std::atoi((node->args[i].c_str())));
-			if (server->Port[i] <= 0 || server->Port[i] > 65535) {
-				std::cout << "Error the port " << server->Port[i] << " outside the range 1 - 65535" << std::endl;
+			int port = std::atoi((node->args[i].c_str()));
+			if (port <= 0 || port > 65535) {
+				std::cout << "Error the port " << port << " outside the range 1 - 65535" << std::endl;
 				this->error = true;
 				return ;
 			}
+			server->setPort(std::atoi((node->args[i].c_str())));
 		}
 	}
 	else if (node->name == "client_max_body_size" && node->args.size() == 1) {
@@ -132,57 +133,41 @@ void config::customDataServer(AstNode *node, serverConfig *server)
 				return ;
 			}
 		}
-		server->clientMaxSizeBody = std::atoi((node->args[0].c_str()));
+		server->setMaxBodySize(std::atoi((node->args[0].c_str())));
 	}
 	else if (node->name == "server_name") {
 		for (size_t i = 0; i < node->args.size(); i++) {
-			server->ServerNames.push_back(node->args[i]);
+			server->setServerName(node->args[i]);
 		}
 	}
 	else if (node->name == "root") {
 		if (node->args.size() == 1) {
-			server->rootPath = node->args[0];
+			server->setRootPath(node->args[0]);
 		}
 		else if (node->args.size() > 1) {
 			std::cout << "Error : multiple roots declared invalid" << std::endl;
 		}
 	}
-	else if (node->name == "error_page") {
-		int last = node->args.size() - 1;
-		if (last <= 0) {
-			std::cout << "Error : invalid initialize of error page " << std::endl;
-		}
-		std::string errorPage = node->args[last];
-		for (size_t i = 0; i < node->args.size() - 1; i++) {
-			int errorNumber = std::atoi((node->args[i].c_str()));
-			if (
-				errorNumber == 400 || 
-				errorNumber == 403 || 
-				errorNumber == 404 || 
-				errorNumber == 405 || 
-				errorNumber == 413 || 
-				errorNumber == 500 || 
-				errorNumber == 501 || 
-				errorNumber == 503
-			)
-			{
-				server->errorPage[errorNumber] = errorPage;
-			}
-			else {
-				std::cout << "Error : invalide error page number " << errorNumber << std::endl;
-				this->error = true;
-				return ;
-			}
-		}
-	}
 	else if (node->name == "index") {
 		for (size_t i = 0; i < node->args.size(); i++) {
-			server->indexFiles.push_back(node->args[i]);
+			server->setIndexFile(node->args[i]);
 		}
 	}
 	else if (node->name == "autoindex") {
 		if (node->args[0] == "on")
-			server->autoindex = true;
+			server->setAutoIndexFlag();
+	}
+	else if (node->name == "methods") {
+		for (size_t i = 0; i < node->args.size(); i++) {
+			if (node->args[i] == "GET" || node->args[i] == "POST" || node->args[i] == "DELETE") {
+				server->setAllowedMethod(node->args[i]);
+			}
+			else {
+				std::cout << "Error : Unknown method " << node->args[i]  << std::endl;
+				this->error = true;
+				return ;
+			}
+		}
 	}
 	else {
 		std::cout << "Warning: Unknown directive '" << node->name << "' " << "it will ignored in server block" << std::endl;
@@ -218,28 +203,37 @@ void clearServer(serverConfig *server)
 	delete server;
 }
 
-bool validateDataBlock(serverConfig *server) 
+bool validateDataBlock(serverConfig *server)
 {
-	std::map<std::string, location *>::iterator it = server->Locations.find("/");
-	if (server->Port.size() == 0) {
+	std::map<std::string, location *>::iterator it = server->Locations.begin();
+	if (server->getPorts().size() == 0) {
 		std::cout << "Error: port number not found" << std::endl;
 		return false;
 	}
-	if ((it == server->Locations.end() || it->second->rootPath.length() == 0) && server->rootPath.length() == 0) {
-		std::cout << "Error: there is no root path defined" << std::endl;
-		return false;
-	}
-	if (server->indexFiles.size() == 0) {
-		// server->indexFiles.push_back("index.html") TODO: use default
-	}
-	if (server->clientMaxSizeBody == 0) {
-		server->clientMaxSizeBody = DEFAULT_SIZE;
-	}
-	if (server->ServerNames.size() == 0) {
-		//TODO : use default server name
-	}
-	if (server->errorPage.size() == 0) {
-		// assign the necisser error pages for exaple 404 500 
+	for (std::map<std::string, location *>::iterator it = server->Locations.begin(); it != server->Locations.end(); it++) {
+
+		if ((it->second->rootPath.length() == 0)) {
+			if (server->getRootPath().length() == 0) {
+				std::cout << "Error: there is no root path defined location " << it->first << std::endl;
+				return false;
+			}
+			it->second->rootPath = server->getRootPath();
+		}
+		if (it->second->allowMethods.empty()) {
+			if (server->getAllowedMethods().empty()) {
+				std::cerr << "Error: location " << it->first << " does not contain allowed methods" << std::endl;
+			}
+			it->second->allowMethods = server->getAllowedMethods();
+		}
+		if (it->second->autoindex == false) {
+			it->second->autoindex = server->getAutoIndexFlag();
+		}
+		if (it->second->indexFiles.size() == 0) {
+			it->second->indexFiles = server->getIndexFiles();
+		}
+		if (it->second->clientMaxSizeBody == 0) {
+			it->second->clientMaxSizeBody = server->getMaxBodySize();
+		}
 	}
 	return true;
 }
@@ -259,16 +253,17 @@ void config::startEvaluation(parser& p)
 			this->error = true;
             break ;
         }
-		for (size_t i = 0; i < server->Port.size(); i++)
+		std::vector<int> ports = server->getPorts();
+		for (size_t i = 0; i < server->getPorts().size(); i++)
 		{
-			if (checkPortDuplicate.count(server->Port[i])) {
+			if (checkPortDuplicate.count(ports[i])) {
 				std::cout << "Error: virtual host not implemented, dont use the same port number more then one server" << std::endl;
 				this->error = true;
 				clearServer(server);
 				break ;
 			}
 			else {
-				checkPortDuplicate.insert(server->Port[i]);
+				checkPortDuplicate.insert(ports[i]);
 			}
 		}
         this->servers.push_back(server);
@@ -304,37 +299,12 @@ void config::printServer()
 {
 	size_t k = 0;
 	while (k < servers.size()) {
-		
-		std::cout << "Server block data N" << k << ": --------------------------------------------" << std::endl << std::endl; 
-		std::cout << "clientMaxSizeBody: " << this->servers[k]->clientMaxSizeBody << std::endl;
-
-		std::cout << "rootPath: " << this->servers[k]->rootPath << std::endl;
-
-		for (std::map<int, std::string>::iterator it = servers[k]->errorPage.begin(); it != servers[k]->errorPage.end(); it++) {
-			std::cout << "error number: " << it->first << " error page: " << it->second << std::endl;
-		}
-
-		for (size_t i = 0; i < servers[k]->ServerNames.size(); i++) {
-			std::cout << "server name " << i << ": " <<  servers[k]->ServerNames[i] << std::endl;
-		}
-
-		for (size_t i = 0; i < servers[k]->indexFiles.size(); i++) {
-			std::cout << "index file " << i << ": " <<  servers[k]->indexFiles[i] << std::endl;
-		}
-
-		for (size_t i = 0; i < servers[k]->Port.size(); i++) {
-			std::cout << "port " << i << ": " <<  servers[k]->Port[i] << std::endl;
-		}
-
-		std::cout << "locations :----------------------------------" << std::endl;
-
 		for (std::map<std::string, location *>::iterator it = servers[k]->Locations.begin(); it != servers[k]->Locations.end(); it++) {
+			std::cout << "location data*******************************************************\n\n" << std::endl;
 			std::cout << "location key == " << it->first << std::endl;
-			std::cout << "location data ::: ::: :::: :::  :::: ::: " << std::endl;
 			std::cout << "clientMaxSizeBody: " << it->second->clientMaxSizeBody << std::endl;
 			std::cout << "autoindex: " << it->second->autoindex << std::endl;
 			std::cout << "allowed methods: ";
-
 			for (std::set<std::string>::iterator setit = it->second->allowMethods.begin(); setit != it->second->allowMethods.end(); setit++) {
 				std::cout << *setit << " ; ";
 			}
@@ -353,7 +323,7 @@ void config::printServer()
 			std::cout << std::endl;
 		}
 		std::cout << "locations finish :: =============================" << std::endl;
-		std::cout << "finish server  : --------------------------------------------------------" << std::endl;
+		std::cout << "finish server  : *******************************************************\n\n" << std::endl;
 		std::cout << std::endl;
 		k++;
 	}
