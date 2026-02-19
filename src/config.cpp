@@ -17,6 +17,23 @@ serverConfig *config::getSerevrConfig( int index )
 	return this->servers[index];
 }
 
+std::vector<int>& serverConfig::getPorts() {return this->Port;}
+size_t serverConfig::getMaxBodySize() {return clientMaxSizeBody;}
+std::vector<std::string>& serverConfig::getServerNames() {return this->ServerNames;}
+std::string&	serverConfig::getRootPath() {return this->rootPath;}
+std::vector<std::string>& serverConfig::getIndexFiles() {return this->indexFiles;}
+bool serverConfig::getAutoIndexFlag() {return this->autoindex;}
+std::set<std::string>& serverConfig::getAllowedMethods() {return this->allowMethods;}
+std::pair<int, std::string>& serverConfig::getRedirection() {return this->redirection;}
+void serverConfig::setPort(int port) {this->Port.push_back(port);}
+void serverConfig::setMaxBodySize(size_t clientBody) {this->clientMaxSizeBody = clientBody;}
+void serverConfig::setServerName(std::string serverName) {this->ServerNames.push_back(serverName);}
+void serverConfig::setRootPath(std::string path) {this->rootPath = path;}
+void serverConfig::setIndexFile(std::string indexFile) {this->indexFiles.push_back(indexFile);}
+void serverConfig::setAutoIndexFlag() {this->autoindex = true;}
+void serverConfig::setAllowedMethod(std::string method) {this->allowMethods.insert(method);}
+void serverConfig::setRedirection(int code, std::string url) {this->redirection.first = code; this->redirection.second = url;}
+
 bool config::CheckParse() {
 	return this->error;
 }
@@ -82,6 +99,39 @@ void config::customDataLocation(AstNode *node, location *loc)
 			std::cout << "Warning : multiple values of cgi_pass; the first will be used" << std::endl;
 		}
 		loc->cgi_pass = node->args[0];
+	}
+	else if (node->name == "return") {
+		for (size_t i = 0; i < node->args[0].length(); i++) {
+			if (!isdigit(node->args[0][i])) {
+				std::cout << "Error : invalide redirection code " << "{" << node->args[0] << "}" << std::endl;
+				this->error = true;
+				return ;
+			}
+		}
+		loc->redirection.first = std::atoi((node->args[0].c_str()));
+		if (loc->redirection.first == 301 || loc->redirection.first == 302) {
+			if (node->args[1].length() > 0) {
+				loc->redirection.second = node->args[1];
+			}
+			else {
+				std::cout << "Error: redirection number " << loc->redirection.first << " must contain URL" << std::endl;
+				this->error = true;
+				return ;
+			}
+		}
+		else {
+			std::cout << "Error: number of redirection not handled, must be {301 or 302}" << std::endl;
+			this->error = true;
+			return;
+		}
+	}
+	else if (node->name == "upload_store") {
+		if (node->args.size() != 1) {
+			std::cout << "Error: multiple args in upload store" << std::endl;
+			this->error = true;
+			return ;
+		}
+		loc->upload_store = node->args[0];
 	}
 	else {
 		std::cout << "Warning: Unknown directive '" << node->name << "' " << "it will ignored" << std::endl;
@@ -169,6 +219,34 @@ void config::customDataServer(AstNode *node, serverConfig *server)
 			}
 		}
 	}
+	else if (node->name == "return") {
+		std::string url;
+		int code;
+		for (size_t i = 0; i < node->args[0].length(); i++) {
+			if (!isdigit(node->args[0][i])) {
+				std::cout << "Error : invalide redirection code " << "{" << node->args[0] << "}" << std::endl;
+				this->error = true;
+				return ;
+			}
+		}
+		code = std::atoi((node->args[0].c_str()));
+		if (code == 301 || code == 302) {
+			if (node->args[1].length() > 0) {
+				url = node->args[1];
+			}
+			else {
+				std::cout << "Error: redirection number " << code << " must contain URL" << std::endl;
+				this->error = true;
+				return ;
+			}
+		}
+		else {
+			std::cout << "Error: number of redirection not handled, must be {301 or 302}" << std::endl;
+			this->error = true;
+			return;
+		}
+		server->setRedirection(code, url);
+	}
 	else {
 		std::cout << "Warning: Unknown directive '" << node->name << "' " << "it will ignored in server block" << std::endl;
 	}
@@ -234,6 +312,9 @@ bool validateDataBlock(serverConfig *server)
 		if (it->second->clientMaxSizeBody == 0) {
 			it->second->clientMaxSizeBody = server->getMaxBodySize();
 		}
+		if (it->second->redirection.second.length() == 0) {
+			it->second->redirection = server->getRedirection();
+		}
 	}
 	return true;
 }
@@ -295,6 +376,7 @@ void config::buildServersConfig( void )
     startEvaluation(p);
 }
 
+// --------------------------------------------------------------------------- print-------
 void config::printServer()
 {
 	size_t k = 0;
@@ -302,8 +384,10 @@ void config::printServer()
 		for (std::map<std::string, location *>::iterator it = servers[k]->Locations.begin(); it != servers[k]->Locations.end(); it++) {
 			std::cout << "location data*******************************************************\n\n" << std::endl;
 			std::cout << "location key == " << it->first << std::endl;
+			std::cout << "return == " << it->second->redirection.first  << " " << it->second->redirection.second << std::endl;
 			std::cout << "clientMaxSizeBody: " << it->second->clientMaxSizeBody << std::endl;
 			std::cout << "autoindex: " << it->second->autoindex << std::endl;
+			std::cout << "upload store: " << it->second->upload_store << std::endl;
 			std::cout << "allowed methods: ";
 			for (std::set<std::string>::iterator setit = it->second->allowMethods.begin(); setit != it->second->allowMethods.end(); setit++) {
 				std::cout << *setit << " ; ";

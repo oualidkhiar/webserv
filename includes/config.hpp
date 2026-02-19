@@ -14,7 +14,7 @@ struct location {
 	std::vector<std::string>						cgi_extension;
 	std::string										cgi_pass;
 	std::string										upload_store;
-	// std::pair<int, std::string>						redirect_return; 
+	std::pair<int, std::string>						redirection;
 
 	location(): clientMaxSizeBody(0), autoindex(false) {}
 
@@ -30,27 +30,29 @@ private:
 	std::vector<std::string>						indexFiles;
 	bool											autoindex;
 	std::set<std::string>							allowMethods;
-	// std::pair<int, std::string>						redirect_return; 
+	std::pair<int, std::string>						redirection; 
 
 public:
 	std::map<std::string, location *>				Locations;
 	serverConfig(): clientMaxSizeBody(0), autoindex(false) {}
 	// geters for Global data
-	std::vector<int>& getPorts() {return this->Port;}
-	size_t getMaxBodySize() {return clientMaxSizeBody;}
-	std::vector<std::string>& getServerNames() {return this->ServerNames;}
-	std::string&	getRootPath() {return this->rootPath;}
-	std::vector<std::string>& getIndexFiles() {return this->indexFiles;}
-	bool getAutoIndexFlag() {return this->autoindex;}
-	std::set<std::string>& getAllowedMethods() {return this->allowMethods;}
+	std::vector<int>& getPorts();
+	size_t getMaxBodySize();
+	std::vector<std::string>& getServerNames();
+	std::string&	getRootPath();
+	std::vector<std::string>& getIndexFiles();
+	bool getAutoIndexFlag();
+	std::set<std::string>& getAllowedMethods();
+	std::pair<int, std::string>& getRedirection();
 	// seters for Global data
-	void setPort(int port) {this->Port.push_back(port);}
-	void setMaxBodySize(size_t clientBody) {this->clientMaxSizeBody = clientBody;}
-	void setServerName(std::string serverName) {this->ServerNames.push_back(serverName);}
-	void setRootPath(std::string path) {this->rootPath = path;}
-	void setIndexFile(std::string indexFile) {this->indexFiles.push_back(indexFile);}
-	void setAutoIndexFlag() {this->autoindex = true;}
-	void setAllowedMethod(std::string method) {this->allowMethods.insert(method);}
+	void setPort(int port);
+	void setMaxBodySize(size_t clientBody);
+	void setServerName(std::string serverName);
+	void setRootPath(std::string path);
+	void setIndexFile(std::string indexFile);
+	void setAutoIndexFlag();
+	void setAllowedMethod(std::string method);
+	void setRedirection(int code, std::string url);
 
 };
 

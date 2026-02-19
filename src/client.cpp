@@ -22,7 +22,7 @@ void ClientSocket::readingAndProcessingRequest()
 
     if (bytesRead > 0) {
         this->transactionMgr->appendToRequest(buffer, bytesRead); 
-        if (this->transactionMgr->getRequestStatus() == FINISHED) { 
+        if (this->transactionMgr->getRequestStatus() == FINISHED) {
             this->state = WRITING_RESPONSE;
             this->action = MODIFY_TO_WRITE;
             DisplyLogs::printCurrentAtion("[INFO ] [MODIFY]", "client finished processing request ready to write response", GREEN);

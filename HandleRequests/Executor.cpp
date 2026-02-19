@@ -212,6 +212,20 @@ void Executor::setLocation(HttpRequest &request)
     request.setLocation(bestLocation);
 }
 
+bool isFile(const std::string &path) {
+    struct stat s;
+    if (stat(path.c_str(), &s) != 0)
+        return false; // file doesn't exist or error
+    return S_ISREG(s.st_mode);
+}
+
+bool isDirectory(const std::string &path) {
+    struct stat s;
+    if (stat(path.c_str(), &s) != 0)
+        return false;
+    return S_ISDIR(s.st_mode);
+}
+
 std::string Executor::pathResolver(HttpRequest &request)
 {
     std::string path;
@@ -292,7 +306,6 @@ void Executor::setContentTpe(HttpResponse &response, const std::string &path)
 
 void Executor::executeGet(HttpRequest &request, HttpResponse &response)
 {
-    std::vector<unsigned char> file_content; // not used ??
     std::string path = pathResolver(request);
     std::pair<int, FtFile *> pair;
     pair = extractFileInfos(path.c_str());
@@ -300,7 +313,6 @@ void Executor::executeGet(HttpRequest &request, HttpResponse &response)
     {
         std::cout << pair.first << std::endl;
         response.setStatus(pair.first);
-        // exit_error("Stat Eroor");
     }
     else
     {
@@ -313,8 +325,6 @@ void Executor::executeGet(HttpRequest &request, HttpResponse &response)
 
 int Executor::matchedScore(std::string uri, std::string key)
 {
-
-    // int score = 1;
     int i = 0;
     std::vector<std::string> key_tokens;
     std::vector<std::string> uri_tokens;

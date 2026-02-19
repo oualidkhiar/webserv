@@ -88,7 +88,7 @@ bool HttpRequest::setUri(const std::string &uri)
 		this->setResponseCode(400, "Bad Request");
 		return false;
 	}
-	checkCGI(uri);	
+	checkCGI(uri);
 	this->uri = uri;
 	return true;
 }
