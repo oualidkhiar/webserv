@@ -90,7 +90,7 @@ void ServerManager::TrackSocketsEvent()
 
     while (true)
     {
-        nfds = epoll_wait(epfd, events, MAX_EVENTS, -1);
+        nfds = epoll_wait(epfd, events, MAX_EVENTS, -1); /// sleep untile data reach socket 
         for (int i = 0; i < nfds; i++) {
             socketsManager *sock = (socketsManager *)events[i].data.ptr;
             sock->handleEvent();
@@ -148,7 +148,7 @@ void ServerManager::addConnection(socketsManager *client)
     struct epoll_event  ev;
     int fd = client->getFd();
     ev.events = EPOLLIN;
-    ev.data.ptr = client;
+    ev.data.ptr = client; 
     epoll_ctl(this->epfd, EPOLL_CTL_ADD, fd, &ev);
     this->socketHandler.insert(std::make_pair(fd, client));
 }

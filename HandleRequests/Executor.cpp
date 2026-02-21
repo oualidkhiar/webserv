@@ -8,12 +8,22 @@
 #include <fstream>
 #include <sstream>
 #include <fcntl.h>
+#include <dirent.h>
 
 Executor::Executor() {}
 
+std::string Executor::pathResolverForDelete(HttpRequest &request)
+{
+    std::string path;
+
+    path = request.getLocation()->rootPath + request.getUri();
+    return (path);
+}
+
+
 void Executor::executeDelete(HttpRequest &request, HttpResponse &response)
 {
-    std::string path = pathResolver(request);
+    std::string path = pathResolverForDelete(request);
     struct stat sb;
     if (stat(path.c_str(), &sb) != 0)
     {
@@ -35,7 +45,7 @@ void Executor::executeDelete(HttpRequest &request, HttpResponse &response)
 
     // here we sure thats request executed successfully so we can set the response header and body
     response.AddHeader("Content-Length", "0\r\n");
-    response.AddHeader("Connection", "Closed\r\n");
+    response.AddHeader("Connection", "closed\r\n");
     response.AddHeader("server", "TestServer/1.1\r\n");
     response.setState(RESPONSE_FINISHED);
 }
@@ -209,14 +219,9 @@ void Executor::setLocation(HttpRequest &request)
 {
     location *bestLocation;
     bestLocation = getLongestMatchedLocation(request, request.getConfig()->Locations);
+    std::cout << "best match is " << bestLocation->key << std::endl;
+    std::cout << "uri = " << request.getUri() << std::endl;
     request.setLocation(bestLocation);
-}
-
-bool isFile(const std::string &path) {
-    struct stat s;
-    if (stat(path.c_str(), &s) != 0)
-        return false; // file doesn't exist or error
-    return S_ISREG(s.st_mode);
 }
 
 bool isDirectory(const std::string &path) {
@@ -226,32 +231,30 @@ bool isDirectory(const std::string &path) {
     return S_ISDIR(s.st_mode);
 }
 
-std::string Executor::pathResolver(HttpRequest &request)
+std::pair<int, std::string> Executor::pathResolver(HttpRequest &request)
 {
     std::string path;
-    if (request.getLocation()->key == "/")
-    {
-        if (request.getLocation()->autoindex)
-        {
-            for (int i = 0; i < request.getLocation()->indexFiles.size(); i++)
-            {
-                path = (request.getLocation()->rootPath + "/" + request.getLocation()->indexFiles[i]);
-                std::pair<int, FtFile *> p = extractFileInfos(path.c_str());
-                if (p.first == 1)
-                {
-                    p.second->ft_close();
-                    break;
-                }
-                path.clear();
-            }
+    std::string uri = request.getUri();
+    path = request.getLocation()->rootPath + uri;
+    if (isDirectory(path)) {
+        if (uri[uri.length()-1] != '/') {
+            return std::make_pair(301, uri+"/"); // case redirection 
+        }
+        else if (request.getLocation()->redirection.second.length() > 0) { // case redirection from config file
+            return std::make_pair(request.getLocation()->redirection.first,
+                    request.getLocation()->redirection.second);
+        }
+        else if (request.getLocation()->indexFiles.size() > 0) { // case index file exist
+            return std::make_pair(2, "");
+        }
+        else if (request.getLocation()->autoindex) { // open dir and generate a list of what that dir contain
+            return std::make_pair(3, path);
+        }
+        else {
+            return std::make_pair(4, ""); // forbiden
         }
     }
-    else if (request.getLocation() != NULL)
-    {
-        if (request.getLocation()->rootPath.empty() == false)
-            path = request.getLocation()->rootPath + request.getUri();
-    }
-    return (path);
+    return std::make_pair(5, path); // regular request
 }
 
 bool Executor::isAllowedMethod(HttpRequest &request)
@@ -276,9 +279,9 @@ void Executor::execute(HttpRequest &request, HttpResponse &response, Cgi &c)
         response.setStatus(HP_METHOD_NOT_ALLOWED);
         return;
     }
-    if (request.getType() == DELETE)
-        executeDelete(request, response);
-    else if (request.getType() == POST)
+    // if (request.getType() == DELETE)
+    //     executeDelete(request, response);
+    if (request.getType() == POST)
         executePost(request, response);
     else if (request.getType() == GET)
     {
@@ -304,68 +307,219 @@ void Executor::setContentTpe(HttpResponse &response, const std::string &path)
         response.AddHeader(CONTENT_TYPE_HEADER, DEFAULT_CONTENT_TYPE);
 }
 
+void Executor::caseRedirection(HttpResponse& response, std::string& path, int code)
+{
+    response.AddHeader("location", path+"\r\n");
+    response.setStatus(code);
+}
+
+std::pair<int, FtFile *> Executor::getIndexFile(std::string& path, HttpRequest& request)
+{
+    std::string indexFile;
+    int lastFile;
+    for (int i = 0; i < request.getLocation()->indexFiles.size(); i++)
+    {
+        indexFile = (request.getLocation()->rootPath + "/" + request.getLocation()->indexFiles[i]);
+        std::pair<int, FtFile *> p = extractFileInfos(indexFile.c_str());
+        if (p.first == 1)
+        {
+            return p;
+        }
+        lastFile = p.first;
+        path.clear();
+    }
+    return std::make_pair(lastFile, (FtFile *)NULL);
+}
+
+void Executor::caseIndexFile(HttpResponse& resp, HttpRequest& req, std::string& path)
+{
+    std::pair<int, FtFile *> res = getIndexFile(path, req);
+    if (res.first != 1) {
+        resp.setStatus(res.first);
+        resp.setState(READING_LARGE_FILE);
+        return ;
+    }
+    setContentTpe(resp, res.second->getPath());
+    resp.setFile(res.second);
+    resp.setState(READING_LARGE_FILE);
+    resp.createBody();
+}
+
+std::vector<unsigned char> convertToVector(std::string body)
+{
+    std::vector<unsigned char> res;
+    for (size_t i = 0; i < body.size(); i++) {
+        res.push_back(body[i]);
+    }
+    return res;
+}
+
+std::string buildListInHtmlFormat(std::string& uri, DIR *dir)
+{
+    std::stringstream html;
+    struct dirent *entry;
+
+    html << "<html>\n";
+    html << "<head><title>Index of " << uri << "</title></head>\n";
+    html << "<body>\n";
+    html << "<h1>Index of " << uri << "</h1>\n";
+    html << "<hr>\n";
+    html << "<ul>\n";
+    while ((entry = readdir(dir)) != NULL) {
+        std::string name = entry->d_name;
+         if (name[0] == '.')
+            continue;
+        std::string link = uri;
+        if (uri[uri.size()-1] != '/')
+            link += "/";
+        link += name;
+        html << "<li><a href=\"" << link
+            << "\">" << name << "</a></li>";
+    }
+    html << "</ul>\n";
+    html << "<hr>\n";
+    html << "</body>\n";
+    html << "</html>\n";
+    return html.str();
+}
+
+void Executor::caseListingFiles(HttpResponse& resp, HttpRequest& req, std::string& path)
+{
+    DIR *dir = opendir(path.c_str());
+    std::string uri = req.getUri();
+    resp.createBody();
+    if (!dir) {
+        resp.setStatus(HP_FORBIDDEN);
+        resp.setState(READING_LARGE_FILE);
+        return;
+    }
+    std::string list = buildListInHtmlFormat(uri, dir);
+    closedir(dir);
+    std::vector<unsigned char> chunk = convertToVector(list);
+    std::ostringstream content_len;
+    content_len << list.length();
+    resp.AddHeader("content-length", content_len.str()+"\r\n");
+    resp.AddHeader("Connection", "closed\r\n");
+    resp.AddHeader("server", "TestServer/1.1\r\n");
+    resp.AddHeader("Content-Type", "text/html\r\n");
+    resp.appendBodyToResponse(chunk);
+    resp.setState(RESPONSE_FINISHED);
+}
+
+void Executor::caseSpecifiedFile(HttpResponse& response, std::string& path)
+{
+    std::pair<int, FtFile *> p = extractFileInfos(path.c_str());
+    if (p.first != 1) {
+        response.setStatus(p.first);
+    } else {
+        response.setFile(p.second);
+        setContentTpe(response, p.second->getPath());
+    }
+    response.createBody();
+    response.setState(READING_LARGE_FILE);
+}
+
+void Executor::caseForbiden(HttpResponse& resp)
+{
+    resp.setStatus(HP_FORBIDDEN);
+    resp.setState(RESPONSE_FINISHED);
+}
+
 void Executor::executeGet(HttpRequest &request, HttpResponse &response)
 {
-    std::string path = pathResolver(request);
+    std::pair<int, std::string> p = pathResolver(request);
     std::pair<int, FtFile *> pair;
-    pair = extractFileInfos(path.c_str());
-    if (pair.first != 1)
+    switch (p.first)
     {
-        std::cout << pair.first << std::endl;
-        response.setStatus(pair.first);
+        case 301: // redirection for 301
+        {
+            caseRedirection(response, p.second, HP_MOVED_PERMANENTLY);
+            response.setState(RESPONSE_FINISHED);
+            break;
+        }
+
+        case 302: // redirection for 302
+        {
+            caseRedirection(response, p.second, HP_FOUND);
+            response.setState(RESPONSE_FINISHED);
+            break;
+        }
+        
+        case 2: // index file exist send index file
+        {
+            caseIndexFile(response, request, p.second);
+            break;
+        }
+        
+        case 3: // case listing files from dir
+        {
+            caseListingFiles(response, request, p.second);
+            break ;
+        }
+        
+        case 4: // forbiden --> it is a directory but there is no index file and autoindex is false
+        {
+            caseForbiden(response);
+            break;
+        }
+
+        case 5: // regular request with specify the target file 
+        {
+            caseSpecifiedFile(response, p.second);
+            break;
+        }
+
+        default:
+            break;
     }
-    else
-    {
-        setContentTpe(response, path);
-        response.setFile(pair.second);
-    }
-    response.setState(READING_LARGE_FILE);
-    response.createBody();
 }
 
-int Executor::matchedScore(std::string uri, std::string key)
+std::string normalizeUri(std::string uri)
 {
-    int i = 0;
-    std::vector<std::string> key_tokens;
-    std::vector<std::string> uri_tokens;
-    if ((tokensSize(key, PATH_DELIMITER) < tokensSize(uri, PATH_DELIMITER)))
-    {
-        key_tokens = ft_split(key, PATH_DELIMITER);
-        uri_tokens = ft_split(uri, PATH_DELIMITER);
-        int size = key_tokens.size();
-        while (i < size)
-        {
-            if (key_tokens.at(i).compare(uri_tokens.at(i)) != 0)
-                return (0);
-            i++;
+    std::string normalizedUri;
+    bool seen = false;
+    for (int i = 0; i < uri.length(); i++) {
+        if (uri[i] == '/' and !seen) {
+            normalizedUri.push_back(uri[i]);
+            seen = true;
+        } else if (uri[i] != '/') {
+            normalizedUri.push_back(uri[i]);
+            seen = false;
         }
     }
-    return (i);
+    return normalizedUri;
 }
-location *Executor::getLongestMatchedLocation(HttpRequest &request, std::map<std::string, location *> map)
+
+int Executor::matchedScore(const std::string uri, const std::string key)
 {
+    if (uri.compare(0, key.length(), key) != 0) 
+        return 0;
+    if (uri.length() == key.length())
+        return key.length();
+    if (uri[key.length()] == '/')
+        return key.length();
+    return 0;
+}
+
+location* Executor::getLongestMatchedLocation(HttpRequest &request, 
+                            std::map<std::string, location *> map)
+{
+    request.setUri(normalizeUri((request.getUri())));
     std::string uri = request.getUri();
     location *best_match = NULL;
-    if (uri == "/")
-    {
-        best_match = map["/"];
-        return best_match;
-    }
-    //  int best_expected_score = tokensSize(uri, PATH_DELIMITER);
-    // std::cout<<"best_expected_score  = "<<best_expected_score<<std::endl;
+    int best_score = 0;
 
-    int previous_score = 0;
-    int score = -1;
     for (std::map<std::string, location *>::const_iterator it = map.begin(); it != map.end(); ++it)
     {
-        score = matchedScore(uri, it->first);
-        if (score > previous_score)
+        int score = matchedScore(uri, it->first);
+        if (score > best_score)
         {
             best_match = it->second;
-            previous_score = score;
+            best_score = score;
         }
     }
+    if (!best_match && map.count("/"))
+        best_match = map["/"];
 
-    return (best_match);
+    return best_match;
 }
-    

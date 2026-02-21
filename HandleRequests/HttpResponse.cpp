@@ -45,7 +45,11 @@ void HttpResponse::setStatus(int status)
 void HttpResponse::createHeaders()
 {
     std::ostringstream os;
-    os << this->file->getFileSize();
+    if (this->file != NULL)
+        os << this->file->getFileSize();
+    else {
+        os << 0;
+    }
     this->headers.insert(std::make_pair("Connection", "close\r\n"));
     this->headers.insert(std::make_pair("server", "TestServer/1.1\r\n"));
     this->headers.insert(std::make_pair(FIXED_LENGTH_HEADER, os.str() + "\r\n"));
@@ -53,6 +57,9 @@ void HttpResponse::createHeaders()
 
 std::pair<unsigned char *, size_t> HttpResponse::getChunkFromRequest()
 {
+    if (!this->body) {
+        return std::make_pair((unsigned char *)NULL, 0);
+    }
     size_t chunkSize = bodySize();
     unsigned char *chunk = body->getCharVector();
     this->body->clearBody();
@@ -61,6 +68,9 @@ std::pair<unsigned char *, size_t> HttpResponse::getChunkFromRequest()
 
 size_t HttpResponse::bodySize()
 {
+    if (!this->body) {
+        return 0;
+    }
     return (this->body->bodySize());
 }
 
@@ -81,6 +91,9 @@ std::string HttpResponse::getHeader(std::string key)
 
 void HttpResponse::appendBodyToResponse(std::vector<unsigned char> &chunk)
 {
+    if (!this->body) {
+        return ;
+    }
     this->body->appendChunkToBody(chunk);
 }
 

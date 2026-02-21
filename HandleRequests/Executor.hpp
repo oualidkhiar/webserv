@@ -11,7 +11,7 @@ private:
 
     // methods // 
     void setContentTpe(HttpResponse & response , const std::string &path);
-    std::string pathResolver(HttpRequest & request);
+    std::pair<int, std::string> pathResolver(HttpRequest & request);
     bool isAllowedMethod(HttpRequest &request);
     void setLocation(HttpRequest &request);
     int matchedScore(std::string uri, std::string key);
@@ -27,6 +27,14 @@ private:
     std::string extractHeaderValue(const std::string &headers, const std::string &key);
     bool saveUploadedFile(const std::string &uploadDir, const std::string &filename, 
                           const std::vector<unsigned char> &content);
+    std::string pathResolverForDelete(HttpRequest &request);
+    // 
+    std::pair<int, FtFile *> getIndexFile(std::string& path, HttpRequest& request);
+    void caseRedirection(HttpResponse& response, std::string& path, int code);
+    void caseIndexFile(HttpResponse& resp, HttpRequest& req, std::string& path);
+    void caseListingFiles(HttpResponse& resp, HttpRequest& req, std::string& path);
+    void caseSpecifiedFile(HttpResponse& response, std::string& path);
+    void caseForbiden(HttpResponse& resp);
 
     public:
     Executor();

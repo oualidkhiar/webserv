@@ -15,8 +15,9 @@ std::pair<unsigned char *, size_t> TransactionManager::getRoofResponse()
     std ::string roof;
     unsigned char *roofBuffer;
     roof = response.getHeaderLine();
-    for (std::map<std::string, std::string>::const_iterator it = response.headersBegin(); it != response.headersEnd(); it++)
+    for (std::map<std::string, std::string>::const_iterator it = response.headersBegin(); it != response.headersEnd(); it++) {
         roof = roof + it->first + ": " + it->second;
+    }
     roof += "\r\n";
     pair.second = roof.length();
     roofBuffer = new unsigned char[pair.second];
@@ -99,15 +100,17 @@ void TransactionManager::setServer(serverConfig *config)
 std::pair<unsigned char *, size_t> TransactionManager::firstResponse()
 {
     response.initializeResponse();
+    responsed = true;
     std::pair<unsigned char *, size_t> roofResponse = getRoofResponse();
     std::pair<unsigned char *, size_t> body = response.getChunkFromRequest();
-    responsed = true;
+    if (body.second == 0) {
+        return roofResponse;
+    }
     return (joinPairs(roofResponse, body));
 }
 
 std::pair<unsigned char *, size_t> TransactionManager::getResponse()
 {
-
     if (getResponseState() == FRESH) {
         executeRequest();
     }
@@ -119,7 +122,7 @@ std::pair<unsigned char *, size_t> TransactionManager::getResponse()
             return std::make_pair((unsigned char *)"", 0); // if child proccess still running cgi don't do anything go handle the other clients
         }
     }
-    if (response.getStatus() != 0) {
+    if (response.getStatus() != 0 and response.getStatus() != 301 and response.getStatus() != 302) {
         this->response.setState(RESPONSE_FINISHED);
         std::pair<unsigned char *, size_t> p = ErrorResponse::getErrorResponse(response.getStatus());
         return p;

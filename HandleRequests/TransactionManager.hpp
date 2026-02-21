@@ -7,6 +7,7 @@
 class TransactionManager
 {
 private:
+    std::string     listedFiles;
     HttpRequest     request;
     HttpResponse    response;
     Cgi             c;

@@ -34,6 +34,7 @@ enum ReadingType
 	EMPTY
 };
 
+
 enum CGIType
 {
 	NO_CGI,
@@ -68,6 +69,8 @@ struct getInfos
 
                               
 #define HP_MOVED_PERMANENTLY 301 // Used for 'return' directive in config (e.g., redirect to https)
+
+#define HP_FOUND    302 
 
                                 
 #define HP_BAD_REQUEST       400 // Parser Error: Syntax error, missing Host header, or chunk formatting error
