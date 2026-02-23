@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>504 - Gateway Timeout</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #ff9a56 0%, #ff6a00 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+        }
+
+        .container {
+            text-align: center;
+            padding: 2rem;
+            max-width: 650px;
+        }
+
+        .error-code {
+            font-size: 150px;
+            font-weight: bold;
+            line-height: 1;
+            margin-bottom: 20px;
+            text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.3);
+            animation: blink 2s ease-in-out infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.6;
+            }
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 15px 40px;
+            background-color: white;
+            color: #ff6a00;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            border: 2px solid white;
+            color: white;
+        }
+
+        .illustration {
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .hourglass {
+            font-size: 100px;
+            animation: flip 2s ease-in-out infinite;
+        }
+
+        @keyframes flip {
+            0%, 100% {
+                transform: rotate(0deg);
+            }
+            50% {
+                transform: rotate(180deg);
+            }
+        }
+
+        .clock {
+            font-size: 100px;
+            animation: tick 1s steps(1) infinite;
+        }
+
+        @keyframes tick {
+            0% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .info-box {
+            background-color: rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+            backdrop-filter: blur(10px);
+            text-align: left;
+        }
+
+        .info-box h3 {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .timeout-info {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .timeout-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.8rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .timeout-row:last-child {
+            border-bottom: none;
+        }
+
+        .timeout-label {
+            font-weight: 600;
+            opacity: 0.9;
+        }
+
+        .timeout-value {
+            font-weight: bold;
+            background-color: rgba(255, 255, 255, 0.2);
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+        }
+
+        .tips {
+            margin-top: 1rem;
+        }
+
+        .tips ul {
+            margin-left: 1.5rem;
+            line-height: 2;
+        }
+
+        .tips li {
+            opacity: 0.95;
+        }
+
+        .progress-container {
+            margin-top: 1.5rem;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            height: 40px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.4);
+            animation: loading 2s ease-in-out infinite;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        @keyframes loading {
+            0% {
+                width: 0%;
+            }
+            50% {
+                width: 100%;
+            }
+            100% {
+                width: 0%;
+            }
+        }
+
+        .retry-timer {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="illustration">
+            <div class="hourglass">⏳</div>
+            <div class="clock">⏰</div>
+        </div>
+        <div class="error-code">504</div>
+        <h1>Gateway Timeout</h1>
+        <p>The server took too long to respond. Please try again.</p>
+        
+        <div class="btn-group">
+            <button onclick="location.reload()" class="btn">Try Again</button>
+            <a href="/" class="btn btn-secondary">Go Home</a>
+        </div>
+
+        <div class="info-box">
+            <h3>⏱️ Timeout Information</h3>
+            
+            <div class="timeout-info">
+                <div class="timeout-row">
+                    <span class="timeout-label">Gateway Timeout</span>
+                    <span class="timeout-value">60 seconds</span>
+                </div>
+                <div class="timeout-row">
+                    <span class="timeout-label">Request Status</span>
+                    <span class="timeout-value">Timed Out</span>
+                </div>
+                <div class="timeout-row">
+                    <span class="timeout-label">Server Status</span>
+                    <span class="timeout-value">Slow Response</span>
+                </div>
+            </div>
+
+            <div class="progress-container">
+                <div class="progress-bar">
+                    Waiting for response...
+                </div>
+            </div>
+
+            <div class="tips">
+                <h3 style="font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 0.8rem;">💡 What happened?</h3>
+                <ul>
+                    <li>The upstream server didn't respond in time</li>
+                    <li>Network connection might be slow</li>
+                    <li>Server is experiencing high load</li>
+                    <li>Database query took too long</li>
+                    <li>External API call timed out</li>
+                </ul>
+            </div>
+
+            <p class="retry-timer">🔄 Auto-refresh in <span id="countdown">30</span> seconds...</p>
+        </div>
+    </div>
+
+    <script>
+        // Auto-refresh countdown
+        let countdown = 30;
+        const countdownElement = document.getElementById('countdown');
+        
+        const timer = setInterval(() => {
+            countdown--;
+            countdownElement.textContent = countdown;
+            
+            if (countdown <= 0) {
+                clearInterval(timer);
+                location.reload();
+            }
+        }, 1000);
+    </script>
+</body>
+</html>

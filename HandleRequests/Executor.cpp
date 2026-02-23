@@ -10,7 +10,9 @@
 #include <fcntl.h>
 #include <dirent.h>
 
-Executor::Executor() {}
+Executor::Executor(): Case(NONE) {}
+
+ExecutorCase Executor::getExecutorCase() {return this->Case;}
 
 std::string Executor::pathResolverForDelete(HttpRequest &request)
 {
@@ -266,9 +268,10 @@ bool Executor::isAllowedMethod(HttpRequest &request)
     return (true);
 }
 
-void Executor::execute(HttpRequest &request, HttpResponse &response, Cgi &c)
+void Executor::execute(HttpRequest &request, HttpResponse &response)
 {
     setLocation(request);
+    CGIType cgiType = request.getCGIType();
     if (request.getLocation() == NULL)
     {
         response.setStatus(HP_NOT_FOUND);
@@ -279,18 +282,18 @@ void Executor::execute(HttpRequest &request, HttpResponse &response, Cgi &c)
         response.setStatus(HP_METHOD_NOT_ALLOWED);
         return;
     }
-    // if (request.getType() == DELETE)
-    //     executeDelete(request, response);
-    if (request.getType() == POST)
+    if (cgiType == PHP_CGI or cgiType == PYTHON_CGI or cgiType == SHELL_CGI) { // check if request is cgi
+        this->Case = CGI_EXECUTION;
+        return ;
+    }
+    if (request.getType() == DELETE) {
+        executeDelete(request, response);
+    }
+    else if (request.getType() == POST) {
         executePost(request, response);
-    else if (request.getType() == GET)
-    {
+    }
+    else if (request.getType() == GET) {
         executeGet(request, response);
-        // c.executeCgi();
-        // if (c.getResponseCode() != 0) {
-        //     response with spicifique error
-        //     response.setStatus(c.getResponseCode());
-        // }
     }
 }
 
@@ -311,9 +314,10 @@ void Executor::caseRedirection(HttpResponse& response, std::string& path, int co
 {
     response.AddHeader("location", path+"\r\n");
     response.setStatus(code);
+    response.setState(RESPONSE_FINISHED);
 }
 
-std::pair<int, FtFile *> Executor::getIndexFile(std::string& path, HttpRequest& request)
+std::pair<int, FtFile *> Executor::getIndexFile(HttpRequest& request)
 {
     std::string indexFile;
     int lastFile;
@@ -326,14 +330,35 @@ std::pair<int, FtFile *> Executor::getIndexFile(std::string& path, HttpRequest& 
             return p;
         }
         lastFile = p.first;
-        path.clear();
     }
     return std::make_pair(lastFile, (FtFile *)NULL);
 }
-
-void Executor::caseIndexFile(HttpResponse& resp, HttpRequest& req, std::string& path)
+std::string extructFileName(std::string fullPath)
 {
-    std::pair<int, FtFile *> res = getIndexFile(path, req);
+    std::size_t pos = fullPath.find_last_of('/');
+    if (pos != std::string::npos) {
+        return fullPath.substr(pos);
+    }
+    return "";
+}
+
+void Executor::caseIndexFile(HttpResponse& resp, HttpRequest& req)
+{
+    std::pair<int, FtFile *> res = getIndexFile(req);
+    req.checkCGI(res.second->getPath());
+    CGIType cgiType = req.getCGIType();
+    if (cgiType == PHP_CGI or cgiType == PYTHON_CGI or cgiType == SHELL_CGI) { // maybe index file is a cgi (needs to execute : index.py ...)
+        res.second->ft_close();
+        std::string fileName = extructFileName(res.second->getPath());
+        if (fileName.length() == 0) {
+            resp.setStatus(HP_NOT_FOUND);
+            resp.setState(READING_LARGE_FILE);
+            return ;
+        }
+        req.setUri(fileName);
+        this->Case = CGI_EXECUTION;
+        return ;
+    }
     if (res.first != 1) {
         resp.setStatus(res.first);
         resp.setState(READING_LARGE_FILE);
@@ -434,20 +459,18 @@ void Executor::executeGet(HttpRequest &request, HttpResponse &response)
         case 301: // redirection for 301
         {
             caseRedirection(response, p.second, HP_MOVED_PERMANENTLY);
-            response.setState(RESPONSE_FINISHED);
             break;
         }
 
         case 302: // redirection for 302
         {
             caseRedirection(response, p.second, HP_FOUND);
-            response.setState(RESPONSE_FINISHED);
             break;
         }
-        
+
         case 2: // index file exist send index file
         {
-            caseIndexFile(response, request, p.second);
+            caseIndexFile(response, request);
             break;
         }
         

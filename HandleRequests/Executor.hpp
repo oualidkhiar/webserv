@@ -4,11 +4,15 @@
 #include "../includes/config.hpp"
 #include "handleCgi.hpp"
 
+enum ExecutorCase{
+    CGI_EXECUTION,
+    NONE
+};
 
 class Executor
 {
 private:
-
+    ExecutorCase Case;
     // methods // 
     void setContentTpe(HttpResponse & response , const std::string &path);
     std::pair<int, std::string> pathResolver(HttpRequest & request);
@@ -29,15 +33,16 @@ private:
                           const std::vector<unsigned char> &content);
     std::string pathResolverForDelete(HttpRequest &request);
     // 
-    std::pair<int, FtFile *> getIndexFile(std::string& path, HttpRequest& request);
+    std::pair<int, FtFile *> getIndexFile(HttpRequest& request);
     void caseRedirection(HttpResponse& response, std::string& path, int code);
-    void caseIndexFile(HttpResponse& resp, HttpRequest& req, std::string& path);
+    void caseIndexFile(HttpResponse& resp, HttpRequest& req);
     void caseListingFiles(HttpResponse& resp, HttpRequest& req, std::string& path);
     void caseSpecifiedFile(HttpResponse& response, std::string& path);
     void caseForbiden(HttpResponse& resp);
 
     public:
     Executor();
-    void execute(HttpRequest &request , HttpResponse & response, Cgi& c);
+    ExecutorCase getExecutorCase();
+    void execute(HttpRequest &request , HttpResponse & response);
 };
 

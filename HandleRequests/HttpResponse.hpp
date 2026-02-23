@@ -20,6 +20,7 @@ private:
     FtFile *file;
     void createHeaderLine();
     void createHeaders();
+    // cgi handlers
 
 public:
 
@@ -47,6 +48,8 @@ public:
     static HttpResponse getResponse(HttpRequest &request);
     ~HttpResponse();
     void printHeaders();
+
+    // cgi handlers
 
     void printBody();
 };

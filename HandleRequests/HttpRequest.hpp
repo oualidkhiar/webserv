@@ -6,7 +6,6 @@
 #include "../includes/config.hpp"
 
 class HttpRequest
-
 {
 private:
     std::vector<unsigned char> request;

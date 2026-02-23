@@ -3,7 +3,7 @@
 #include <algorithm>
 #include "StringManip.hpp"
 
-HttpRequest ::HttpRequest()
+HttpRequest::HttpRequest()
 {
     status = READING_REQUEST_LINE;
     status_code = 200;
@@ -40,6 +40,7 @@ void HttpRequest::clear() { request.clear(); }
 void HttpRequest::setQuery(std::string query) {this->query_string = query;}
 std::string HttpRequest::getQuery( void ) { return this->query_string;}
 bool HttpRequest::hasError() { return (this->status == ERROR); }
+enum CGIType HttpRequest::getCGIType() {return this->cgi_type;}
 
 void HttpRequest::checkCGI(const std::string &uri)
 {
@@ -49,28 +50,15 @@ void HttpRequest::checkCGI(const std::string &uri)
 		this->setCGIType(NO_CGI);
 		return;
 	}
-
 	std::string extension = uri.substr(dot_pos);
-
-	if (this->location != NULL && !this->location->cgi_extension.empty())
-	{
-		for (size_t i = 0; i < this->location->cgi_extension.size(); i++)
-		{
-			if (this->location->cgi_extension[i] == extension)
-			{
-				if (extension == ".php")
-					this->setCGIType(PHP_CGI);
-				else if (extension == ".py")
-					this->setCGIType(PYTHON_CGI);
-				else if (extension == ".sh")
-					this->setCGIType(SHELL_CGI);
-				else
-					this->setCGIType(NO_CGI);
-				return;
-			}
-		}
-	}
-	this->setCGIType(NO_CGI);
+	if (extension == ".php")
+		this->setCGIType(PHP_CGI);
+	else if (extension == ".py")
+		this->setCGIType(PYTHON_CGI);
+	else if (extension == ".sh")
+		this->setCGIType(SHELL_CGI);
+	else
+		this->setCGIType(NO_CGI);
 }
 
 bool HttpRequest::setUri(const std::string &uri)

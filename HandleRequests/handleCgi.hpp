@@ -43,6 +43,7 @@ private:
 	void redirectInOut();
 	void parentPs();
 	void childPs(std::string path);
+	bool timeOut();
 
 public:
 
@@ -54,3 +55,6 @@ public:
 	int getResponseCode();
 
 };
+
+
+

@@ -19,6 +19,7 @@ std::map<int, std::string> ErrorResponse::initErrorPages()
     errorPages[501] = "www/error_pages/501.html";
     errorPages[503] = "www/error_pages/503.html";
     errorPages[505] = "www/error_pages/505.html";
+    errorPages[504] = "www/error_pages/504.html";
     
     return errorPages;
 }

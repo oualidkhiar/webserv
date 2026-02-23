@@ -80,7 +80,10 @@ void TransactionManager::appendToRequest(unsigned char *buffer, size_t size)
 void TransactionManager::executeRequest()
 {
     Executor execute;
-    execute.execute(request, response, c);
+    execute.execute(request, response);
+    if (execute.getExecutorCase() == CGI_EXECUTION) {
+        c.executeCgi();
+    }
 }
 
 void TransactionManager::readChunk()

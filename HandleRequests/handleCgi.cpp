@@ -260,7 +260,7 @@ std::string Cgi::generateRandomName()
 		else {break ;}
 		if (name.length() >= NAME_LEN) {break;}
 	}
-	if (name.empty()) {
+	if (name.empty() or access(("/tmp/"+name).c_str(), F_OK) == 0) {
 		std::ostringstream oss;
 		oss << (&fd);
 		name = oss.str();
@@ -275,7 +275,6 @@ void Cgi::createResponse()
 {
 	std::string filename;
 	std::string outfile;
-	Executor	forGettingFile;
 	FtFile 		*file;
 	int			fd;
 
@@ -286,8 +285,7 @@ void Cgi::createResponse()
 		perror("open");
 		this->responseCode = 500;
 		return ;
-	}
-	else {
+	} else {
 		file = new FtFile(outfile);
 		file->setFd(fd);
 		response.setFile(file);
@@ -309,7 +307,7 @@ void Cgi::redirectInOut()
 	// close(infile)
 }
 
-bool timeOut()
+bool Cgi::timeOut()
 {
 	static time_t 	startTime;
 	time_t			currentTime;
@@ -343,7 +341,7 @@ void Cgi::parentPs()
 		}
 		return ;
 	}
-	if (timeOut()) {
+	if (this->timeOut()) {
 		kill(pid, SIGKILL);
 		this->responseCode = 504; // Gateway timeout error response 
 	}
@@ -356,10 +354,11 @@ void Cgi::childPs(std::string path)
 	argv[1] = NULL;
 	if (request.getType() == GET || request.getType() == DELETE) {
 		redirectOutOnly();
-	}
-	else {
+	} else {
 		redirectInOut();
 	}
+	// TODO: if python get interpreter for python / shell interpreter for shell / php intepreter for php --> from config file 
+	std::cerr << path.c_str() << std::endl;
 	execve(path.c_str(), argv, envp);
 	exit(1);
 }
@@ -371,7 +370,6 @@ void Cgi::executeCgi(void)
 	if (this->responseCode != 0) {
 		return ;
 	}
-	
 	createResponse();
 	if (this->responseCode != 0) {
 		std::cout << path << std::endl;
