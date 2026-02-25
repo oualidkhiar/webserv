@@ -42,6 +42,10 @@ std::string HttpRequest::getQuery( void ) { return this->query_string;}
 bool HttpRequest::hasError() { return (this->status == ERROR); }
 enum CGIType HttpRequest::getCGIType() {return this->cgi_type;}
 
+ // debugging functions*******
+void HttpRequest::setRequest(std::vector<unsigned char> request) { this->request = request; }
+// ***************************
+
 void HttpRequest::checkCGI(const std::string &uri)
 {
 	size_t dot_pos = uri.find_last_of('.');
@@ -157,7 +161,7 @@ std::string HttpRequest::extractString(size_t pos, size_t len)
 std::vector<unsigned char> HttpRequest::getChunk(size_t start, size_t len)
 {
     std::vector<unsigned char>::const_iterator first = request.begin() + start;
-    std::vector<unsigned char>::const_iterator last = request.begin() + len;
+    std::vector<unsigned char>::const_iterator last = request.begin() + start + len;
     std::vector<unsigned char> chunk(first, last);
     return (chunk);
 }

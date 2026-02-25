@@ -13,14 +13,14 @@ RequestParser ::RequestParser() {}
 /*                                                                            */
 /* ************************************************************************** */
 
-size_t RequestParser::findEndOfHeader(HttpRequest &request)
+size_t RequestParser::find2CrlfPos(HttpRequest &request)
 {
-
+    size_t len = request.requestSize();
     size_t pos = 0;
-    while (pos < request.getRequest().size() - 3)
+    while (pos + 3 < len)
     {
-        if (request.getRequest().at(pos) == '\r' && request.getRequest().at(pos + 1) == '\n' &&
-            request.getRequest().at(pos + 2) == '\r' && request.getRequest().at(pos + 3) == '\n')
+        if (request.getCharFromRequest(pos) == '\r' && request.getCharFromRequest(pos + 1) == '\n' &&
+            request.getCharFromRequest(pos + 2) == '\r' && request.getCharFromRequest(pos + 3) == '\n')
             return (pos);
         pos++;
     }
@@ -29,10 +29,11 @@ size_t RequestParser::findEndOfHeader(HttpRequest &request)
 
 size_t RequestParser::findCrlfPos(HttpRequest &request)
 {
+    size_t len = request.requestSize();
     size_t pos = 0;
-    while (pos < request.getRequest().size() - 1)
+    while (pos + 1 < len)
     {
-        if (request.getRequest().at(pos) == '\r' && request.getRequest().at(pos + 1) == '\n')
+        if (request.getCharFromRequest(pos) == '\r' && request.getCharFromRequest(pos + 1) == '\n')
             return (pos);
         pos++;
     }
@@ -45,6 +46,7 @@ size_t RequestParser::findCrlfPos(HttpRequest &request)
 /*                                                                            */
 /* ************************************************************************** */
 
+/* body chunked parsing  */
 bool RequestParser::get_chunked(HttpRequest &request, int size)
 {
     if (!(request.getCharFromRequest(size) == '\r' && request.getCharFromRequest(size + 1) == '\n'))
@@ -54,44 +56,66 @@ bool RequestParser::get_chunked(HttpRequest &request, int size)
     return (true);
 }
 
+int RequestParser::get_chunked_size(HttpRequest &request, const size_t &pos)
+{
+	std::string line = request.extractString(0, pos);
+	size_t i = 0;
+	while (i < line.size() && std::isxdigit((line[i])))
+		i++;
+	std::string hex_part = line.substr(0, i);
+	if (hex_part.empty())
+	{
+		request.setResponseCode(400, "Bad Request");
+		return (-1);
+	}
+	int size = hex_to_num(hex_part);
+	if (size < 0)
+	{
+		request.setResponseCode(400, "Bad Request");
+		return (-1);
+	}
+	return (size);
+}
+
 void RequestParser::read_body_chunked(HttpRequest &request)
 {
     size_t pos = findCrlfPos(request);
-    if (pos == std::string::npos)
-        return;
 
-    std::string line = request.extractString(0, pos);
-    size_t i = 0;
-    while (i < line.size() && std::isxdigit((line[i])))
-        i++;
-    std::string hex_part = line.substr(0, i);
-    if (hex_part.empty())
-    {
-        request.setResponseCode(400, "Bad Request");
-        return;
-    }
-    int size = hex_to_num(hex_part);
-    if (size < 0)
-    {
-        request.setResponseCode(400, "Bad Request");
-        return;
-    }
-    if (size == 0)
-    {
-        request.eraseFromRequest(0, pos + 2);
-        request.setStatus((status)FINISHED);
-        return;
-    }
-    if (request.requestSize() < pos + 2 + (size) + 2)
-        return;
-    request.eraseFromRequest(0, pos + 2);
-    if (get_chunked(request, size) == false)
-    {
-        request.setResponseCode(400, "Bad Request");
-        return;
-    }
+	while (pos != std::string::npos)
+	{
+		int size = get_chunked_size(request, pos);
+		if (size < 0)
+			return ;
+
+		if (size == 0)
+		{
+			if (request.requestSize() < pos + 4)
+				return;
+			if (request.getCharFromRequest(pos + 2) != '\r'
+				|| request.getCharFromRequest(pos + 3) != '\n')
+			{
+				request.setResponseCode(400, "Bad Request");
+				return;
+			}
+			request.eraseFromRequest(0, pos + 4);
+			request.setStatus((status)FINISHED);
+			return;
+		}
+
+		if (request.requestSize() < pos + 2 + (size) + 2)
+			return;
+
+		request.eraseFromRequest(0, pos + 2);
+		if (get_chunked(request, size) == false)
+		{
+			request.setResponseCode(400, "Bad Request");
+			return;
+		}
+		pos = findCrlfPos(request);
+	}
 }
 
+/* body fixed length parsing  */
 void RequestParser::read_body_fixed(HttpRequest &request)
 {
     Body	&body = request.getBody();
@@ -141,7 +165,6 @@ void RequestParser::read_body(HttpRequest &request)
 		}
 		read_body_fixed(request);
 	}
-
 	if (body.getType() == CHUNKED)
 		read_body_chunked(request);
 }
@@ -156,7 +179,7 @@ void RequestParser::read_header(HttpRequest &request)
 {
 
     size_t pos;
-    pos = findEndOfHeader(request);
+    pos = find2CrlfPos(request);
     if (pos == std::string::npos)
         return;
     std::string headers_string = request.extractString(0, pos);

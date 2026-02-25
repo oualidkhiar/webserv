@@ -72,9 +72,7 @@ int hex_to_num(const std::string hex)
 
 int stringToNumber(std::string s)
 {
-    int number;
-    number = 0;
-
+    int number = 0;
     int i = 0;
     while (s[i])
     {

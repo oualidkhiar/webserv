@@ -1,5 +1,6 @@
 #include "Body.hpp"
 #include "HttpRequest.hpp"
+#include <cctype>
 #include <cstring>
 
 Body::Body() : type(EMPTY), to_read(0) {}
@@ -14,7 +15,11 @@ size_t Body::getToRead() { return (this->to_read); }
 
 enum ReadingType Body::discoverReadingType(HttpRequest &request) 
 {
-    bool has_chunked = !request.getHeader(CHUNKED_HEADER).empty();
+    std::string te = request.getHeader(CHUNKED_HEADER);
+    std::string te_lower = te;
+    for (size_t i = 0; i < te_lower.size(); i++)
+        te_lower[i] = std::tolower(te_lower[i]);
+    bool has_chunked = (te_lower.find("chunked") != std::string::npos);
     bool has_content_length = !request.getHeader(FIXED_LENGTH_HEADER).empty();
     
     //if both are present, return EMPTY (security: request smuggling)
@@ -26,10 +31,10 @@ enum ReadingType Body::discoverReadingType(HttpRequest &request)
     }
     
     if (has_chunked)
-	{
-		setType(CHUNKED);
+    {
+        setType(CHUNKED);
         return CHUNKED;
-	}
+    }
     if (has_content_length)
 	{
 		setType(FIXED_LENGTH);

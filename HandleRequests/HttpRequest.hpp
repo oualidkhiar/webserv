@@ -74,4 +74,5 @@ public:
     void printHeaders();
     void printBody();
     void printRequest();
+	void setRequest(std::vector<unsigned char> request);
 };
