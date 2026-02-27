@@ -26,11 +26,11 @@ private:
     std::pair<int , FtFile *> extractFileInfos(const char * path);
     
     // Multipart parsing helpers
-    std::string extractBoundary(const std::string &contentType);
+    // std::string extractBoundary(const std::string &contentType);
     void parseMultipartBody(HttpRequest &request, HttpResponse &response, const std::string &boundary);
     std::string extractHeaderValue(const std::string &headers, const std::string &key);
-    bool saveUploadedFile(const std::string &uploadDir, const std::string &filename, 
-                          const std::vector<unsigned char> &content);
+    bool saveUploadedFile(const std::string &uploadDir, const std::string &filename,
+                          const std::string &content);
     std::string pathResolverForDelete(HttpRequest &request);
     // 
     std::pair<int, FtFile *> getIndexFile(HttpRequest& request);
@@ -44,5 +44,8 @@ private:
     Executor();
     ExecutorCase getExecutorCase();
     void execute(HttpRequest &request , HttpResponse & response);
+
+	//debugging;
+    std::string extractBoundary(const std::string &contentType);
 };
 
