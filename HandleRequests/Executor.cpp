@@ -183,6 +183,7 @@ void Executor::parseMultipartBody(HttpRequest &request, HttpResponse &response, 
 				else
 				{
 					response.setStatus(HP_INTERNAL_SERVER_ERROR);
+					response.setState(RESPONSE_FINISHED);
 					return;
 				}
 			}
@@ -221,9 +222,14 @@ void Executor::executePost(HttpRequest &request, HttpResponse &response)
 		parseMultipartBody(request, response, boundary);
 
 	}
+	else if (request.getLocation() == NULL || request.getLocation()->upload_store.empty())
+	{
+		response.setStatus(HP_FORBIDDEN);
+		response.setState(RESPONSE_FINISHED);
+	}
 	else
 	{
-		response.setStatus(HP_OK);
+		response.setStatus(HP_Unsupported_Media_Type);
 		response.setState(RESPONSE_FINISHED);
 	}
 }

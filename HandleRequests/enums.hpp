@@ -48,7 +48,7 @@ enum HttpVersion
 	HTTP_1_0,
 	HTTP_1_1
 };
-
+#define HP_Unsupported_Media_Type 415
 struct getInfos 
 {
     ResponseState state;
@@ -78,8 +78,8 @@ struct getInfos
 #define HP_NOT_FOUND         404 // Router Error: The requested file path does not exist
 #define HP_METHOD_NOT_ALLOWED 405 // Config Limit: Request method not in 'limit_except' block
 #define HP_PAYLOAD_TOO_LARGE 413 // Config Limit: Body size > 'client_max_body_size'
+#define HP_Unsupported_Media_Type 415 
 
-                              
 #define HP_INTERNAL_SERVER_ERROR 500 // CGI Error: Script crashed or system call (read/write) failed
 #define HP_NOT_IMPLEMENTED       501 // Parser Error: Method is not GET, POST, or DELETE
 #define HP_VERSION_NOT_SUPPORTED 505 // Parser Error: Request is not HTTP/1.1

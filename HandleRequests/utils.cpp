@@ -44,6 +44,9 @@ std::string getStatusReponseLine(int code)
     case HP_VERSION_NOT_SUPPORTED:
         statusLine = "HTTP/1.1 505 HTTP Version Not Supported\r\n";
         break;
+	case HP_Unsupported_Media_Type:
+		statusLine = "HTTP/1.1 415 Unsupported Media Type\r\n";
+		break;
     default:
         statusLine = "HTTP/1.1 500 Internal Server Error\r\n";
         break;
