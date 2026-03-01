@@ -47,11 +47,7 @@ void Cgi::convertFromVectorStringtToDoubleArray(std::vector<std::string> &env)
 std::string Cgi::pathResolver()
 {
 	std::string path;
-	if (request.getLocation() != NULL)
-	{
-		if (request.getLocation()->rootPath.empty() == false)
-			path = request.getLocation()->rootPath + request.getUri();
-	}
+	path = request.getLocation()->rootPath + request.getUri();
 	return (path);
 }
 
@@ -268,10 +264,12 @@ void Cgi::redirectOutOnly()
 
 void Cgi::redirectInOut()
 {
-	// dup2(request.outfile()->getFd(), STDIN_FILENO);
+	std::string infile = request.getFtFile()->getPath();
+	int fd = open(infile.c_str(), O_RDONLY);
+	dup2(fd, STDIN_FILENO);
 	dup2(response.getFile()->getFd(), STDOUT_FILENO);
 	close(response.getFile()->getFd());
-	// close(infile)
+	close(fd);
 }
 
 bool Cgi::timeOut()
@@ -296,6 +294,9 @@ void Cgi::parentPs()
 			this->responseCode = 500;
 			return ;
 		}
+		char buffer[10];
+		read(response.getFile()->getFd(), buffer, 10);
+		std::cout << buffer << std::endl;
 		resetFileOffset();
     	if (this->responseCode != 0) {return ;}
 		writeHeadersFromCgiOut();
@@ -303,14 +304,16 @@ void Cgi::parentPs()
 			response.AddHeader(CONTENT_TYPE_HEADER, DEFAULT_CONTENT_TYPE);
 		}
 		if (request.getType() == POST) {
-			// close(infile);
-			// remove it 
+			request.getFtFile()->setRemoveFile(true);
+			request.getFtFile()->ft_close();
 		}
 		return ;
 	}
 	if (this->timeOut()) {
 		kill(pid, SIGKILL);
 		this->responseCode = 504; // Gateway timeout error response 
+		request.getFtFile()->setRemoveFile(true);
+		request.getFtFile()->ft_close();
 	}
 }
 
@@ -323,11 +326,12 @@ void Cgi::childPs(std::string path)
 		redirectOutOnly();
 	} else {
 		redirectInOut();
-	}
+	}	
+	
 	// TODO: if python get interpreter for python / shell interpreter for shell / php intepreter for php --> from config file 
-	std::cerr << path.c_str() << std::endl;
 	execve(path.c_str(), argv, envp);
 	exit(1);
+	
 }
 
 void Cgi::executeCgi(void)

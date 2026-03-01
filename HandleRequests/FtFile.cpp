@@ -5,7 +5,6 @@
 #include "StringManip.hpp"
 #include <iostream>
 
-FtFile::FtFile(void) {};
 FtFile::FtFile(const std::string &path)
 
 {
@@ -118,7 +117,9 @@ void FtFile::writeToFile(const std::vector<unsigned char> &data, bool close)
 {
     if (fd == -1)
     {
-        fd = open(path.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
+        fd = open(path.c_str(), O_CREAT | O_WRONLY, 0644); // modified. old version :  fd = open(path.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
+		if (fd == -1)
+			std::cout << "file not created !" << std::endl; // TODO by ilyas w sm7lina. siti 500 la3azak alkhawa.
         this->state = FILE_WRITING;
     }
     if (close)

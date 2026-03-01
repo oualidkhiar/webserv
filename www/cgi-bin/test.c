@@ -3,9 +3,8 @@
 #include <unistd.h>
 int main()
 {
-    sleep(7);
     printf("Content-Type: html\r\n");
-    printf("Content-Length: 29\r\n");
+    printf("content-length: 29\r\n");
     printf("\r\n");
     printf("hwllo im walid khiar welcome");
 }

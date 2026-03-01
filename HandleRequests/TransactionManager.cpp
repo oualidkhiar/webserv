@@ -83,6 +83,10 @@ void TransactionManager::executeRequest()
     execute.execute(request, response);
     if (execute.getExecutorCase() == CGI_EXECUTION) {
         c.executeCgi();
+		if (c.getResponseCode() != 0) {
+			response.setState(RESPONSE_FINISHED);
+			response.setStatus(c.getResponseCode());
+		}
     }
 }
 

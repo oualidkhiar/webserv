@@ -4,6 +4,8 @@
 #include <iostream>
 #include <cstdlib>
 #include <cctype>
+#include "utils.hpp"
+#include "Executor.hpp"
 
 RequestParser ::RequestParser() {}
 
@@ -213,7 +215,10 @@ void RequestParser::read_header(HttpRequest &request)
     request.setStatus(READ_BODY);
 	if (request.getCGIType() != NO_CGI && request.getType() == POST)
 	{
-		request.setFtFile(new FtFile);
+
+		std::string name = "/tmp/" + generateRandomName();
+		FtFile *file = new FtFile(name);
+		request.setFtFile(file);
 	}
 }
 
@@ -325,16 +330,17 @@ void RequestParser::create_request(HttpRequest &request)
         read_header(request);
     if (request.getStatus() == READ_BODY)
 	{
-        read_body(request);
+		read_body(request);
 		if (request.getCGIType() != NO_CGI && request.getType() == POST)
 		{
+			//TODO validate path and allowed methods .
 			if (request.getStatus() == FINISHED)
 				closefile = true;
 			request.getFtFile()->writeToFile(request.getBody().getBody(), closefile) ;
 		}
 		if (request.getCGIType() == NO_CGI && request.getType() == POST)
 		{
-			// file upload;
+
 		}
 	}
 	if (request.getStatus() == ERROR)

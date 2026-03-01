@@ -16,12 +16,8 @@ private:
     // methods // 
     void setContentTpe(HttpResponse & response , const std::string &path);
     std::pair<int, std::string> pathResolver(HttpRequest & request);
-    bool isAllowedMethod(HttpRequest &request);
-    void setLocation(HttpRequest &request);
-    int matchedScore(std::string uri, std::string key);
     void executeDelete(HttpRequest &request, HttpResponse & response);
     void executePost(HttpRequest &request, HttpResponse & response);
-    location *getLongestMatchedLocation(HttpRequest &request, std::map<std::string, location *> map);
     void executeGet(HttpRequest &request, HttpResponse & response);
     std::pair<int , FtFile *> extractFileInfos(const char * path);
     
@@ -44,8 +40,13 @@ private:
     Executor();
     ExecutorCase getExecutorCase();
     void execute(HttpRequest &request , HttpResponse & response);
-
+	static bool isAllowedMethod(HttpRequest &request);
+	static void setLocation(HttpRequest &request);
+	static int matchedScore(std::string uri, std::string key);
+	static    location *getLongestMatchedLocation(HttpRequest &request, std::map<std::string, location *> map);
+	
 	//debugging;
     std::string extractBoundary(const std::string &contentType);
+
 };
 
