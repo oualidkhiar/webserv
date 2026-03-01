@@ -215,7 +215,7 @@ void PostParser::creatFile(HttpRequest &request, HttpResponse &response)
 	if (request.getCGIType() == NO_CGI)
 	{
 		std::string contentType = request.getHeader("content-type");
-		if (!contentType.empty() || contentType.find("multipart/form-data") != std::string::npos)
+		if (!contentType.empty() && contentType.find("multipart/form-data") != std::string::npos)
 			return;
 
 		std::string filePath = PostParser::applicationFileName(request);

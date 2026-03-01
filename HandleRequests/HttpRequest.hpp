@@ -6,6 +6,8 @@
 #include "../includes/config.hpp"
 #include "FtFile.hpp"
 
+class HttpResponse;
+
 class HttpRequest
 {
 private:
@@ -48,7 +50,7 @@ public:
     int getPort();
     struct location *getLocation();
     std::vector<unsigned char> getRequest();
-    void appendRequestData(unsigned char *buffer, size_t buffer_size);
+    void appendRequestData(unsigned char *buffer, size_t buffer_size, HttpResponse &response);
     unsigned char getCharFromRequest(int index);
     size_t requestSize();
     std::string getQuery( void );

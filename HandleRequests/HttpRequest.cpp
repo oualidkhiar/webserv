@@ -136,10 +136,11 @@ std::string HttpRequest::getHeader(std::string key)
     return "";
 }
 
-void HttpRequest::appendRequestData(unsigned char *buffer, size_t buffer_size)
+void HttpRequest::appendRequestData(unsigned char *buffer, size_t buffer_size, HttpResponse &response)
 {
     RequestParser parser;
     this->request.insert(request.end(), buffer, buffer + buffer_size);
+    parser.create_request(*this, response);
 }
 
 int HttpRequest::addHeader(std::string key, std::string value)

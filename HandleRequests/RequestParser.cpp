@@ -138,7 +138,9 @@ void RequestParser::read_body_fixed(HttpRequest &request)
         body.setToRead(0);
     }
     if (body.getToRead() == 0)
+    {
         request.setStatus((status)FINISHED);
+    }
 }
 
 bool RequestParser::setBufferFixed(HttpRequest &request, Body *body)
@@ -321,7 +323,6 @@ void RequestParser::reading_request_line(HttpRequest &request)
 
 void RequestParser::create_request(HttpRequest &request, HttpResponse &response)
 {
-	std::cout << "saaaaaaaaaaaaaaaaaaaaaaaa\n";
 	if (request.getStatus() == FINISHED)
 	{
 		if (request.getType() == POST && request.getCGIType() != NO_CGI)
@@ -343,7 +344,5 @@ void RequestParser::create_request(HttpRequest &request, HttpResponse &response)
 		read_body(request);
 	}
 	if (request.getStatus() == ERROR)
-	{
-
-	}
+		return ;
 }
