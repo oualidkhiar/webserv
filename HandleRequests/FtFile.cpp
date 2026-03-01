@@ -113,5 +113,21 @@ std::vector<unsigned char> FtFile::readFile()
         chunk.assign(buffer, buffer + bytes_read);
     return (chunk);
 }
+void FtFile::writeToFile(const std::vector<unsigned char> &data, bool close)
+{
+    if (fd == -1)
+    {
+        fd = open(path.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
+        this->state = FILE_WRITING;
+    }
+    if (close)
+    {
+        write(fd, &data[0], data.size());
+        ft_close();
+        return;
+    }
+    write(fd, &data[0], data.size());
+}
+
 
 FtFile::~FtFile() {}

@@ -7,6 +7,7 @@ enum FileReadState
 {
     NOT_OPENED,
     FILE_READING,
+    FILE_WRITING,
     FILE_FINISHED,
 };
 
@@ -32,6 +33,7 @@ public:
     FileReadState getState() const;
     void incrementSentedBytes(size_t amount);
     std::vector<unsigned char> readFile();
+    void FtFile::writeToFile(const std::vector<unsigned char> &data, bool close);
     // Setters
     void setFileSize(size_t size);
     void setFd(int newFd);
