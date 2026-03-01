@@ -12,6 +12,7 @@ HttpRequest::HttpRequest()
     location = NULL;
 	cgi_type = NO_CGI;
 	file = NULL;
+	ContentType CT = NO_CT;
 }
 
 int HttpRequest::getPort() { return (this->port); }
@@ -28,7 +29,9 @@ std::vector<unsigned char> HttpRequest::getRequest() { return (this->request); }
 unsigned char HttpRequest::getCharFromRequest(int index) { return (request.at(index)); }
 size_t HttpRequest::requestSize() { return (request.size()); }
 FtFile* HttpRequest::getFtFile(void) {return (this->file); } ;
+ContentType	HttpRequest::getContentType(void) {return (this->CT);};
 
+void HttpRequest::setContentType(ContentType CT) {this->CT = CT; };
 void HttpRequest::setFtFile(FtFile *file) {this->file = file; }
 void HttpRequest::setPort(int port) { this->port = port; }
 void HttpRequest::setConfig(struct serverConfig *config) { this->config = config; }
@@ -137,7 +140,6 @@ void HttpRequest::appendRequestData(unsigned char *buffer, size_t buffer_size)
 {
     RequestParser parser;
     this->request.insert(request.end(), buffer, buffer + buffer_size);
-    parser.create_request(*this);
 }
 
 int HttpRequest::addHeader(std::string key, std::string value)

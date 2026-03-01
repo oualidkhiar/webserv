@@ -1,6 +1,7 @@
 #include "PostParser.hpp"
 #include "enums.hpp"
 #include <fstream>
+#include "utils.hpp"
 
 std::string PostParser::extractBoundary(const std::string &contentType)
 {
@@ -138,7 +139,7 @@ void PostParser::parseMultipartBody(HttpRequest &request, HttpResponse &response
 	response.setState(RESPONSE_FINISHED);
 }
 
-void PostParser::execute(HttpRequest &request, HttpResponse &response)
+void PostParser::executeUpload(HttpRequest &request, HttpResponse &response)
 {
 	std::string contentType = request.getHeader("content-type");
 	if (contentType.find("multipart/form-data") != std::string::npos)
@@ -163,21 +164,55 @@ void PostParser::execute(HttpRequest &request, HttpResponse &response)
 		bool closeFile = (request.getStatus() == FINISHED);
 		request.getFtFile()->writeToFile(request.getBody().getBody(), closeFile);
 	}
-	else
+	else if (!contentType.empty())
 	{
 		response.setStatus(HP_Unsupported_Media_Type);
+		response.setState(RESPONSE_FINISHED);
+	}
+	else
+	{
+		response.setStatus(HP_OK); // added lately for post without file upload withot nothing .
 		response.setState(RESPONSE_FINISHED);
 	}
 }
 
 std::string PostParser::applicationFileName(HttpRequest &request)
 {
+	std::string basePath = request.getLocation()->rootPath + "/" + request.getLocation()->upload_store + "/";
 	std::string value = request.getHeader("content-disposition");
 	if (value.find("filename=") != std::string::npos)
 	{
 		std::string filename = extractHeaderValue(value, "filename=");
 		if (!filename.empty())
-			return (request.getLocation()->rootPath + "/" + request.getLocation()->upload_store + "/" + filename);
+			return (basePath + filename);
 	}
-	return "";
+	return (basePath + generateRandomName());
+}
+
+void PostParser::executeCGI(HttpRequest &request)
+{
+	//TODO validate path and allowed methods .
+	bool closeFile = (request.getStatus() == FINISHED);
+	request.getFtFile()->writeToFile(request.getBody().getBody(), closeFile);
+	request.getBody().clearBody();
+}
+
+void PostParser::creatFile(HttpRequest &request)
+{
+	if (request.getCGIType() != NO_CGI)
+	{
+		std::string name = "/tmp/" + generateRandomName();
+		FtFile *file = new FtFile(name);
+		request.setFtFile(file);
+	}
+	if (request.getCGIType() == NO_CGI)
+	{
+		std::string contentType = request.getHeader("content-type");
+		if (!contentType.empty() || contentType.find("multipart/form-data") != std::string::npos)
+			return;
+
+		std::string filePath = PostParser::applicationFileName(request);
+		FtFile *file = new FtFile(filePath);
+		request.setFtFile(file);
+	}
 }

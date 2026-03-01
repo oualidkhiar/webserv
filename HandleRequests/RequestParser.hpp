@@ -15,6 +15,7 @@ private:
     bool setBufferFixed(HttpRequest &request , Body * body);
     size_t findCrlfPos(HttpRequest & request);
     size_t find2CrlfPos(HttpRequest &request);
+	void CGI_body(HttpRequest &request);
 public:
     RequestParser();
     void create_request(HttpRequest &request, HttpResponse &response);

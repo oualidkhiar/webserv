@@ -12,6 +12,8 @@ private:
 	static std::string extractHeaderValue(const std::string &headers, const std::string &key);
 
 public:
-	static void execute(HttpRequest &request, HttpResponse &response);
+	static void executeUpload(HttpRequest &request, HttpResponse &response);
+	static void executeCGI(HttpRequest &request);
 	static std::string applicationFileName(HttpRequest &request);
+	static void creatFile(HttpRequest &request);
 };

@@ -24,6 +24,6 @@ public:
     enum ReadingType discoverReadingType(HttpRequest &request);
     enum ReadingType getType();
     size_t getToRead();
-    std::vector<unsigned char> getBody();
+    const std::vector<unsigned char>& getBody();
     ~Body();
 };

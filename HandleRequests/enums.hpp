@@ -48,6 +48,14 @@ enum HttpVersion
 	HTTP_1_0,
 	HTTP_1_1
 };
+
+enum ContentType
+{
+	NO_CT,
+	MULTIPART_CT,
+	APPLICATION_CT
+};
+
 #define HP_Unsupported_Media_Type 415
 struct getInfos 
 {

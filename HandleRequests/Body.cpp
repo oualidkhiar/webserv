@@ -9,7 +9,7 @@ void Body::setToRead(size_t to_read) { this->to_read = to_read; }
 void Body::setBody(std::vector<unsigned char> chunk) { this->body = chunk; }
 void Body::setType(enum ReadingType type) { this->type = type;}
 
-std::vector<unsigned char> Body::getBody() { return (this->body); }
+const std::vector<unsigned char>& Body::getBody() { return (this->body); }
 enum ReadingType Body::getType() { return (this->type); }
 size_t Body::getToRead() { return (this->to_read); }
 

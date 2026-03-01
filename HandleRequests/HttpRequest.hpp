@@ -28,6 +28,7 @@ private:
     int port;
     struct location *location;
 	FtFile *file;
+	ContentType CT;
 
 public:
     HttpRequest();
@@ -56,8 +57,10 @@ public:
     std::string extractString(size_t pos, size_t len);
     std::vector<unsigned char> getChunk(size_t pos, size_t len);
 	FtFile *getFtFile(void);
+	ContentType	getContentType(void);
 
     void clear();
+	void setContentType(ContentType CT);
 	void setFtFile(FtFile *file);
     void setLocation(struct location *location);
     void setPort(int port);

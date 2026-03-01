@@ -213,21 +213,11 @@ void RequestParser::read_header(HttpRequest &request)
 		return;
 	}
     request.setStatus(READ_BODY);
-	if (request.getCGIType() != NO_CGI && request.getType() == POST)
-	{
-		std::string name = "/tmp/" + generateRandomName();
-		FtFile *file = new FtFile(name);
-		request.setFtFile(file);
-	}
-	if (request.getCGIType() == NO_CGI && request.getType() == POST
-		&& request.getHeader("content-type").find("application/octet-stream"))
-	{
-		std::string filePath  = PostParser::applicationFileName(request);
-		if (filePath.empty())
-		{}
-		FtFile *file = new FtFile(filePath);
-		request.setFtFile(file);
-	}
+
+
+	/*after reading the headers we creatFile if there is body read and fileupload*/
+	if (request.getType() == POST)
+		PostParser::creatFile(request);
 }
 
 /* ************************************************************************** */
@@ -327,6 +317,7 @@ void RequestParser::reading_request_line(HttpRequest &request)
 
 //changing the order of the function (request-line -> header -> body)
 // wa9ila here i need to do alot of ifs not 'if else if , else if ' when read_header sets READ_BODY, the next if runs so body is parsed in same call.
+
 void RequestParser::create_request(HttpRequest &request, HttpResponse &response)
 {
 	if (request.getStatus() == FINISHED)
@@ -338,15 +329,13 @@ void RequestParser::create_request(HttpRequest &request, HttpResponse &response)
     if (request.getStatus() == READ_BODY)
 	{
 		read_body(request);
-		if (request.getCGIType() != NO_CGI && request.getType() == POST)
+		if (request.getType() == POST && request.getCGIType() != NO_CGI)
 		{
-			//TODO validate path and allowed methods .
-			bool closeFile = (request.getStatus() == FINISHED);
-			request.getFtFile()->writeToFile(request.getBody().getBody(), closeFile) ;
+			PostParser::executeCGI(request);
 		}
-		if (request.getCGIType() == NO_CGI && request.getType() == POST)
+		if (request.getType() == POST && request.getCGIType() == NO_CGI)
 		{
-			PostParser::execute(request, response);
+			PostParser::executeUpload(request, response);
 		}
 	}
 	if (request.getStatus() == ERROR)
