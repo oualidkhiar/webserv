@@ -15,5 +15,5 @@ public:
 	static void executeUpload(HttpRequest &request, HttpResponse &response);
 	static void executeCGI(HttpRequest &request);
 	static std::string applicationFileName(HttpRequest &request);
-	static void creatFile(HttpRequest &request);
+	static void creatFile(HttpRequest &request, HttpResponse &response);
 };

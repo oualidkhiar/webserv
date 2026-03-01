@@ -177,7 +177,7 @@ void RequestParser::read_body(HttpRequest &request)
 /*                                                                            */
 /* ************************************************************************** */
 
-void RequestParser::read_header(HttpRequest &request)
+void RequestParser::read_header(HttpRequest &request, HttpResponse &response)
 {
 
     size_t pos;
@@ -217,7 +217,7 @@ void RequestParser::read_header(HttpRequest &request)
 
 	/*after reading the headers we creatFile if there is body read and fileupload*/
 	if (request.getType() == POST)
-		PostParser::creatFile(request);
+		PostParser::creatFile(request, response);
 }
 
 /* ************************************************************************** */
@@ -320,15 +320,21 @@ void RequestParser::reading_request_line(HttpRequest &request)
 
 void RequestParser::create_request(HttpRequest &request, HttpResponse &response)
 {
+	std::cout << "saaaaaaaaaaaaaaaaaaaaaaaa\n";
 	if (request.getStatus() == FINISHED)
+	{
         return;
+	}
 	if (request.getStatus() == READING_REQUEST_LINE)
         reading_request_line(request);
 	if (request.getStatus() == READ_HEADER)
-        read_header(request);
+        read_header(request, response); // file created.
     if (request.getStatus() == READ_BODY)
 	{
 		read_body(request);
+	}
+	if (request.getStatus() == ERROR)
+	{
 		if (request.getType() == POST && request.getCGIType() != NO_CGI)
 		{
 			PostParser::executeCGI(request);
@@ -338,6 +344,4 @@ void RequestParser::create_request(HttpRequest &request, HttpResponse &response)
 			PostParser::executeUpload(request, response);
 		}
 	}
-	if (request.getStatus() == ERROR)
-		return;
 }

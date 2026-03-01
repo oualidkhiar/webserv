@@ -119,6 +119,8 @@ bool Executor::isAllowedMethod(HttpRequest &request)
 
 void Executor::execute(HttpRequest &request, HttpResponse &response)
 {
+	if (request.getType() == POST)
+		return ;
     setLocation(request);
     CGIType cgiType = request.getCGIType();
     if (request.getLocation() == NULL)

@@ -7,7 +7,7 @@ class RequestParser
 {
 private:
     void reading_request_line(HttpRequest &request);
-    void read_header(HttpRequest &request);
+    void read_header(HttpRequest &request, HttpResponse &response);
     bool set_request_type(HttpRequest &request, std::string token);
     int get_chunked_size(HttpRequest &request, const size_t &pos);
     bool get_chunked(HttpRequest & request,int size);

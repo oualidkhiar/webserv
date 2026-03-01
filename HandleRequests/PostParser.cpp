@@ -77,65 +77,7 @@ bool PostParser::saveUploadedFile(const std::string &uploadDir, const std::strin
 
 void PostParser::parseMultipartBody(HttpRequest &request, HttpResponse &response, const std::string &boundary)
 {
-	const std::vector<unsigned char> &bodyData = request.getBody().getBody();
-	std::string bodyStr(bodyData.begin(), bodyData.end());
-
-	std::string fullBoundary = "--" + boundary;
-
-	size_t pos = 0;
-	int filesUploaded = 0;
-
-	while ((pos = bodyStr.find(fullBoundary, pos)) != std::string::npos)
-	{
-		pos += fullBoundary.size();
-		if (bodyStr.substr(pos, 2) == "--")
-			break;
-		if (bodyStr.substr(pos, 2) == "\r\n")
-			pos += 2;
-
-		size_t nextBoundary = bodyStr.find(fullBoundary, pos);
-		if (nextBoundary == std::string::npos)
-			break;
-
-		std::string thePart = bodyStr.substr(pos, nextBoundary - pos);
-
-		size_t headerEnd = thePart.find("\r\n\r\n");
-		if (headerEnd == std::string::npos)
-		{
-			pos = nextBoundary;
-			continue;
-		}
-
-		std::string headers = thePart.substr(0, headerEnd);
-		std::string content = thePart.substr(headerEnd + 4);
-
-		if (content.size() >= 2 && content.substr(content.size() - 2) == "\r\n")
-			content = content.substr(0, content.size() - 2);
-
-		if (headers.find("filename=") != std::string::npos)
-		{
-			std::string filename = extractHeaderValue(headers, "filename=");
-
-			if (!filename.empty())
-			{
-				std::string uploadDir = request.getLocation()->rootPath + "/" + request.getLocation()->upload_store;
-				if (saveUploadedFile(uploadDir, filename, content))
-					filesUploaded++;
-				else
-				{
-					response.setStatus(HP_INTERNAL_SERVER_ERROR);
-					response.setState(RESPONSE_FINISHED);
-					return;
-				}
-			}
-		}
-		pos = nextBoundary;
-	}
-	if (filesUploaded > 0)
-		response.setStatus(HP_CREATED);
-	else
-		response.setStatus(HP_OK);
-
+	exit(1);	
 	response.setState(RESPONSE_FINISHED);
 }
 
@@ -197,8 +139,16 @@ void PostParser::executeCGI(HttpRequest &request)
 	request.getBody().clearBody();
 }
 
-void PostParser::creatFile(HttpRequest &request)
+#include "Executor.hpp"
+void PostParser::creatFile(HttpRequest &request, HttpResponse &response)
 {
+	Executor::setLocation(request);
+	if (!Executor::isAllowedMethod(request))
+	{
+		response.setStatus(HP_METHOD_NOT_ALLOWED);
+		response.setState(RESPONSE_FINISHED);
+		request.setStatus(ERROR);
+	}
 	if (request.getCGIType() != NO_CGI)
 	{
 		std::string name = "/tmp/" + generateRandomName();
