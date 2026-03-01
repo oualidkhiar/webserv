@@ -128,6 +128,7 @@ void RequestParser::read_body_fixed(HttpRequest &request)
     {
         body.appendChunkToBody(request.getChunk(0, available_data));
         body.decrementToRead(available_data);
+		std::cout << "to read:" << body.getToRead() << std::endl;
 	    request.clear();
     }
     else
@@ -323,6 +324,14 @@ void RequestParser::create_request(HttpRequest &request, HttpResponse &response)
 	std::cout << "saaaaaaaaaaaaaaaaaaaaaaaa\n";
 	if (request.getStatus() == FINISHED)
 	{
+		if (request.getType() == POST && request.getCGIType() != NO_CGI)
+		{
+			PostParser::executeCGI(request);
+		}
+		if (request.getType() == POST && request.getCGIType() == NO_CGI)
+		{
+			PostParser::executeUpload(request, response);
+		}
         return;
 	}
 	if (request.getStatus() == READING_REQUEST_LINE)
@@ -335,13 +344,6 @@ void RequestParser::create_request(HttpRequest &request, HttpResponse &response)
 	}
 	if (request.getStatus() == ERROR)
 	{
-		if (request.getType() == POST && request.getCGIType() != NO_CGI)
-		{
-			PostParser::executeCGI(request);
-		}
-		if (request.getType() == POST && request.getCGIType() == NO_CGI)
-		{
-			PostParser::executeUpload(request, response);
-		}
+
 	}
 }
