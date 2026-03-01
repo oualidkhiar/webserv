@@ -11,6 +11,7 @@ HttpRequest::HttpRequest()
     available_data = 0;
     location = NULL;
 	cgi_type = NO_CGI;
+	file = NULL;
 }
 
 int HttpRequest::getPort() { return (this->port); }
@@ -26,7 +27,9 @@ struct location *HttpRequest::getLocation() { return (this->location); }
 std::vector<unsigned char> HttpRequest::getRequest() { return (this->request); };
 unsigned char HttpRequest::getCharFromRequest(int index) { return (request.at(index)); }
 size_t HttpRequest::requestSize() { return (request.size()); }
+FtFile* HttpRequest::getFtFile(void) {return (this->file); } ;
 
+void HttpRequest::setFtFile(FtFile *file) {this->file = file; }
 void HttpRequest::setPort(int port) { this->port = port; }
 void HttpRequest::setConfig(struct serverConfig *config) { this->config = config; }
 void HttpRequest::setAvailableData(size_t amount) { this->available_data += amount; };

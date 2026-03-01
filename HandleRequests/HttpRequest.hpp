@@ -4,6 +4,7 @@
 #include "enums.hpp"
 #include "Body.hpp"
 #include "../includes/config.hpp"
+#include "FtFile.hpp"
 
 class HttpRequest
 {
@@ -26,6 +27,7 @@ private:
     struct serverConfig *config;
     int port;
     struct location *location;
+	FtFile *file;
 
 public:
     HttpRequest();
@@ -53,8 +55,10 @@ public:
     void eraseFromRequest(size_t start, size_t len);
     std::string extractString(size_t pos, size_t len);
     std::vector<unsigned char> getChunk(size_t pos, size_t len);
+	FtFile *getFtFile(void);
 
     void clear();
+	void setFtFile(FtFile *file);
     void setLocation(struct location *location);
     void setPort(int port);
     void setConfig(struct serverConfig *config);

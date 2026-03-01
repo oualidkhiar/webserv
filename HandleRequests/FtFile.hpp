@@ -23,6 +23,7 @@ private:
 
 public:
     FtFile(const std::string &path);
+	FtFile(void);
     void setRemoveFile(bool t_f);
     bool shouldRemovingFile();
     // Getters
@@ -33,7 +34,7 @@ public:
     FileReadState getState() const;
     void incrementSentedBytes(size_t amount);
     std::vector<unsigned char> readFile();
-    void FtFile::writeToFile(const std::vector<unsigned char> &data, bool close);
+    void writeToFile(const std::vector<unsigned char> &data, bool close);
     // Setters
     void setFileSize(size_t size);
     void setFd(int newFd);

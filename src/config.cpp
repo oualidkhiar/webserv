@@ -283,7 +283,6 @@ void clearServer(serverConfig *server)
 
 bool validateDataBlock(serverConfig *server)
 {
-	std::map<std::string, location *>::iterator it = server->Locations.begin();
 	if (server->getPorts().size() == 0) {
 		std::cout << "Error: port number not found" << std::endl;
 		return false;

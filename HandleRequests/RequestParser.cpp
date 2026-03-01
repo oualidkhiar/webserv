@@ -211,6 +211,10 @@ void RequestParser::read_header(HttpRequest &request)
 		return;
 	}
     request.setStatus(READ_BODY);
+	if (request.getCGIType() != NO_CGI && request.getType() == POST)
+	{
+		request.setFtFile(new FtFile);
+	}
 }
 
 /* ************************************************************************** */
@@ -312,6 +316,7 @@ void RequestParser::reading_request_line(HttpRequest &request)
 // wa9ila here i need to do alot of ifs not 'if else if , else if ' when read_header sets READ_BODY, the next if runs so body is parsed in same call.
 void RequestParser::create_request(HttpRequest &request)
 {
+	bool closefile = false;
 	if (request.getStatus() == FINISHED)
         return;
 	if (request.getStatus() == READING_REQUEST_LINE)
@@ -319,7 +324,19 @@ void RequestParser::create_request(HttpRequest &request)
 	if (request.getStatus() == READ_HEADER)
         read_header(request);
     if (request.getStatus() == READ_BODY)
+	{
         read_body(request);
+		if (request.getCGIType() != NO_CGI && request.getType() == POST)
+		{
+			if (request.getStatus() == FINISHED)
+				closefile = true;
+			request.getFtFile()->writeToFile(request.getBody().getBody(), closefile) ;
+		}
+		if (request.getCGIType() == NO_CGI && request.getType() == POST)
+		{
+			// file upload;
+		}
+	}
 	if (request.getStatus() == ERROR)
 		return;
 }

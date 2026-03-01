@@ -5,6 +5,7 @@
 #include "StringManip.hpp"
 #include <iostream>
 
+FtFile::FtFile(void) {};
 FtFile::FtFile(const std::string &path)
 
 {
