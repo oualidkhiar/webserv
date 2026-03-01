@@ -187,9 +187,7 @@ void Executor::parseMultipartBody(HttpRequest &request, HttpResponse &response, 
 				}
 			}
 		}
-		pos = nextBoundary + fullBoundary.size();
-		if (pos + 2 <= bodyStr.size() && bodyStr.substr(pos, 2) == "\r\n")
-			pos += 2;
+		pos = nextBoundary;
 	}
 	if (filesUploaded > 0)
 		response.setStatus(HP_CREATED);

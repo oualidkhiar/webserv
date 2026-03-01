@@ -338,10 +338,10 @@ void RequestParser::create_request(HttpRequest &request)
 				closefile = true;
 			request.getFtFile()->writeToFile(request.getBody().getBody(), closefile) ;
 		}
-		if (request.getCGIType() == NO_CGI && request.getType() == POST)
-		{
+		// if (request.getCGIType() == NO_CGI && request.getType() == POST)
+		// {
 
-		}
+		// }
 	}
 	if (request.getStatus() == ERROR)
 		return;
