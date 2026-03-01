@@ -17,16 +17,10 @@ private:
     void setContentTpe(HttpResponse & response , const std::string &path);
     std::pair<int, std::string> pathResolver(HttpRequest & request);
     void executeDelete(HttpRequest &request, HttpResponse & response);
-    void executePost(HttpRequest &request, HttpResponse & response);
     void executeGet(HttpRequest &request, HttpResponse & response);
     std::pair<int , FtFile *> extractFileInfos(const char * path);
-    
+
     // Multipart parsing helpers
-    // std::string extractBoundary(const std::string &contentType);
-    void parseMultipartBody(HttpRequest &request, HttpResponse &response, const std::string &boundary);
-    std::string extractHeaderValue(const std::string &headers, const std::string &key);
-    bool saveUploadedFile(const std::string &uploadDir, const std::string &filename,
-                          const std::string &content);
     std::string pathResolverForDelete(HttpRequest &request);
     // 
     std::pair<int, FtFile *> getIndexFile(HttpRequest& request);
@@ -45,8 +39,6 @@ private:
 	static int matchedScore(std::string uri, std::string key);
 	static    location *getLongestMatchedLocation(HttpRequest &request, std::map<std::string, location *> map);
 	
-	//debugging;
-    std::string extractBoundary(const std::string &contentType);
 
 };
 

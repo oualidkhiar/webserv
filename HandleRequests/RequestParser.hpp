@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include "HttpRequest.hpp"
+#include "HttpResponse.hpp"
 
 class RequestParser
 {
@@ -16,7 +17,7 @@ private:
     size_t find2CrlfPos(HttpRequest &request);
 public:
     RequestParser();
-    void create_request(HttpRequest &request);
+    void create_request(HttpRequest &request, HttpResponse &response);
     void read_body_chunked(HttpRequest &request); // to be private (public just for debugging)
     void read_body(HttpRequest &request);// to be private (public just for debugging)
 };

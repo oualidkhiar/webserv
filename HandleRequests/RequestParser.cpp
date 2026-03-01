@@ -5,7 +5,7 @@
 #include <cstdlib>
 #include <cctype>
 #include "utils.hpp"
-#include "Executor.hpp"
+#include "PostParser.hpp"
 
 RequestParser ::RequestParser() {}
 
@@ -215,9 +215,17 @@ void RequestParser::read_header(HttpRequest &request)
     request.setStatus(READ_BODY);
 	if (request.getCGIType() != NO_CGI && request.getType() == POST)
 	{
-
 		std::string name = "/tmp/" + generateRandomName();
 		FtFile *file = new FtFile(name);
+		request.setFtFile(file);
+	}
+	if (request.getCGIType() == NO_CGI && request.getType() == POST
+		&& request.getHeader("content-type").find("application/octet-stream"))
+	{
+		std::string filePath  = PostParser::applicationFileName(request);
+		if (filePath.empty())
+		{}
+		FtFile *file = new FtFile(filePath);
 		request.setFtFile(file);
 	}
 }
@@ -319,9 +327,8 @@ void RequestParser::reading_request_line(HttpRequest &request)
 
 //changing the order of the function (request-line -> header -> body)
 // wa9ila here i need to do alot of ifs not 'if else if , else if ' when read_header sets READ_BODY, the next if runs so body is parsed in same call.
-void RequestParser::create_request(HttpRequest &request)
+void RequestParser::create_request(HttpRequest &request, HttpResponse &response)
 {
-	bool closefile = false;
 	if (request.getStatus() == FINISHED)
         return;
 	if (request.getStatus() == READING_REQUEST_LINE)
@@ -334,14 +341,13 @@ void RequestParser::create_request(HttpRequest &request)
 		if (request.getCGIType() != NO_CGI && request.getType() == POST)
 		{
 			//TODO validate path and allowed methods .
-			if (request.getStatus() == FINISHED)
-				closefile = true;
-			request.getFtFile()->writeToFile(request.getBody().getBody(), closefile) ;
+			bool closeFile = (request.getStatus() == FINISHED);
+			request.getFtFile()->writeToFile(request.getBody().getBody(), closeFile) ;
 		}
-		// if (request.getCGIType() == NO_CGI && request.getType() == POST)
-		// {
-
-		// }
+		if (request.getCGIType() == NO_CGI && request.getType() == POST)
+		{
+			PostParser::execute(request, response);
+		}
 	}
 	if (request.getStatus() == ERROR)
 		return;

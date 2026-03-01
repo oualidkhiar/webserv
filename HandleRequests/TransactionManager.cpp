@@ -74,7 +74,7 @@ void TransactionManager::appendToRequest(unsigned char *buffer, size_t size)
 {
     RequestParser parser;
     this->request.appendRequestData(buffer, size);
-    parser.create_request(request);
+    parser.create_request(request, response);
 }
 
 void TransactionManager::executeRequest()
