@@ -1,7 +1,15 @@
 
 #include "utils.hpp"
 #include <iostream>
+#include <unistd.h>
+#include <sys/stat.h>
+#include <sstream>
+#include <sys/types.h>
 #include <ctime>
+#include <unistd.h>
+#include <fcntl.h>
+#define NAME_LEN 5
+
 
 std::string getStatusReponseLine(int code)
 {
@@ -53,6 +61,41 @@ std::string getStatusReponseLine(int code)
     }
     return statusLine;
 }
+
+std::string generateRandomName()
+{
+	int fd;
+	char buffer[NAME_LEN+1];
+	std::string name;
+	fd = open("/dev/random", O_RDONLY);
+
+	while (fd > 0)
+	{
+		int bytes_read = read(fd, buffer, NAME_LEN);
+		if (bytes_read > 0) {
+			int p = 0;
+			while (p < bytes_read) {
+				if (std::isprint(buffer[p]) && buffer[p] != '/') {
+					name.push_back(buffer[p]);
+					if (name.length() >= NAME_LEN) {break;}
+				}
+				p++;
+			}
+		}
+		else {break ;}
+		if (name.length() >= NAME_LEN) {break;}
+	}
+	if (name.empty() or access(("/tmp/"+name).c_str(), F_OK) == 0) {
+		std::ostringstream oss;
+		oss << (&fd);
+		name = oss.str();
+	}
+	if (fd > 0) {
+		close(fd);
+	}
+	return name;
+}
+
 
 // Sat, 03 Jan 2026 11:10:45 GMT
 // std::string getDateValue()

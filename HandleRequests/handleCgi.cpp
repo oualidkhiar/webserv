@@ -1,4 +1,5 @@
 #include "handleCgi.hpp"
+#include "utils.hpp"
 #include <unistd.h>
 #include <sys/stat.h>
 #include <ctime>
@@ -235,40 +236,6 @@ void Cgi::resetFileOffset()
 		return ;
 	}
     response.setState(READING_LARGE_FILE);
-}
-
-std::string Cgi::generateRandomName()
-{
-	int fd;
-	char buffer[NAME_LEN+1];
-	std::string name;
-	fd = open("/dev/random", O_RDONLY);
-
-	while (fd > 0)
-	{
-		int bytes_read = read(fd, buffer, NAME_LEN);
-		if (bytes_read > 0) {
-			int p = 0;
-			while (p < bytes_read) {
-				if (std::isprint(buffer[p]) && buffer[p] != '/') {
-					name.push_back(buffer[p]);
-					if (name.length() >= NAME_LEN) {break;}
-				}
-				p++;
-			}
-		}
-		else {break ;}
-		if (name.length() >= NAME_LEN) {break;}
-	}
-	if (name.empty() or access(("/tmp/"+name).c_str(), F_OK) == 0) {
-		std::ostringstream oss;
-		oss << (&fd);
-		name = oss.str();
-	}
-	if (fd > 0) {
-		close(fd);
-	}
-	return name;
 }
 
 void Cgi::createResponse()

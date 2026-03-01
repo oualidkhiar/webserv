@@ -6,7 +6,6 @@
 #include <sys/wait.h>
 #include <sstream>
 
-#define NAME_LEN 5
 #define MAX_TIME_RUN 5; // 5 SECOND 
 
 class Cgi {
@@ -36,7 +35,6 @@ private:
 	void writeHeadersFromCgiOut();
 
 	void resetFileOffset();
-	std::string generateRandomName();
 	void createResponse();
 
 	void redirectOutOnly();

@@ -117,7 +117,6 @@ bool Executor::saveUploadedFile(const std::string &uploadDir, const std::string 
 	if (!path.empty() && path[path.size() - 1] != '/')
 		path += '/';
 	path += filename;
-
 	std::ofstream file(path.c_str(), std::ios::binary | std::ios::trunc);
 	if (!file.is_open())
 		return false;
@@ -174,7 +173,7 @@ void Executor::parseMultipartBody(HttpRequest &request, HttpResponse &response, 
 			if (!filename.empty())
 			{
 				// read upload directory from config file, if not set, use default "uploads"
-				std::string uploadDir = request.getLocation()->upload_store;
+				std::string uploadDir = request.getLocation()->rootPath+"/"+request.getLocation()->upload_store;
 				if (uploadDir.empty())
 					uploadDir = "temp";
 
