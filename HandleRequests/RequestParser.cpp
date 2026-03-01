@@ -323,8 +323,14 @@ void RequestParser::reading_request_line(HttpRequest &request)
 
 void RequestParser::create_request(HttpRequest &request, HttpResponse &response)
 {
-	if (request.getStatus() == FINISHED)
+	if (request.getStatus() == READING_REQUEST_LINE)
+        reading_request_line(request);
+	if (request.getStatus() == READ_HEADER)
+        read_header(request, response); // file created.
+    if (request.getStatus() == READ_BODY)
 	{
+		std::cout << response.getState();
+		read_body(request);
 		if (request.getType() == POST && request.getCGIType() != NO_CGI)
 		{
 			PostParser::executeCGI(request);
@@ -333,16 +339,10 @@ void RequestParser::create_request(HttpRequest &request, HttpResponse &response)
 		{
 			PostParser::executeUpload(request, response);
 		}
+	}
+	if (request.getStatus() == FINISHED)
         return;
-	}
-	if (request.getStatus() == READING_REQUEST_LINE)
-        reading_request_line(request);
-	if (request.getStatus() == READ_HEADER)
-        read_header(request, response); // file created.
-    if (request.getStatus() == READ_BODY)
-	{
-		read_body(request);
-	}
+
 	if (request.getStatus() == ERROR)
 		return ;
 }

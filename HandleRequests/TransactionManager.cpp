@@ -72,9 +72,7 @@ int TransactionManager::getResponseCode()
 
 void TransactionManager::appendToRequest(unsigned char *buffer, size_t size)
 {
-    RequestParser parser;
     this->request.appendRequestData(buffer, size, response);
-    parser.create_request(request, response);
 }
 
 void TransactionManager::executeRequest()
