@@ -121,18 +121,7 @@ void Executor::execute(HttpRequest &request, HttpResponse &response)
 {
 	if (request.getType() == POST)
 		return ;
-    setLocation(request);
     CGIType cgiType = request.getCGIType();
-    if (request.getLocation() == NULL)
-    {
-        response.setStatus(HP_NOT_FOUND);
-        return;
-    }
-    if (!isAllowedMethod(request))
-    {
-        response.setStatus(HP_METHOD_NOT_ALLOWED);
-        return;
-    }
     if (cgiType == PHP_CGI or cgiType == PYTHON_CGI or cgiType == SHELL_CGI) { // check if request is cgi
         this->Case = CGI_EXECUTION;
         return ;

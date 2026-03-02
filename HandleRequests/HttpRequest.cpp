@@ -12,7 +12,8 @@ HttpRequest::HttpRequest()
     location = NULL;
 	cgi_type = NO_CGI;
 	file = NULL;
-	ContentType CT = NO_CT;
+	CT = NO_CT;
+	mp_state = MP_READING_HEADERS;
 }
 
 int HttpRequest::getPort() { return (this->port); }
@@ -30,7 +31,13 @@ unsigned char HttpRequest::getCharFromRequest(int index) { return (request.at(in
 size_t HttpRequest::requestSize() { return (request.size()); }
 FtFile* HttpRequest::getFtFile(void) {return (this->file); } ;
 ContentType	HttpRequest::getContentType(void) {return (this->CT);};
+std::string HttpRequest::getBoundary(void) {return (this->boundary);};
 
+
+MultipartState HttpRequest::getMpState(void) { return this->mp_state; }
+std::string &HttpRequest::getMpBuffer(void) { return this->mp_buffer; }
+void HttpRequest::setMpState(MultipartState s) { this->mp_state = s; }
+void HttpRequest::setBoundary(std::string boundary) {this->boundary = boundary ;};
 void HttpRequest::setContentType(ContentType CT) {this->CT = CT; };
 void HttpRequest::setFtFile(FtFile *file) {this->file = file; }
 void HttpRequest::setPort(int port) { this->port = port; }

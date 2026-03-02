@@ -19,7 +19,6 @@ void ClientSocket::readingAndProcessingRequest()
     int bytesRead;
 
     bytesRead = read(this->socketFd, buffer, MAX_BUFFER_SIZE);
-    std::cout << "bufereeeeeeeeeeeeeeee " << buffer << std::endl;
     if (bytesRead > 0) {
         this->transactionMgr->appendToRequest(buffer, bytesRead);
         if (this->transactionMgr->getRequestStatus() == FINISHED) {

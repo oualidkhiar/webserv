@@ -6,6 +6,7 @@
 #include <cctype>
 #include "utils.hpp"
 #include "PostParser.hpp"
+#include "Executor.hpp"
 
 RequestParser ::RequestParser() {}
 
@@ -217,10 +218,25 @@ void RequestParser::read_header(HttpRequest &request, HttpResponse &response)
 	}
     request.setStatus(READ_BODY);
 
-
 	/*after reading the headers we creatFile if there is body read and fileupload*/
-	if (request.getType() == POST)
-		PostParser::creatFile(request, response);
+	if (request.getType() == POST )
+	{
+		// condition: for mulipartformdata
+		std::string contentType = request.getHeader("content-type");
+		if (!contentType.empty() && contentType.find("multipart/form-data") != std::string::npos)
+		{
+			std::string boundary = PostParser::extractBoundary(contentType);
+			if (boundary.empty() || boundary.size() > 70)
+			{
+				response.setStatus(HP_BAD_REQUEST);
+				response.setState(RESPONSE_FINISHED);
+				return;
+			}
+			request.setBoundary("--" + boundary);
+			return ;
+		}
+		PostParser::creatFile(request, response); // this creat the file for : CGI | upload file that is not multipart/form-data.
+	}
 }
 
 /* ************************************************************************** */
@@ -251,7 +267,7 @@ bool RequestParser::set_request_type(HttpRequest &request, std::string token)
 	return true;
 }
 
-void RequestParser::reading_request_line(HttpRequest &request)
+void RequestParser::reading_request_line(HttpRequest &request, HttpResponse &response)
 {
 	int token_numbers = 0;
 
@@ -310,6 +326,24 @@ void RequestParser::reading_request_line(HttpRequest &request)
 	}
 	request.setStatus(READ_HEADER);
 	request.eraseFromRequest(0, pos + 2);
+
+	Executor::setLocation(request);
+
+	if (request.getLocation() == NULL)
+	{
+		response.setStatus(HP_NOT_FOUND);
+		response.setState(RESPONSE_FINISHED);
+		request.setStatus(ERROR);
+		return ;
+	}
+
+	if (!Executor::isAllowedMethod(request))
+	{
+		response.setStatus(HP_METHOD_NOT_ALLOWED);
+		response.setState(RESPONSE_FINISHED);
+		request.setStatus(ERROR);
+		return ;
+	}
 }
 
 /* ************************************************************************** */
@@ -318,13 +352,10 @@ void RequestParser::reading_request_line(HttpRequest &request)
 /*                                                                            */
 /* ************************************************************************** */
 
-//changing the order of the function (request-line -> header -> body)
-// wa9ila here i need to do alot of ifs not 'if else if , else if ' when read_header sets READ_BODY, the next if runs so body is parsed in same call.
-
 void RequestParser::create_request(HttpRequest &request, HttpResponse &response)
 {
 	if (request.getStatus() == READING_REQUEST_LINE)
-        reading_request_line(request);
+        reading_request_line(request, response);
 	if (request.getStatus() == READ_HEADER)
         read_header(request, response); // file created.
     if (request.getStatus() == READ_BODY)

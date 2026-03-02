@@ -32,6 +32,10 @@ private:
 	FtFile *file;
 	ContentType CT;
 
+	std::string boundary;
+	MultipartState mp_state;
+	std::string mp_buffer;
+
 public:
     HttpRequest();
     enum CGIType getCGIType();
@@ -60,8 +64,13 @@ public:
     std::vector<unsigned char> getChunk(size_t pos, size_t len);
 	FtFile *getFtFile(void);
 	ContentType	getContentType(void);
+	std::string getBoundary(void);
+	MultipartState getMpState(void);
+	std::string &getMpBuffer(void);
+	void setMpState(MultipartState s);
 
     void clear();
+	void setBoundary(std::string boundary);
 	void setContentType(ContentType CT);
 	void setFtFile(FtFile *file);
     void setLocation(struct location *location);

@@ -56,6 +56,12 @@ enum ContentType
 	APPLICATION_CT
 };
 
+enum MultipartState
+{
+	MP_READING_HEADERS,
+	MP_WRITING_BODY
+};
+
 #define HP_Unsupported_Media_Type 415
 struct getInfos 
 {
