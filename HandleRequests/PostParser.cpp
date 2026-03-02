@@ -164,7 +164,11 @@ void PostParser::executeUpload(HttpRequest &request, HttpResponse &response)
 	else if (contentType.find("application/octet-stream") != std::string::npos)
 	{
 		bool closeFile = (request.getStatus() == FINISHED);
-		request.getFtFile()->writeToFile(request.getBody().getBody(), closeFile);
+		if (request.getFtFile()->writeToFile(request.getBody().getBody(), closeFile) == -1) { // write syscall failed
+			response.setState(RESPONSE_FINISHED);
+			response.setStatus(HP_INTERNAL_SERVER_ERROR);
+			request.setStatus(FINISHED);
+		}
 	}
 }
 

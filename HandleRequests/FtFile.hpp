@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include <cstdio>
+#include <errno.h>
 
 enum FileReadState
 {
@@ -34,7 +35,7 @@ public:
     FileReadState getState() const;
     void incrementSentedBytes(size_t amount);
     std::vector<unsigned char> readFile();
-    void writeToFile(const std::vector<unsigned char> &data, bool close);
+    int writeToFile(const std::vector<unsigned char> &data, bool close);
     // Setters
     void setFileSize(size_t size);
     void setFd(int newFd);

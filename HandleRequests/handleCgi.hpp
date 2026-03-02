@@ -19,6 +19,7 @@ private:
 	int				responseCode;
 	struct stat		sb;
 	pid_t			pid;
+	time_t 	startTime;
 
 	void fill_char_array(char *c_str, std::string cppStr);
 	void convertFromVectorStringtToDoubleArray(std::vector<std::string> &env);

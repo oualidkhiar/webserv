@@ -74,10 +74,8 @@ void ClientSocket::sendingResponse()
         }
     }
     if (this->transactionMgr->getResponseState() == RESPONSE_FINISHED) {
-        // if not keep-alive close the connection
         DisplyLogs::printCurrentAtion("[INFO ] [RESP ]", "Response (HTTP 200) fully sent to client", GREEN);
         this->action = CLOSE_CONNECTION;
-        // else i have to set action to MODIFY_TO_READ
     }
     delete[] response.first;
 }

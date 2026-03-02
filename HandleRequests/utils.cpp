@@ -31,6 +31,9 @@ std::string getStatusReponseLine(int code)
     case HP_BAD_REQUEST:
         statusLine = "HTTP/1.1 400 Bad Request\r\n";
         break;
+    case HP_GITWAY_TIME_OUT:
+        statusLine = "HTTP/1.1 504 Gateway Timeout error\r\n";
+        break;
     case HP_FORBIDDEN:
         statusLine = "HTTP/1.1 403 Forbidden\r\n";
         break;

@@ -1,348 +1,349 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welcome - Modern Web Design</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>WebServer Tester</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            color: #333;
-        }
+    :root {
+      --bg: #0a0c10;
+      --surface: #111318;
+      --border: #1e2230;
+      --accent-cgi: #00e5a0;
+      --accent-post: #4d9fff;
+      --accent-delete: #ff4d6d;
+      --text: #e2e8f0;
+      --muted: #64748b;
+      --mono: 'JetBrains Mono', monospace;
+      --sans: 'Syne', sans-serif;
+    }
 
-        /* Navigation */
-        nav {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 1rem 0;
-            position: fixed;
-            width: 100%;
-            top: 0;
-            z-index: 1000;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--mono);
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
 
-        nav .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+    header {
+      text-align: center;
+      margin-bottom: 60px;
+    }
 
-        nav .logo {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: white;
-            text-decoration: none;
-        }
+    header h1 {
+      font-family: var(--sans);
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      background: linear-gradient(135deg, #00e5a0, #4d9fff, #ff4d6d);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
 
-        nav ul {
-            list-style: none;
-            display: flex;
-            gap: 2rem;
-        }
+    header p {
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin-top: 8px;
+    }
 
-        nav a {
-            color: white;
-            text-decoration: none;
-            transition: opacity 0.3s;
-        }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 24px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
 
-        nav a:hover {
-            opacity: 0.8;
-        }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
 
-        /* Hero Section */
-        .hero {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 150px 2rem 100px;
-            text-align: center;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 40px rgba(0,0,0,0.4);
+    }
 
-        .hero-content h1 {
-            font-size: 3.5rem;
-            margin-bottom: 1rem;
-            animation: fadeInUp 1s ease;
-        }
+    .card-header {
+      padding: 20px 24px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
 
-        .hero-content p {
-            font-size: 1.3rem;
-            margin-bottom: 2rem;
-            opacity: 0.9;
-            animation: fadeInUp 1s ease 0.2s both;
-        }
+    .badge {
+      font-family: var(--sans);
+      font-weight: 700;
+      font-size: 0.75rem;
+      padding: 4px 10px;
+      border-radius: 999px;
+      letter-spacing: 0.08em;
+    }
 
-        .btn {
-            display: inline-block;
-            padding: 15px 40px;
-            background-color: white;
-            color: #667eea;
-            text-decoration: none;
-            border-radius: 50px;
-            font-weight: bold;
-            font-size: 1.1rem;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            animation: fadeInUp 1s ease 0.4s both;
-        }
+    .badge.cgi   { background: rgba(0,229,160,0.15); color: var(--accent-cgi); border: 1px solid rgba(0,229,160,0.3); }
+    .badge.post  { background: rgba(77,159,255,0.15); color: var(--accent-post); border: 1px solid rgba(77,159,255,0.3); }
+    .badge.delete{ background: rgba(255,77,109,0.15); color: var(--accent-delete); border: 1px solid rgba(255,77,109,0.3); }
 
-        .btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-        }
+    .card-header h2 {
+      font-family: var(--sans);
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
 
-        .btn-secondary {
-            background-color: transparent;
-            border: 2px solid white;
-            color: white;
-            margin-left: 1rem;
-        }
+    .card-body { padding: 20px 24px 24px; }
 
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
+    .field { margin-bottom: 14px; }
 
-        /* Features Section */
-        .features {
-            padding: 80px 2rem;
-            background-color: #f8f9fa;
-        }
+    label {
+      display: block;
+      font-size: 0.72rem;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
+    input, textarea, select {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      padding: 10px 12px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
 
-        .section-title {
-            text-align: center;
-            font-size: 2.5rem;
-            margin-bottom: 3rem;
-            color: #333;
-        }
+    input:focus, textarea:focus, select:focus { border-color: #334155; }
 
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-        }
+    textarea { resize: vertical; min-height: 90px; }
 
-        .feature-card {
-            background: white;
-            padding: 2rem;
-            border-radius: 10px;
-            text-align: center;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            transition: transform 0.3s ease;
-        }
+    .btn {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-family: var(--sans);
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      letter-spacing: 0.03em;
+      margin-top: 18px;
+      transition: opacity 0.2s, transform 0.1s;
+    }
 
-        .feature-card:hover {
-            transform: translateY(-10px);
-        }
+    .btn:hover  { opacity: 0.88; }
+    .btn:active { transform: scale(0.98); }
 
-        .feature-icon {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-        }
+    .btn.cgi    { background: var(--accent-cgi);    color: #000; }
+    .btn.post   { background: var(--accent-post);   color: #000; }
+    .btn.delete { background: var(--accent-delete); color: #fff; }
 
-        .feature-card h3 {
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
-            color: #667eea;
-        }
+    .response-box {
+      margin-top: 16px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 12px;
+      font-size: 0.78rem;
+      color: var(--muted);
+      min-height: 60px;
+      white-space: pre-wrap;
+      word-break: break-all;
+      display: none;
+    }
 
-        .feature-card p {
-            color: #666;
-        }
+    .response-box.visible { display: block; }
+    .response-box.ok      { color: var(--accent-cgi);   border-color: rgba(0,229,160,0.3); }
+    .response-box.err     { color: var(--accent-delete); border-color: rgba(255,77,109,0.3); }
 
-        /* About Section */
-        .about {
-            padding: 80px 2rem;
-        }
-
-        .about-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 3rem;
-            align-items: center;
-        }
-
-        .about-text h2 {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-            color: #333;
-        }
-
-        .about-text p {
-            font-size: 1.1rem;
-            color: #666;
-            margin-bottom: 1.5rem;
-        }
-
-        .about-image {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            height: 400px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 5rem;
-        }
-
-        /* CTA Section */
-        .cta {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 80px 2rem;
-            text-align: center;
-        }
-
-        .cta h2 {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .cta p {
-            font-size: 1.2rem;
-            margin-bottom: 2rem;
-            opacity: 0.9;
-        }
-
-        /* Footer */
-        footer {
-            background-color: #333;
-            color: white;
-            padding: 2rem;
-            text-align: center;
-        }
-
-        footer p {
-            opacity: 0.8;
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            nav ul {
-                gap: 1rem;
-            }
-
-            .hero-content h1 {
-                font-size: 2rem;
-            }
-
-            .hero-content p {
-                font-size: 1rem;
-            }
-
-            .about-content {
-                grid-template-columns: 1fr;
-            }
-
-            .btn-secondary {
-                margin-left: 0;
-                margin-top: 1rem;
-            }
-        }
-    </style>
+    .status-line {
+      font-size: 0.72rem;
+      margin-bottom: 6px;
+      font-family: var(--sans);
+      font-weight: 700;
+      letter-spacing: 0.06em;
+    }
+  </style>
 </head>
 <body>
-    <!-- Navigation -->
-    <nav>
-        <div class="container">
-            <a href="#" class="logo">MyWebsite</a>
-            <ul>
-                <li><a href="#home">Home</a></li>
-                <li><a href="#features">Features</a></li>
-                <li><a href="#about">About</a></li>
-                <li><a href="#contact">Contact</a></li>
-            </ul>
-        </div>
-    </nav>
 
-    <!-- Hero Section -->
-    <section id="home" class="hero">
-        <div class="hero-content">
-            <h1>Welcome to the Future</h1>
-            <p>Build amazing things with modern web technologies</p>
-            <a href="#features" class="btn">Get Started</a>
-            <a href="#about" class="btn btn-secondary">Learn More</a>
-        </div>
-    </section>
+<header>
+  <h1>WebServer Tester</h1>
+  <p>Test CGI, POST, and DELETE endpoints on your local server</p>
+</header>
 
-    <!-- Features Section -->
-    <section id="features" class="features">
-        <div class="container">
-            <h2 class="section-title">Our Features</h2>
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">🚀</div>
-                    <h3>Fast Performance</h3>
-                    <p>Lightning-fast load times and optimized performance for the best user experience.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🎨</div>
-                    <h3>Beautiful Design</h3>
-                    <p>Modern, clean, and responsive design that looks great on all devices.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🔒</div>
-                    <h3>Secure & Safe</h3>
-                    <p>Built with security in mind to protect your data and privacy.</p>
-                </div>
-            </div>
-        </div>
-    </section>
+<div class="grid">
 
-    <!-- About Section -->
-    <section id="about" class="about">
-        <div class="container">
-            <div class="about-content">
-                <div class="about-text">
-                    <h2>About Us</h2>
-                    <p>We are passionate about creating beautiful and functional web experiences. Our team of dedicated professionals works tirelessly to deliver the best solutions for your needs.</p>
-                    <p>With years of experience in web development and design, we understand what it takes to build websites that not only look great but perform exceptionally well.</p>
-                    <a href="#contact" class="btn">Contact Us</a>
-                </div>
-                <div class="about-image">
-                    💻
-                </div>
-            </div>
-        </div>
-    </section>
+  <!-- CGI -->
+  <div class="card">
+    <div class="card-header">
+      <span class="badge cgi">CGI</span>
+      <h2>CGI Request</h2>
+    </div>
+    <div class="card-body">
+      <div class="field">
+        <label>CGI Path</label>
+        <input id="cgi-path" type="text" value="/cgi-bin/script.cgi" placeholder="/cgi-bin/script.cgi"/>
+      </div>
+      <div class="field">
+        <label>Query String (optional)</label>
+        <input id="cgi-query" type="text" placeholder="key=value&foo=bar"/>
+      </div>
+      <div class="field">
+        <label>Method</label>
+        <select id="cgi-method">
+          <option value="GET">GET</option>
+          <option value="POST">POST</option>
+        </select>
+      </div>
+      <div class="field" id="cgi-body-field">
+        <label>Body (for POST)</label>
+        <textarea id="cgi-body" placeholder="name=John&age=30"></textarea>
+      </div>
+      <button class="btn cgi" onclick="sendCGI()">▶  Send CGI Request</button>
+      <div class="response-box" id="cgi-response"></div>
+    </div>
+  </div>
 
-    <!-- CTA Section -->
-    <section id="contact" class="cta">
-        <div class="container">
-            <h2>Ready to Get Started?</h2>
-            <p>Join thousands of satisfied customers today!</p>
-            <a href="mailto:info@mywebsite.com" class="btn">Get In Touch</a>
-        </div>
-    </section>
+  <!-- POST -->
+  <div class="card">
+    <div class="card-header">
+      <span class="badge post">POST</span>
+      <h2>POST Request</h2>
+    </div>
+    <div class="card-body">
+      <div class="field">
+        <label>URL</label>
+        <input id="post-url" type="text" value="/api/resource" placeholder="/api/resource"/>
+      </div>
+      <div class="field">
+        <label>Content-Type</label>
+        <select id="post-ct">
+          <option value="application/json">application/json</option>
+          <option value="application/x-www-form-urlencoded">application/x-www-form-urlencoded</option>
+          <option value="text/plain">text/plain</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Body</label>
+        <textarea id="post-body" placeholder='{"key": "value"}'></textarea>
+      </div>
+      <button class="btn post" onclick="sendPOST()">▶  Send POST Request</button>
+      <div class="response-box" id="post-response"></div>
+    </div>
+  </div>
 
-    <!-- Footer -->
-    <footer>
-        <div class="container">
-            <p>&copy; 2026 MyWebsite. All rights reserved.</p>
-        </div>
-    </footer>
+  <!-- DELETE -->
+  <div class="card">
+    <div class="card-header">
+      <span class="badge delete">DELETE</span>
+      <h2>DELETE Request</h2>
+    </div>
+    <div class="card-body">
+      <div class="field">
+        <label>URL</label>
+        <input id="del-url" type="text" value="/api/resource/1" placeholder="/api/resource/1"/>
+      </div>
+      <div class="field">
+        <label>Extra Headers (JSON, optional)</label>
+        <textarea id="del-headers" placeholder='{"Authorization": "Bearer token"}'></textarea>
+      </div>
+      <div class="field">
+        <label>Body (optional)</label>
+        <textarea id="del-body" placeholder="Optional body for DELETE"></textarea>
+      </div>
+      <button class="btn delete" onclick="sendDELETE()">▶  Send DELETE Request</button>
+      <div class="response-box" id="del-response"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // Update CGI body visibility
+  document.getElementById('cgi-method').addEventListener('change', function() {
+    document.getElementById('cgi-body-field').style.opacity = this.value === 'POST' ? '1' : '0.4';
+  });
+
+  async function display(boxId, res) {
+    const box = document.getElementById(boxId);
+    box.className = 'response-box visible';
+    let body = '';
+    try { body = await res.text(); } catch(e) { body = '(no body)'; }
+    const ok = res.ok;
+    box.classList.add(ok ? 'ok' : 'err');
+    box.innerHTML = `<div class="status-line">HTTP ${res.status} ${res.statusText}</div>${escHtml(body)}`;
+  }
+
+  async function displayErr(boxId, err) {
+    const box = document.getElementById(boxId);
+    box.className = 'response-box visible err';
+    box.innerHTML = `<div class="status-line">REQUEST FAILED</div>${escHtml(err.message)}`;
+  }
+
+  function escHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  async function sendCGI() {
+    const path  = document.getElementById('cgi-path').value.trim();
+    const query = document.getElementById('cgi-query').value.trim();
+    const method= document.getElementById('cgi-method').value;
+    const body  = document.getElementById('cgi-body').value;
+    const url   = query ? `${path}?${query}` : path;
+    try {
+      const opts = { method };
+      if (method === 'POST' && body) {
+        opts.headers = { 'Content-Type': 'application/x-www-form-urlencoded' };
+        opts.body = body;
+      }
+      const res = await fetch(url, opts);
+      display('cgi-response', res);
+    } catch(e) { displayErr('cgi-response', e); }
+  }
+
+  async function sendPOST() {
+    const url = document.getElementById('post-url').value.trim();
+    const ct  = document.getElementById('post-ct').value;
+    const body= document.getElementById('post-body').value;
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': ct },
+        body: body
+      });
+      display('post-response', res);
+    } catch(e) { displayErr('post-response', e); }
+  }
+
+  async function sendDELETE() {
+    const url     = document.getElementById('del-url').value.trim();
+    const hdrRaw  = document.getElementById('del-headers').value.trim();
+    const body    = document.getElementById('del-body').value.trim();
+    let headers   = {};
+    if (hdrRaw) {
+      try { headers = JSON.parse(hdrRaw); }
+      catch(e) { alert('Invalid JSON in headers field'); return; }
+    }
+    try {
+      const opts = { method: 'DELETE', headers };
+      if (body) { opts.body = body; }
+      const res = await fetch(url, opts);
+      display('del-response', res);
+    } catch(e) { displayErr('del-response', e); }
+  }
+</script>
 </body>
 </html>

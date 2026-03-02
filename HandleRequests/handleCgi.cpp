@@ -276,9 +276,7 @@ void Cgi::redirectInOut()
 
 bool Cgi::timeOut()
 {
-	static time_t 	startTime;
 	time_t			currentTime;
-
 	if (startTime == 0) {
 		startTime = time(NULL);
 	}
@@ -364,6 +362,7 @@ void Cgi::executeCgi(void)
 	else {
 		this->response.setState(WAITING_FOR_CGI);
 		usleep(1000); // sleep parent 1000 microsecond maybe child will finish fast
+		this->startTime = time(NULL); // set start time for handling cgi time out 
 		parentPs();
 	}
 }
