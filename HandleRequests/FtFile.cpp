@@ -113,23 +113,45 @@ std::vector<unsigned char> FtFile::readFile()
         chunk.assign(buffer, buffer + bytes_read);
     return (chunk);
 }
-void FtFile::writeToFile(const std::vector<unsigned char> &data, bool close)
+
+int FtFile::writeToFile(const std::vector<unsigned char> &data, bool close)
 {
+    int ret;
     if (fd == -1)
     {
         fd = open(path.c_str(), O_CREAT | O_WRONLY, 0644); // modified. old version :  fd = open(path.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
 		if (fd == -1)
-			return ;
+			return -1;
         this->state = FILE_WRITING;
     }
     if (close)
     {
         write(fd, &data[0], data.size());
+        if (ret < 0) { // write fail before writing all the data
+            if (errno == EINTR) { // if the cause is interupt try call write another time
+                ret = write(fd, &data[0], data.size());        
+            }
+            if (ret < 0) {
+                this->setRemoveFile(true);
+                ft_close();
+                return -1;
+            }
+        }
         ft_close();
-        return ;
+        return 1;
     }
-    write(fd, &data[0], data.size());
+    ret = write(fd, &data[0], data.size());
+    if (ret < 0) { // write fail before writing all the data
+        if (errno == EINTR) { // if the cause is interupt try call write another time 
+            ret = write(fd, &data[0], data.size());        
+        }
+        if (ret < 0) {
+            this->setRemoveFile(true);
+            ft_close();
+            return -1;
+        }
+    }
+    return 1;
 }
-
 
 FtFile::~FtFile() {}

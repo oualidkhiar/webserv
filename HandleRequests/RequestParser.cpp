@@ -360,7 +360,6 @@ void RequestParser::create_request(HttpRequest &request, HttpResponse &response)
         read_header(request, response); // file created.
     if (request.getStatus() == READ_BODY)
 	{
-		std::cout << response.getState();
 		read_body(request);
 		if (request.getType() == POST && request.getCGIType() != NO_CGI)
 		{
