@@ -127,6 +127,16 @@ int FtFile::writeToFile(const std::vector<unsigned char> &data, bool close)
     if (close)
     {
         write(fd, &data[0], data.size());
+        if (ret < 0) { // write fail before writing all the data
+            if (errno == EINTR) { // if the cause is interupt try call write another time
+                ret = write(fd, &data[0], data.size());        
+            }
+            if (ret < 0) {
+                this->setRemoveFile(true);
+                ft_close();
+                return -1;
+            }
+        }
         ft_close();
         return 1;
     }
