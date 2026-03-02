@@ -51,8 +51,9 @@ std::string Cgi::pathResolver()
 	return (path);
 }
 
-void Cgi::isValideFile(std::string &path)
+void Cgi::isValideFileCgiPass(std::string &path)
 {
+	// file check
 	if (access(path.c_str(), F_OK) != 0)
 	{
 		this->responseCode = 404;
@@ -258,6 +259,7 @@ void Cgi::createResponse()
 
 void Cgi::redirectOutOnly()
 {
+	std::cerr << response.getFile()->getPath() << std::endl;
 	dup2(response.getFile()->getFd(), STDOUT_FILENO);
 	close(response.getFile()->getFd());
 }
@@ -295,8 +297,6 @@ void Cgi::parentPs()
 			return ;
 		}
 		char buffer[10];
-		read(response.getFile()->getFd(), buffer, 10);
-		std::cout << buffer << std::endl;
 		resetFileOffset();
     	if (this->responseCode != 0) {return ;}
 		writeHeadersFromCgiOut();
@@ -312,33 +312,39 @@ void Cgi::parentPs()
 	if (this->timeOut()) {
 		kill(pid, SIGKILL);
 		this->responseCode = 504; // Gateway timeout error response 
-		request.getFtFile()->setRemoveFile(true);
-		request.getFtFile()->ft_close();
+		if (request.getType() == POST) {
+			request.getFtFile()->setRemoveFile(true);
+			request.getFtFile()->ft_close();
+		}
 	}
 }
 
 void Cgi::childPs(std::string path)
 {
-	char *argv[2];
-	argv[0] = (char *)path.c_str();
-	argv[1] = NULL;
+	char *argv[3];
+	argv[0] = (char *)(request.getLocation()->cgi_pass.c_str());
+	argv[1] = (char *)(path.c_str());
+	argv[2] = NULL;
 	if (request.getType() == GET || request.getType() == DELETE) {
 		redirectOutOnly();
 	} else {
 		redirectInOut();
-	}	
-	
-	// TODO: if python get interpreter for python / shell interpreter for shell / php intepreter for php --> from config file 
-	execve(path.c_str(), argv, envp);
+	}
+	execve(argv[0], argv, envp);
 	exit(1);
-	
 }
 
 void Cgi::executeCgi(void)
 {
 	std::string path = pathResolver();
-	isValideFile(path);
+	if (access(path.c_str(), F_OK) != 0)
+	{
+		this->responseCode = 404; // path not found error response generate 404
+		return ;
+	}
+	isValideFileCgiPass(request.getLocation()->cgi_pass);
 	if (this->responseCode != 0) {
+		this->responseCode = 503;
 		return ;
 	}
 	createResponse();

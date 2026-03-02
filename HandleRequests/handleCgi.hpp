@@ -25,7 +25,7 @@ private:
 
 	std::string pathResolver();
 
-	void isValideFile(std::string &path);
+	void isValideFileCgiPass(std::string &path);
 
 	void createEnvp();
 
