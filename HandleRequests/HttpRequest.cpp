@@ -143,6 +143,52 @@ std::string HttpRequest::getHeader(std::string key)
     return "";
 }
 
+void HttpRequest::parseCookies()
+{
+    std::string cookie_header = getHeader("cookie");
+    if (cookie_header.empty())
+        return;
+
+    size_t pos = 0;
+    while (pos < cookie_header.size())
+    {
+        size_t sep = cookie_header.find(';', pos);
+        std::string pair;
+        if (sep == std::string::npos)
+        {
+            pair = cookie_header.substr(pos);
+            pos = cookie_header.size();
+        }
+        else
+        {
+            pair = cookie_header.substr(pos, sep - pos);
+            pos = sep + 1;
+            while (pos < cookie_header.size() && cookie_header[pos] == ' ')
+                pos++;
+        }
+        size_t eq = pair.find('=');
+        if (eq == std::string::npos)
+            continue;
+        std::string name = StringManip::strtrim(pair.substr(0, eq));
+        std::string value = StringManip::strtrim(pair.substr(eq + 1));
+        if (!name.empty())
+            cookies[name] = value;
+    }
+}
+
+std::string HttpRequest::getCookie(const std::string &name)
+{
+    std::map<std::string, std::string>::iterator it = cookies.find(name);
+    if (it != cookies.end())
+        return it->second;
+    return "";
+}
+
+std::map<std::string, std::string> HttpRequest::getCookies()
+{
+    return cookies;
+}
+
 void HttpRequest::appendRequestData(unsigned char *buffer, size_t buffer_size, HttpResponse &response)
 {
     RequestParser parser;

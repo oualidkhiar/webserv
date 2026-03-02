@@ -204,7 +204,9 @@ void RequestParser::read_header(HttpRequest &request, HttpResponse &response)
         request.addHeader(StringManip::toLowerCase(header.first), header.second);
         headers_string.erase(0, line.length() + 1);
     }
-	// after reading headers, seting the body type 
+	request.parseCookies();
+
+	// after reading headers, seting the body type
 	//if the body is empty, set the status to finished
 	if (request.getHttpVersion() == HTTP_1_1 && request.getHeader("host").empty())
 	{
