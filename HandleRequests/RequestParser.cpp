@@ -224,20 +224,23 @@ void RequestParser::read_header(HttpRequest &request, HttpResponse &response)
 	if (request.getType() == POST )
 	{
 		// condition: for mulipartformdata
-		std::string contentType = request.getHeader("content-type");
-		if (!contentType.empty() && contentType.find("multipart/form-data") != std::string::npos)
+		if (request.getCGIType() == NO_CGI)
 		{
-			std::string boundary = PostParser::extractBoundary(contentType);
-			if (boundary.empty() || boundary.size() > 70)
+			std::string contentType = request.getHeader("content-type");
+			if (!contentType.empty() && contentType.find("multipart/form-data") != std::string::npos)
 			{
-				response.setStatus(HP_BAD_REQUEST);
-				response.setState(RESPONSE_FINISHED);
-				return;
+				std::string boundary = PostParser::extractBoundary(contentType);
+				if (boundary.empty() || boundary.size() > 70)
+				{
+					response.setStatus(HP_BAD_REQUEST);
+					response.setState(RESPONSE_FINISHED);
+					return;
+				}
+				request.setBoundary("--" + boundary);
+				return ;
 			}
-			request.setBoundary("--" + boundary);
-			return ;
 		}
-		PostParser::creatFile(request, response); // this creat the file for : CGI | upload file that is not multipart/form-data.
+		PostParser::creatFile(request, response); // this creat the file for : CGI | upload file that is not multipart/form-data. 
 	}
 }
 
