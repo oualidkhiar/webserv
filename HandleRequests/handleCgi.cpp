@@ -72,8 +72,9 @@ void Cgi::createEnvp()
 	std::vector<std::string> env;
 	std::string value;
 
-	value = request.getType();
-	value = "REQUEST_METHOD=" + value;
+	RequestType method = request.getType();
+	std::string methods[3] = {"DELETE", "POST", "GET"};
+	value = "REQUEST_METHOD=" + methods[method];
 	env.push_back(value);
 
 	if (request.getQuery().length() > 0)

@@ -30,11 +30,23 @@ def main():
 
     # Required CGI header
     sys.stdout.write("Content-Type: text/html\r\n\r\n")
+
+    print(method)
     print("<html>")
     print("<head><title>Python CGI Test</title></head>")
     print("<body>")
-    print("<h1>Python CGI is Working 🚀</h1>")
-    print(f"<p>Request Method: {method}</p>")
+
+    if method == "POST":
+        # 🔥 POST RESPONSE
+        print("<h1 style='color: green;'>POST Request Processed Successfully ✅</h1>")
+        print("<p>This confirms the POST branch executed.</p>")
+        exit(0)
+    else:
+        # 🔵 GET RESPONSE
+        print("<h1 style='color: blue;'>GET Request Processed Successfully 🔵</h1>")
+        print("<p>This confirms the GET branch executed.</p>")
+
+    print(f"<p><strong>Request Method:</strong> {method}</p>")
 
     print("<h2>Received Data:</h2>")
     print("<ul>")
