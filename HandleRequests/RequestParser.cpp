@@ -240,7 +240,7 @@ void RequestParser::read_header(HttpRequest &request, HttpResponse &response)
 				return ;
 			}
 		}
-		PostParser::creatFile(request, response); // this creat the file for : CGI | upload file that is not multipart/form-data. 
+		PostParser::creatFile(request, response); // this creat the file for : CGI | upload file that is not multipart/form-data
 	}
 }
 

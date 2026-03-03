@@ -182,15 +182,16 @@ static std::string generateDateName(const std::string &basePath)
 	std::time_t todayTime = std::time(NULL);
 	std::strftime(buf, sizeof(buf), "upload_%Y-%m-%d_%H-%M-%S", std::localtime(&todayTime));
 	std::string name = buf;
+
 	if (access((basePath + name).c_str(), F_OK) != 0)
 		return name;
 	int counter = 0;
 	while (true)
 	{
-		std::ostringstream oss;
-		oss << buf << "_" << counter++;
-		if (access((basePath + oss.str()).c_str(), F_OK) != 0)
-			return oss.str();
+		std::string name_n;
+		name_n += "_" + counter++;
+		if (access((basePath + name_n).c_str(), F_OK) != 0)
+			return name_n;
 	}
 }
 
