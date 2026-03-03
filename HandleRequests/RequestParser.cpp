@@ -346,6 +346,13 @@ void RequestParser::reading_request_line(HttpRequest &request, HttpResponse &res
 		request.setStatus(ERROR);
 		return ;
 	}
+	if (request.getType() == POST) {
+		if (request.getLocation()->upload_store.empty()) {
+			response.setStatus(HP_FORBIDDEN);
+			response.setState(RESPONSE_FINISHED);
+			request.setStatus(ERROR);
+		}
+	}
 }
 
 /* ************************************************************************** */

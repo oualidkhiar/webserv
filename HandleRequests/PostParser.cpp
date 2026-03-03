@@ -88,7 +88,7 @@ void PostParser::executeUpload(HttpRequest &request, HttpResponse &response)
 					if (buf[boundary.size()] == '\r' && buf[boundary.size() + 1] == '\n')
 						buf.erase(0, boundary.size() + 2);
 					else
-						break; 
+						break;
 				}
 				else if (buf.size() < boundary.size() + 2)
 					break; 
