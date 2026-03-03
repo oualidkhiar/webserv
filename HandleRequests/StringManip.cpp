@@ -51,13 +51,14 @@ std::string StringManip::toLowerCase(const std::string s)
     return result;
 }
 
-int hex_to_num(const std::string hex)
+long long hex_to_num(const std::string hex)
 {
-    int result = 0;
+    long long result = 0;
     for (size_t i = 0; i < hex.size(); ++i)
     {
+        if (result > (9223372036854775807LL - 15) / 16)
+            return -1;
         result *= 16;
-
         if (std::isdigit(hex[i]))
             result += hex[i] - '0';
         else if (hex[i] >= 'A' && hex[i] <= 'F')

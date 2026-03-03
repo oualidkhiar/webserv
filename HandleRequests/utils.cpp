@@ -31,8 +31,8 @@ std::string getStatusReponseLine(int code)
     case HP_BAD_REQUEST:
         statusLine = "HTTP/1.1 400 Bad Request\r\n";
         break;
-    case HP_GITWAY_TIME_OUT:
-        statusLine = "HTTP/1.1 504 Gateway Timeout error\r\n";
+    case HP_GATEWAY_TIMEOUT:
+        statusLine = "HTTP/1.1 504 Gateway Timeout\r\n";
         break;
     case HP_FORBIDDEN:
         statusLine = "HTTP/1.1 403 Forbidden\r\n";
@@ -43,8 +43,26 @@ std::string getStatusReponseLine(int code)
     case HP_METHOD_NOT_ALLOWED:
         statusLine = "HTTP/1.1 405 Method Not Allowed\r\n";
         break;
+    case HP_FOUND:
+        statusLine = "HTTP/1.1 302 Found\r\n";
+        break;
+    case HP_REQUEST_TIMEOUT:
+        statusLine = "HTTP/1.1 408 Request Timeout\r\n";
+        break;
+    case HP_LENGTH_REQUIRED:
+        statusLine = "HTTP/1.1 411 Length Required\r\n";
+        break;
     case HP_PAYLOAD_TOO_LARGE:
         statusLine = "HTTP/1.1 413 Payload Too Large\r\n";
+        break;
+    case HP_URI_TOO_LONG:
+        statusLine = "HTTP/1.1 414 URI Too Long\r\n";
+        break;
+    case HP_UNSUPPORTED_MEDIA_TYPE:
+        statusLine = "HTTP/1.1 415 Unsupported Media Type\r\n";
+        break;
+    case HP_REQUEST_HEADER_TOO_LARGE:
+        statusLine = "HTTP/1.1 431 Request Header Fields Too Large\r\n";
         break;
     case HP_INTERNAL_SERVER_ERROR:
         statusLine = "HTTP/1.1 500 Internal Server Error\r\n";
@@ -52,12 +70,15 @@ std::string getStatusReponseLine(int code)
     case HP_NOT_IMPLEMENTED:
         statusLine = "HTTP/1.1 501 Not Implemented\r\n";
         break;
+    case HP_BAD_GATEWAY:
+        statusLine = "HTTP/1.1 502 Bad Gateway\r\n";
+        break;
+    case HP_SERVICE_UNAVAILABLE:
+        statusLine = "HTTP/1.1 503 Service Unavailable\r\n";
+        break;
     case HP_VERSION_NOT_SUPPORTED:
         statusLine = "HTTP/1.1 505 HTTP Version Not Supported\r\n";
         break;
-	case HP_Unsupported_Media_Type:
-		statusLine = "HTTP/1.1 415 Unsupported Media Type\r\n";
-		break;
     default:
         statusLine = "HTTP/1.1 500 Internal Server Error\r\n";
         break;

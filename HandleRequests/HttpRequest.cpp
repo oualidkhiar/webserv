@@ -7,7 +7,6 @@ HttpRequest::HttpRequest()
 {
     status = READING_REQUEST_LINE;
     status_code = 200;
-    reason_phrase = "OK";
     available_data = 0;
     location = NULL;
 	cgi_type = NO_CGI;
@@ -82,7 +81,7 @@ bool HttpRequest::setUri(const std::string &uri)
 {
 	if (uri.empty())
 	{
-		this->setResponseCode(400, "Bad Request");
+		this->setResponseCode(HP_BAD_REQUEST);
 		return false;
 	}
 
@@ -90,7 +89,7 @@ bool HttpRequest::setUri(const std::string &uri)
 	bool is_asterisk = (uri == "*");
 	if (!is_origin && !is_asterisk)
 	{
-		this->setResponseCode(400, "Bad Request");
+		this->setResponseCode(HP_BAD_REQUEST);
 		return false;
 	}
 	checkCGI(uri);
@@ -98,10 +97,9 @@ bool HttpRequest::setUri(const std::string &uri)
 	return true;
 }
 
-void HttpRequest::setResponseCode(const int status_code, const std::string &reason_phrase)
+void HttpRequest::setResponseCode(const int status_code)
 {
 	this->status_code = status_code;
-	this->reason_phrase = reason_phrase;
 	if (status_code > 299)
 		this->status = ERROR;
 }
@@ -124,12 +122,12 @@ bool HttpRequest::setHttpVersion(const std::string &http_version)
 	std::isdigit(http_version[5]) == false || http_version[6] != '.' ||
 	std::isdigit(http_version[7]) == false)
 	{
-		this->setResponseCode(400, "Bad Request");
+		this->setResponseCode(HP_BAD_REQUEST);
 		return false;
 	}
 	else
 	{
-		this->setResponseCode(505, "HTTP Version Not Supported");
+		this->setResponseCode(HP_VERSION_NOT_SUPPORTED);
 		return false;
 	}
 }

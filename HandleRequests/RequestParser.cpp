@@ -50,7 +50,7 @@ size_t RequestParser::findCrlfPos(HttpRequest &request)
 /* ************************************************************************** */
 
 /* body chunked parsing  */
-bool RequestParser::get_chunked(HttpRequest &request, int size)
+bool RequestParser::get_chunked(HttpRequest &request, long long size)
 {
     if (!(request.getCharFromRequest(size) == '\r' && request.getCharFromRequest(size + 1) == '\n'))
         return (false);
@@ -59,7 +59,7 @@ bool RequestParser::get_chunked(HttpRequest &request, int size)
     return (true);
 }
 
-int RequestParser::get_chunked_size(HttpRequest &request, const size_t &pos)
+long long RequestParser::get_chunked_size(HttpRequest &request, const size_t &pos)
 {
 	std::string line = request.extractString(0, pos);
 	size_t i = 0;
@@ -68,13 +68,13 @@ int RequestParser::get_chunked_size(HttpRequest &request, const size_t &pos)
 	std::string hex_part = line.substr(0, i);
 	if (hex_part.empty())
 	{
-		request.setResponseCode(400, "Bad Request");
+		request.setResponseCode(HP_BAD_REQUEST);
 		return (-1);
 	}
-	int size = hex_to_num(hex_part);
+	long long size = hex_to_num(hex_part);
 	if (size < 0)
 	{
-		request.setResponseCode(400, "Bad Request");
+		request.setResponseCode(HP_BAD_REQUEST);
 		return (-1);
 	}
 	return (size);
@@ -86,7 +86,7 @@ void RequestParser::read_body_chunked(HttpRequest &request)
 
 	while (pos != std::string::npos)
 	{
-		int size = get_chunked_size(request, pos);
+		long long size = get_chunked_size(request, pos);
 		if (size < 0)
 			return ;
 
@@ -97,7 +97,7 @@ void RequestParser::read_body_chunked(HttpRequest &request)
 			if (request.getCharFromRequest(pos + 2) != '\r'
 				|| request.getCharFromRequest(pos + 3) != '\n')
 			{
-				request.setResponseCode(400, "Bad Request");
+				request.setResponseCode(HP_BAD_REQUEST);
 				return;
 			}
 			request.eraseFromRequest(0, pos + 4);
@@ -111,7 +111,13 @@ void RequestParser::read_body_chunked(HttpRequest &request)
 		request.eraseFromRequest(0, pos + 2);
 		if (get_chunked(request, size) == false)
 		{
-			request.setResponseCode(400, "Bad Request");
+			request.setResponseCode(HP_BAD_REQUEST);
+			return;
+		}
+		size_t max = request.getLocation()->clientMaxSizeBody;
+		if (max > 0 && request.getBody().bodySize() > max)
+		{
+			request.setResponseCode(HP_PAYLOAD_TOO_LARGE);
 			return;
 		}
 		pos = findCrlfPos(request);
@@ -150,7 +156,14 @@ bool RequestParser::setBufferFixed(HttpRequest &request, Body *body)
 	long long content_length = stringToNumber(request.getHeader(FIXED_LENGTH_HEADER));
     if (content_length <= -1)
 	{
-		request.setResponseCode(400, "Bad Request");
+		request.setResponseCode(HP_BAD_REQUEST);
+		body->setType(EMPTY);
+		return (false);
+	}
+	size_t max = request.getLocation()->clientMaxSizeBody;
+	if (max > 0 && (size_t)content_length > max)
+	{
+		request.setResponseCode(HP_PAYLOAD_TOO_LARGE);
 		body->setType(EMPTY);
 		return (false);
 	}
@@ -189,6 +202,11 @@ void RequestParser::read_header(HttpRequest &request, HttpResponse &response)
     pos = find2CrlfPos(request);
     if (pos == std::string::npos)
         return;
+    if (pos > BUFFER_SIZE)
+    {
+        request.setResponseCode(HP_REQUEST_HEADER_TOO_LARGE);
+        return;
+    }
     std::string headers_string = request.extractString(0, pos);
     request.eraseFromRequest(0, pos + 4);
     std::string line;
@@ -199,7 +217,7 @@ void RequestParser::read_header(HttpRequest &request, HttpResponse &response)
 		
         if (header.first.empty() == true || StringManip::strtrim(header.first) != header.first)
         {
-			request.setResponseCode(400, "Bad Request");
+			request.setResponseCode(HP_BAD_REQUEST);
             return;
         }
         request.addHeader(StringManip::toLowerCase(header.first), header.second);
@@ -211,7 +229,7 @@ void RequestParser::read_header(HttpRequest &request, HttpResponse &response)
 	//if the body is empty, set the status to finished
 	if (request.getHttpVersion() == HTTP_1_1 && request.getHeader("host").empty())
 	{
-		request.setResponseCode(400, "Bad Request");
+		request.setResponseCode(HP_BAD_REQUEST);
 		return;
 	}
 	if (request.getBody().discoverReadingType(request) == EMPTY)
@@ -228,7 +246,7 @@ void RequestParser::read_header(HttpRequest &request, HttpResponse &response)
 		if (request.getCGIType() == NO_CGI)
 		{
 			std::string contentType = request.getHeader("content-type");
-			if (!contentType.empty() && contentType.find("multipart/form-data") != std::string::npos)
+			if (contentType.find("multipart/form-data") != std::string::npos)
 			{
 				std::string boundary = PostParser::extractBoundary(contentType);
 				if (boundary.empty() || boundary.size() > 70)
@@ -262,12 +280,12 @@ bool RequestParser::set_request_type(HttpRequest &request, std::string token)
         request.setType(DELETE);
 	else if (!StringManip::isAllUppercase(token))
 	{
-		request.setResponseCode(400, "Bad Request");
+		request.setResponseCode(HP_BAD_REQUEST);
 		return false;
 	}
     else
 	{
-		request.setResponseCode(405, "Method Not Allowed");
+		request.setResponseCode(HP_NOT_IMPLEMENTED);
 		return false;
 	}
 	return true;
@@ -298,7 +316,7 @@ void RequestParser::reading_request_line(HttpRequest &request, HttpResponse &res
 		{
 			if (token.size() > BUFFER_SIZE - 18) //18 is the size of largest method (DELETE) +  (space) + 2 (HTTP/1.1) + 2 (CRLF)
 			{
-				request.setResponseCode(414, "URI Too Long");
+				request.setResponseCode(HP_URI_TOO_LONG);
 				return;
 			}
 			size_t query_pos = token.find('?');
@@ -320,14 +338,14 @@ void RequestParser::reading_request_line(HttpRequest &request, HttpResponse &res
 
         else if (token_numbers > 3)
         {
-            request.setResponseCode(400, "Bad Request");
+            request.setResponseCode(HP_BAD_REQUEST);
             return;
         }
         line = StringManip::strtrim(line);
 	}
 	if (token_numbers != 3)
 	{
-		request.setResponseCode(400, "Bad Request");
+		request.setResponseCode(HP_BAD_REQUEST);
 		return;
 	}
 	request.setStatus(READ_HEADER);
@@ -374,6 +392,8 @@ void RequestParser::create_request(HttpRequest &request, HttpResponse &response)
     if (request.getStatus() == READ_BODY)
 	{
 		read_body(request);
+		if (request.getStatus() == ERROR)
+			return;
 		if (request.getType() == POST && request.getCGIType() != NO_CGI)
 		{
 			PostParser::executeCGI(request);

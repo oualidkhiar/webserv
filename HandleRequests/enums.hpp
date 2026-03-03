@@ -62,13 +62,10 @@ enum MultipartState
 	MP_WRITING_BODY
 };
 
-#define HP_Unsupported_Media_Type 415
-struct getInfos 
+struct getInfos
 {
     ResponseState state;
     int fd;
-    
-
 };
 
 
@@ -76,25 +73,31 @@ struct getInfos
 #define PATH_DELIMITER "/"
 #define DEFAULT_CONTENT_TYPE "application/octet-stream\r\n"
 
-                                 
-#define HP_OK               0  // Standard response for successful GET requests
-#define HP_CREATED          201  // Mandatory for POST: When a file is successfully uploaded/created
-#define HP_NO_CONTENT       204  // Mandatory for DELETE: When a file is deleted successfully
+// 2xx Success
+#define HP_OK                        200 // Successful GET request
+#define HP_CREATED                   201 // POST: file successfully uploaded/created
+#define HP_NO_CONTENT                204 // DELETE: file deleted successfully
 
-                              
-#define HP_MOVED_PERMANENTLY 301 // Used for 'return' directive in config (e.g., redirect to https)
+// 3xx Redirection
+#define HP_MOVED_PERMANENTLY         301 // 'return' directive in config
+#define HP_FOUND                     302 // Temporary redirect
 
-#define HP_FOUND    302 
+// 4xx Client Errors
+#define HP_BAD_REQUEST               400 // Syntax error, missing Host header, chunk formatting error
+#define HP_FORBIDDEN                 403 // chmod 000 file, or directory listing is OFF
+#define HP_NOT_FOUND                 404 // Requested path does not exist
+#define HP_METHOD_NOT_ALLOWED        405 // Method not in 'limit_except' block
+#define HP_REQUEST_TIMEOUT           408
+#define HP_LENGTH_REQUIRED           411 // POST with no Content-Length
+#define HP_PAYLOAD_TOO_LARGE         413 // Body size > 'client_max_body_size'
+#define HP_URI_TOO_LONG              414 // URI exceeds buffer size
+#define HP_UNSUPPORTED_MEDIA_TYPE    415 // Content-Type not supported
+#define HP_REQUEST_HEADER_TOO_LARGE  431 // Headers exceed buffer size
 
-                                
-#define HP_BAD_REQUEST       400 // Parser Error: Syntax error, missing Host header, or chunk formatting error
-#define HP_FORBIDDEN         403 // Permissions Error: 'chmod 000' file or directory listing is OFF
-#define HP_NOT_FOUND         404 // Router Error: The requested file path does not exist
-#define HP_METHOD_NOT_ALLOWED 405 // Config Limit: Request method not in 'limit_except' block
-#define HP_PAYLOAD_TOO_LARGE 413 // Config Limit: Body size > 'client_max_body_size'
-#define HP_Unsupported_Media_Type 415 
-#define HP_GITWAY_TIME_OUT 504
-
-#define HP_INTERNAL_SERVER_ERROR 500 // CGI Error: Script crashed or system call (read/write) failed
-#define HP_NOT_IMPLEMENTED       501 // Parser Error: Method is not GET, POST, or DELETE
-#define HP_VERSION_NOT_SUPPORTED 505 // Parser Error: Request is not HTTP/1.1
+// 5xx Server Errors
+#define HP_INTERNAL_SERVER_ERROR     500 // CGI crash or system call (read/write) failed
+#define HP_NOT_IMPLEMENTED           501 // Method is not GET, POST, or DELETE
+#define HP_BAD_GATEWAY               502 // CGI returned an invalid response
+#define HP_SERVICE_UNAVAILABLE       503
+#define HP_GATEWAY_TIMEOUT           504
+#define HP_VERSION_NOT_SUPPORTED     505 // Request is not HTTP/1.1

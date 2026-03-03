@@ -24,10 +24,7 @@ void HttpResponse::setFile(FtFile *file)
 void HttpResponse::createHeaderLine()
 {
     std::ostringstream os;
-    if (this->status == 0)
-        os << 200;
-    else
-        os << this->status;
+    os << this->status;
     this->header = "HTTP/1.1 " + os.str() + " " + getReasonPhrase(this->status) + "\r\n";
 }
 

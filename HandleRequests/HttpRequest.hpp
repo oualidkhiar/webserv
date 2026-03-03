@@ -23,7 +23,6 @@ private:
     Body body;
 	enum CGIType cgi_type;
     int status_code;
-	std::string	reason_phrase;
 
     enum status status;
     size_t available_data;
@@ -82,7 +81,7 @@ public:
     void setConfig(struct serverConfig *config);
     void setAvailableData(size_t available_data);
     void setBody(Body &body);
-    void setResponseCode(const int status_code, const std::string &reason_phrase);
+    void setResponseCode(const int status_code);
     void setHeaders(std::map<std::string, std::string> headers);
     bool setUri(const std::string &uri);
     void setType(enum RequestType type);

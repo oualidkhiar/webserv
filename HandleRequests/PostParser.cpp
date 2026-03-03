@@ -121,7 +121,12 @@ void PostParser::executeUpload(HttpRequest &request, HttpResponse &response)
 					if (request.getFtFile())
 					{
 						std::vector<unsigned char> last(buf.begin(), buf.begin() + bPos);
-						request.getFtFile()->writeToFile(last, true);
+						if (request.getFtFile()->writeToFile(last, true) == -1)
+						{
+							response.setStatus(HP_INTERNAL_SERVER_ERROR);
+							response.setState(RESPONSE_FINISHED);
+							return;
+						}
 						delete request.getFtFile();
 						request.setFtFile(NULL);
 					}
@@ -150,17 +155,22 @@ void PostParser::executeUpload(HttpRequest &request, HttpResponse &response)
 						if (request.getFtFile())
 						{
 							std::vector<unsigned char> chunk(buf.begin(), buf.begin() + safe);
-							request.getFtFile()->writeToFile(chunk, false);
+							if (request.getFtFile()->writeToFile(chunk, false) == -1)
+							{
+								response.setStatus(HP_INTERNAL_SERVER_ERROR);
+								response.setState(RESPONSE_FINISHED);
+								return;
+							}
 						}
 						buf.erase(0, safe);
 					}
 				}
 			}
 		}
-		// All body data received but closing boundary was already processed
+		// All body data received but no closing boundary found — malformed multipart
 		if (request.getStatus() == FINISHED && response.getState() != RESPONSE_FINISHED)
 		{
-			response.setStatus(HP_CREATED);
+			response.setStatus(HP_BAD_REQUEST);
 			response.setState(RESPONSE_FINISHED);
 		}
 	}

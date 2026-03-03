@@ -56,13 +56,13 @@ void Cgi::isValideFileCgiPass(std::string &path)
 	// file check
 	if (access(path.c_str(), F_OK) != 0)
 	{
-		this->responseCode = 404;
+		this->responseCode = HP_NOT_FOUND;
 			// path not found error response generate 404
 		return ;
 	}
 	if (access(path.c_str(), X_OK) != 0)
 	{
-		this->responseCode = 403;
+		this->responseCode = HP_FORBIDDEN;
 		return ; // file not executeble error response permession denid
 	}
 }
@@ -126,7 +126,7 @@ std::pair<std::string, std::string> Cgi::exrtactKeyValue(std::string line, size_
 	pos = line.find(':');
 	if (pos == std::string::npos)
 	{ //':' not found should treat error 500
-		this->responseCode = 500;
+		this->responseCode = HP_INTERNAL_SERVER_ERROR;
 		return (ret);
 	}
 	ret.first = line.substr(0, pos);
@@ -141,14 +141,14 @@ void Cgi::shiftFileOffset(size_t len)
 	char *buffer = new char[len];
 	if (!buffer)
 	{
-		this->responseCode = 500;
+		this->responseCode = HP_INTERNAL_SERVER_ERROR;
 		delete[] buffer;
 		return ;
 	}
 	int bytes_read = read(response.getFile()->getFd(), buffer, len);
 	if (bytes_read < 0)
 	{
-		this->responseCode = 500;
+		this->responseCode = HP_INTERNAL_SERVER_ERROR;
 	}
 	delete[] buffer;
 }
@@ -158,7 +158,7 @@ void Cgi::writeHeadersFromCgiOut( void )
 	std::ifstream file(response.getFile()->getPath().c_str());
 	if (!file.is_open())
 	{
-		this->responseCode = 500;
+		this->responseCode = HP_INTERNAL_SERVER_ERROR;
 		return ;
 	}
 	std::string header;
@@ -206,7 +206,7 @@ void Cgi::writeHeadersFromCgiOut( void )
 		}
 		else
 		{
-			this->responseCode = 500;
+			this->responseCode = HP_INTERNAL_SERVER_ERROR;
 			break ;
 		}
 	}
@@ -223,13 +223,13 @@ void Cgi::resetFileOffset()
 	fd = open(response.getFile()->getPath().c_str(), O_RDONLY);
     if (fd < 0) {
         perror("open");
-        this->responseCode = 500;
+        this->responseCode = HP_INTERNAL_SERVER_ERROR;
     }
 	response.getFile()->setFd(fd);
 	response.getFile()->setState(FILE_READING);
 	response.getFile()->setRemoveFile(true);
     if (stat(response.getFile()->getPath().c_str(), &sb) != 0) {
-		this->responseCode = 500;
+		this->responseCode = HP_INTERNAL_SERVER_ERROR;
 		return ;
 	}
     response.setState(READING_LARGE_FILE);
@@ -247,7 +247,7 @@ void Cgi::createResponse()
 	fd = open(outfile.c_str(), O_CREAT | O_WRONLY, 0644);
 	if (fd < 0) {
 		perror("open");
-		this->responseCode = 500;
+		this->responseCode = HP_INTERNAL_SERVER_ERROR;
 		return ;
 	} else {
 		file = new FtFile(outfile);
@@ -291,7 +291,7 @@ void Cgi::parentPs()
 	result = waitpid(pid, &status, WNOHANG);
 	if (result != 0) {
 		if (status != 0 || result == -1) {
-			this->responseCode = 500;
+			this->responseCode = HP_INTERNAL_SERVER_ERROR;
 			return ;
 		}
 		char buffer[10];
@@ -309,7 +309,7 @@ void Cgi::parentPs()
 	}
 	if (this->timeOut()) {
 		kill(pid, SIGKILL);
-		this->responseCode = 504; // Gateway timeout error response 
+		this->responseCode = HP_GATEWAY_TIMEOUT; // Gateway timeout error response 
 		if (request.getType() == POST) {
 			request.getFtFile()->setRemoveFile(true);
 			request.getFtFile()->ft_close();
@@ -337,12 +337,12 @@ void Cgi::executeCgi(void)
 	std::string path = pathResolver();
 	if (access(path.c_str(), F_OK) != 0)
 	{
-		this->responseCode = 404; // path not found error response generate 404
+		this->responseCode = HP_NOT_FOUND; // path not found error response generate 404
 		return ;
 	}
 	isValideFileCgiPass(request.getLocation()->cgi_pass);
 	if (this->responseCode != 0) {
-		this->responseCode = 503;
+		this->responseCode = HP_SERVICE_UNAVAILABLE;
 		return ;
 	}
 	createResponse();
@@ -354,7 +354,7 @@ void Cgi::executeCgi(void)
 	pid = fork();
 	if (pid < 0) {
 		perror("fork");
-		this->responseCode = 500;
+		this->responseCode = HP_INTERNAL_SERVER_ERROR;
 	}
 	else if (pid == 0) {
 		childPs(path);

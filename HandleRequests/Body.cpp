@@ -25,7 +25,7 @@ enum ReadingType Body::discoverReadingType(HttpRequest &request)
     //if both are present, return EMPTY (security: request smuggling)
     if (has_chunked && has_content_length)
     {
-        request.setResponseCode(400, "Bad Request");
+        request.setResponseCode(HP_BAD_REQUEST);
         this->type = EMPTY;
         return EMPTY;
     }

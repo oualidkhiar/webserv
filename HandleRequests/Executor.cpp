@@ -42,8 +42,7 @@ void Executor::executeDelete(HttpRequest &request, HttpResponse &response)
         response.setStatus(HP_INTERNAL_SERVER_ERROR);
         return;
     }
-    // 0 is for success yak ?
-    response.setStatus(0);
+    response.setStatus(HP_OK);
 
     // here we sure thats request executed successfully so we can set the response header and body
     response.AddHeader("Content-Length", "0\r\n");
