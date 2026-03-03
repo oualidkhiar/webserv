@@ -70,13 +70,15 @@ int hex_to_num(const std::string hex)
     return result;
 }
 
-int stringToNumber(std::string s)
+long long stringToNumber(std::string s)
 {
-    int number = 0;
+    long long number = 0;
     int i = 0;
     while (s[i])
     {
         if (std::isdigit(s[i]) == false)
+            return (-1);
+        if (number > (9223372036854775807LL - (s[i] - '0')) / 10)
             return (-1);
         number = (number * 10) + (s[i] - '0');
         i++;

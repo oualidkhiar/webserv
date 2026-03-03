@@ -122,7 +122,7 @@ void RequestParser::read_body_chunked(HttpRequest &request)
 void RequestParser::read_body_fixed(HttpRequest &request)
 {
     Body	&body = request.getBody();
-    size_t	to_read = body.getToRead();
+    size_t	to_read = body.getToRead(); // this should be set in header if there's one .
     size_t	available_data = request.requestSize();
 
     if (to_read >= available_data)
@@ -131,11 +131,12 @@ void RequestParser::read_body_fixed(HttpRequest &request)
         body.decrementToRead(available_data);
 		std::cout << "to read:" << body.getToRead() << std::endl;
 	    request.clear();
+		
     }
     else
     {
         body.appendChunkToBody(request.getChunk(0, to_read));
-        request.eraseFromRequest(0, to_read);
+        request.eraseFromRequest(0, to_read); // here we can do simply request.clear() , since we can handle keep-alive , those leftovers bytes matters .
         body.setToRead(0);
     }
     if (body.getToRead() == 0)
@@ -146,7 +147,7 @@ void RequestParser::read_body_fixed(HttpRequest &request)
 
 bool RequestParser::setBufferFixed(HttpRequest &request, Body *body)
 {
-	int content_length = stringToNumber(request.getHeader(FIXED_LENGTH_HEADER));
+	long long content_length = stringToNumber(request.getHeader(FIXED_LENGTH_HEADER));
     if (content_length <= -1)
 	{
 		request.setResponseCode(400, "Bad Request");

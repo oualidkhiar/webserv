@@ -14,7 +14,7 @@ public:
 
 
 int hex_to_num(std::string hex);
-int stringToNumber(std::string s);
+long long stringToNumber(std::string s);
 void exit_error(const char * s);
 void write_str(const char * des , const char *s);
 std::vector<std::string> ft_split(std::string string , std::string delimiter);
