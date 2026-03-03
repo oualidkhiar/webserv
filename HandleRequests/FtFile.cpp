@@ -81,7 +81,10 @@ void FtFile::incrementSentedBytes(size_t amount)
 
 void FtFile::ft_close()
 {
-    close(fd);
+    if (fd != -1){
+        close(fd);
+        fd = -1;
+    }
     if (this->remove_file) {
         std::remove(this->path.c_str());
     }
