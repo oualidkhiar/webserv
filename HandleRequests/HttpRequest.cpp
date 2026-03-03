@@ -104,6 +104,11 @@ void HttpRequest::setResponseCode(const int status_code)
 		this->status = ERROR;
 }
 
+int HttpRequest::getResponseCode()
+{
+	return (this->status_code);
+}
+
 // this function is added by saad
 bool HttpRequest::setHttpVersion(const std::string &http_version)
 {

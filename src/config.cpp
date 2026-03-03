@@ -62,7 +62,7 @@ void config::customDataLocation(AstNode *node, location *loc)
 				return ;
 			}
 		}
-		loc->clientMaxSizeBody = std::atoi((node->args[0].c_str()));
+		loc->clientMaxSizeBody = std::strtoul((node->args[0].c_str()), NULL, 10);
 	}
 	else if (node->name == "index") {
 		for (size_t i = 0; i < node->args.size(); i++) {
@@ -183,7 +183,7 @@ void config::customDataServer(AstNode *node, serverConfig *server)
 				return ;
 			}
 		}
-		server->setMaxBodySize(std::atoi((node->args[0].c_str())));
+		server->setMaxBodySize(std::strtoul((node->args[0].c_str()), NULL, 10));
 	}
 	else if (node->name == "server_name") {
 		for (size_t i = 0; i < node->args.size(); i++) {

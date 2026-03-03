@@ -64,6 +64,88 @@ std::string PostParser::extractHeaderValue(const std::string &headers, const std
 	return headers.substr(pos + 1, end - pos - 1);
 }
 
+bool PostParser::readPartHeaders(HttpRequest &request, std::string &buf, const std::string &boundary)
+{
+	if (buf.size() >= boundary.size() + 2 && buf.compare(0, boundary.size(), boundary) == 0)
+	{
+		if (buf[boundary.size()] == '\r' && buf[boundary.size() + 1] == '\n')
+			buf.erase(0, boundary.size() + 2);
+		else
+			return false;
+	}
+	else if (buf.size() < boundary.size() + 2)
+		return false;
+
+	size_t hEnd = buf.find("\r\n\r\n");
+	if (hEnd == std::string::npos)
+		return false;
+
+	std::string headers = buf.substr(0, hEnd);
+	buf.erase(0, hEnd + 4);
+
+	std::string filename = extractHeaderValue(headers, "filename=");
+	if (!filename.empty())
+	{
+		std::string path = request.getLocation()->rootPath + "/"
+					 + request.getLocation()->upload_store + "/" + filename;
+		request.setFtFile(new FtFile(path));
+	}
+	request.setMpState(MP_WRITING_BODY);
+	return true;
+}
+
+bool PostParser::writePartBody(HttpRequest &request, HttpResponse &response, std::string &buf, const std::string &delimiter)
+{
+	size_t bPos = buf.find(delimiter);
+	if (bPos != std::string::npos)
+	{
+		if (request.getFtFile())
+		{
+			std::vector<unsigned char> last(buf.begin(), buf.begin() + bPos);
+			if (request.getFtFile()->writeToFile(last, true) == -1)
+			{
+				response.setStatus(HP_INTERNAL_SERVER_ERROR);
+				response.setState(RESPONSE_FINISHED);
+				return false;
+			}
+			delete request.getFtFile();
+			request.setFtFile(NULL);
+		}
+		size_t after = bPos + delimiter.size();
+		// "--boundary--" final boundary, we're done
+		if (after + 2 <= buf.size() && buf[after] == '-' && buf[after + 1] == '-')
+		{
+			response.setStatus(HP_CREATED);
+			response.setState(RESPONSE_FINISHED);
+			buf.clear();
+			return false;
+		}
+		// "--boundary\r\n" another part follows
+		if (after + 2 <= buf.size() && buf[after] == '\r' && buf[after + 1] == '\n')
+			after += 2;
+		buf.erase(0, after);
+		request.setMpState(MP_READING_HEADERS);
+		return true;
+	}
+	size_t keep = delimiter.size() - 1;
+	if (buf.size() > keep)
+	{
+		size_t safe = buf.size() - keep;
+		if (request.getFtFile())
+		{
+			std::vector<unsigned char> chunk(buf.begin(), buf.begin() + safe);
+			if (request.getFtFile()->writeToFile(chunk, false) == -1)
+			{
+				response.setStatus(HP_INTERNAL_SERVER_ERROR);
+				response.setState(RESPONSE_FINISHED);
+				return false;
+			}
+		}
+		buf.erase(0, safe);
+	}
+	return false;
+}
+
 void PostParser::executeUpload(HttpRequest &request, HttpResponse &response)
 {
 	std::string contentType = request.getHeader("content-type");
@@ -82,90 +164,12 @@ void PostParser::executeUpload(HttpRequest &request, HttpResponse &response)
 		while (loop)
 		{
 			loop = false;
-
 			if (request.getMpState() == MP_READING_HEADERS)
-			{
-				if (buf.size() >= boundary.size() + 2
-					&& buf.compare(0, boundary.size(), boundary) == 0)
-				{
-					if (buf[boundary.size()] == '\r' && buf[boundary.size() + 1] == '\n')
-						buf.erase(0, boundary.size() + 2);
-					else
-						break;
-				}
-				else if (buf.size() < boundary.size() + 2)
-					break; 
-
-				size_t hEnd = buf.find("\r\n\r\n");
-				if (hEnd == std::string::npos)
-					break; 
-
-				std::string headers = buf.substr(0, hEnd);
-				buf.erase(0, hEnd + 4);
-
-				std::string filename = extractHeaderValue(headers, "filename=");
-				if (!filename.empty())
-				{
-					std::string path = request.getLocation()->rootPath + "/"
-								 + request.getLocation()->upload_store + "/" + filename;
-					request.setFtFile(new FtFile(path));
-				}
-				request.setMpState(MP_WRITING_BODY);
-				loop = true;
-			}
+				loop = readPartHeaders(request, buf, boundary);
 			else
-			{
-				size_t bPos = buf.find(delimiter);
-				if (bPos != std::string::npos)
-				{
-					if (request.getFtFile())
-					{
-						std::vector<unsigned char> last(buf.begin(), buf.begin() + bPos);
-						if (request.getFtFile()->writeToFile(last, true) == -1)
-						{
-							response.setStatus(HP_INTERNAL_SERVER_ERROR);
-							response.setState(RESPONSE_FINISHED);
-							return;
-						}
-						delete request.getFtFile();
-						request.setFtFile(NULL);
-					}
-					size_t after = bPos + delimiter.size();
-					// "--boundary--" y3ni final boundary, we're done
-					if (after + 2 <= buf.size() && buf[after] == '-' && buf[after + 1] == '-')
-					{
-						response.setStatus(HP_CREATED);
-						response.setState(RESPONSE_FINISHED);
-						buf.clear();
-						return;
-					}
-					// "--boundary\r\n"for  another part follows, just skip  the "\r\n"
-					if (after + 2 <= buf.size() && buf[after] == '\r' && buf[after + 1] == '\n')
-						after += 2;
-					buf.erase(0, after);
-					request.setMpState(MP_READING_HEADERS);
-					loop = true;
-				}
-				else
-				{
-					size_t keep = delimiter.size() - 1;
-					if (buf.size() > keep)
-					{
-						size_t safe = buf.size() - keep;
-						if (request.getFtFile())
-						{
-							std::vector<unsigned char> chunk(buf.begin(), buf.begin() + safe);
-							if (request.getFtFile()->writeToFile(chunk, false) == -1)
-							{
-								response.setStatus(HP_INTERNAL_SERVER_ERROR);
-								response.setState(RESPONSE_FINISHED);
-								return;
-							}
-						}
-						buf.erase(0, safe);
-					}
-				}
-			}
+				loop = writePartBody(request, response, buf, delimiter);
+			if (response.getState() == RESPONSE_FINISHED)
+				return;
 		}
 		// All body data received but no closing boundary found — malformed multipart
 		if (request.getStatus() == FINISHED && response.getState() != RESPONSE_FINISHED)
