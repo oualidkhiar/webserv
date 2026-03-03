@@ -3,6 +3,9 @@
 #include "enums.hpp"
 #include "utils.hpp"
 #include "RequestParser.hpp"
+#include <ctime>
+#include <sstream>
+#include <unistd.h>
 
 std::string PostParser::extractBoundary(const std::string &contentType)
 {
@@ -173,6 +176,24 @@ void PostParser::executeUpload(HttpRequest &request, HttpResponse &response)
 }
 
 
+static std::string generateDateName(const std::string &basePath)
+{
+	char buf[30];
+	std::time_t todayTime = std::time(NULL);
+	std::strftime(buf, sizeof(buf), "upload_%Y-%m-%d_%H-%M-%S", std::localtime(&todayTime));
+	std::string name = buf;
+	if (access((basePath + name).c_str(), F_OK) != 0)
+		return name;
+	int counter = 0;
+	while (true)
+	{
+		std::ostringstream oss;
+		oss << buf << "_" << counter++;
+		if (access((basePath + oss.str()).c_str(), F_OK) != 0)
+			return oss.str();
+	}
+}
+
 std::string PostParser::applicationFileName(HttpRequest &request)
 {
 	std::string basePath = request.getLocation()->rootPath + "/" + request.getLocation()->upload_store + "/";
@@ -183,7 +204,7 @@ std::string PostParser::applicationFileName(HttpRequest &request)
 		if (!filename.empty())
 			return (basePath + filename);
 	}
-	return (basePath + generateRandomName());
+	return (basePath + generateDateName(basePath));
 }
 
 void PostParser::executeCGI(HttpRequest &request)
