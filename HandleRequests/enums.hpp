@@ -77,7 +77,7 @@ struct getInfos
 #define DEFAULT_CONTENT_TYPE "application/octet-stream\r\n"
 
                                  
-#define HP_OK               200  // Standard response for successful GET requests
+#define HP_OK               0  // Standard response for successful GET requests
 #define HP_CREATED          201  // Mandatory for POST: When a file is successfully uploaded/created
 #define HP_NO_CONTENT       204  // Mandatory for DELETE: When a file is deleted successfully
 

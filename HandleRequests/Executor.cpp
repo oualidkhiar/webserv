@@ -119,9 +119,15 @@ bool Executor::isAllowedMethod(HttpRequest &request)
 
 void Executor::execute(HttpRequest &request, HttpResponse &response)
 {
-	if (request.getType() == POST)
-		return ;
     CGIType cgiType = request.getCGIType();
+	if (request.getType() == POST) {
+        if (cgiType == PHP_CGI or cgiType == PYTHON_CGI or cgiType == SHELL_CGI) { // check if request is cgi
+            this->Case = CGI_EXECUTION;
+            return ;
+        }
+        response.setState(RESPONSE_FINISHED);
+		return ;
+    }
     if (cgiType == PHP_CGI or cgiType == PYTHON_CGI or cgiType == SHELL_CGI) { // check if request is cgi
         this->Case = CGI_EXECUTION;
         return ;

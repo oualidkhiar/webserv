@@ -8,7 +8,7 @@
 std::map<int, std::string> ErrorResponse::initErrorPages()
 {
     std::map<int, std::string> errorPages;
-    
+
     errorPages[400] = "www/error_pages/400.html";
     errorPages[403] = "www/error_pages/403.html";
     errorPages[404] = "www/error_pages/404.html";
@@ -20,7 +20,7 @@ std::map<int, std::string> ErrorResponse::initErrorPages()
     errorPages[503] = "www/error_pages/503.html";
     errorPages[505] = "www/error_pages/505.html";
     errorPages[504] = "www/error_pages/504.html";
-    
+
     return errorPages;
 }
 

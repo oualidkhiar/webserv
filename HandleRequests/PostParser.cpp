@@ -63,12 +63,6 @@ std::string PostParser::extractHeaderValue(const std::string &headers, const std
 
 void PostParser::executeUpload(HttpRequest &request, HttpResponse &response)
 {
-	if (request.getLocation()->upload_store.empty())
-	{
-		response.setStatus(HP_FORBIDDEN);
-		response.setState(RESPONSE_FINISHED);
-		return;
-	}
 	std::string contentType = request.getHeader("content-type");
 
 	if (contentType.find("multipart/form-data") != std::string::npos)
@@ -167,7 +161,7 @@ void PostParser::executeUpload(HttpRequest &request, HttpResponse &response)
 			response.setState(RESPONSE_FINISHED);
 		}
 	}
-	else if (contentType.find("application/octet-stream") != std::string::npos)
+	else
 	{
 		bool closeFile = (request.getStatus() == FINISHED);
 		if (request.getFtFile()->writeToFile(request.getBody().getBody(), closeFile) == -1) { // write syscall failed
@@ -177,7 +171,6 @@ void PostParser::executeUpload(HttpRequest &request, HttpResponse &response)
 		}
 	}
 }
-
 
 
 std::string PostParser::applicationFileName(HttpRequest &request)
@@ -215,12 +208,6 @@ void PostParser::creatFile(HttpRequest &request, HttpResponse &response)
 		if (!contentType.empty() && contentType.find("multipart/form-data") != std::string::npos)
 			return;
 
-		if (request.getLocation()->upload_store.empty())
-		{
-			response.setStatus(HP_FORBIDDEN);
-			response.setState(RESPONSE_FINISHED);
-			return;
-		}
 		std::string filePath = PostParser::applicationFileName(request);
 		FtFile *file = new FtFile(filePath);
 		request.setFtFile(file);
