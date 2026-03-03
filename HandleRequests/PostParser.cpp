@@ -185,11 +185,12 @@ static std::string generateDateName(const std::string &basePath)
 
 	if (access((basePath + name).c_str(), F_OK) != 0)
 		return name;
-	int counter = 0;
+	int counter = 1;
 	while (true)
 	{
-		std::string name_n;
-		name_n += "_" + counter++;
+		std::ostringstream oss;
+		oss << name << "_" << counter++;
+		std::string name_n = oss.str();
 		if (access((basePath + name_n).c_str(), F_OK) != 0)
 			return name_n;
 	}
