@@ -106,6 +106,7 @@ bool PostParser::writePartBody(HttpRequest &request, HttpResponse &response, std
 			{
 				response.setStatus(HP_INTERNAL_SERVER_ERROR);
 				response.setState(RESPONSE_FINISHED);
+				request.setStatus(FINISHED);
 				return false;
 			}
 			delete request.getFtFile();
@@ -138,6 +139,7 @@ bool PostParser::writePartBody(HttpRequest &request, HttpResponse &response, std
 			{
 				response.setStatus(HP_INTERNAL_SERVER_ERROR);
 				response.setState(RESPONSE_FINISHED);
+				request.setStatus(FINISHED);
 				return false;
 			}
 		}
