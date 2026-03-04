@@ -5,6 +5,7 @@
 #define BACKLOGMAX 1024
 #define MAX_BUFFER_SIZE 8192
 #define DEFAULT_SIZE 1000000
+#define MAX_TIME_WITHOUT_INTERACTION 60
 #define GREEN  "\033[32m"
 #define RED    "\033[31m"
 #define CYAN   "\033[36m"

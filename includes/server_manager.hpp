@@ -28,6 +28,7 @@ public:
     void addConnection(socketsManager * client);
     void removeConnection(int fd);
     void modifyEvent(int state, int fd, struct epoll_event& ev);
+    void removeTimedOutClients();
 
     void setError();
     bool checkError( void );

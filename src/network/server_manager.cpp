@@ -90,7 +90,7 @@ void ServerManager::TrackSocketsEvent()
 
     while (true)
     {
-        nfds = epoll_wait(epfd, events, MAX_EVENTS, -1); /// sleep untile data reach socket 
+        nfds = epoll_wait(epfd, events, MAX_EVENTS, 1000); /// sleep untile data reach socket 
         for (int i = 0; i < nfds; i++) {
             socketsManager *sock = (socketsManager *)events[i].data.ptr;
             sock->handleEvent();
@@ -128,8 +128,30 @@ void ServerManager::TrackSocketsEvent()
                     break;
             }
             sock->setActionNone();
+            sock->updateTimeInteraction();
             if (this->error)
                 break ;
+        }
+        removeTimedOutClients();
+    }
+}
+
+void ServerManager::removeTimedOutClients()
+{
+    for (std::map<int, socketsManager *>::iterator it = socketHandler.begin(); it != socketHandler.end();)
+    {
+        if (it->second->isTimeOut())
+        {
+            int fd = it->first;
+            epoll_ctl(epfd, EPOLL_CTL_DEL, fd, NULL);
+            close(fd);
+            delete it->second;
+            std::map<int, socketsManager *>::iterator tmp = it;
+            ++it;
+            socketHandler.erase(tmp);
+            DisplyLogs::printCurrentAtion("[INFO ] [TIMEOUT]", "client time out detect {removed}", YELLOW);
+        } else {
+           it++;
         }
     }
 }

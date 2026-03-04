@@ -12,7 +12,9 @@ public:
     ListeningSocket(serverConfig *conf, int fd);
     ~ListeningSocket();
 
+    // overridden functions
     void handleEvent();
+    bool isTimeOut();
 
 };
 

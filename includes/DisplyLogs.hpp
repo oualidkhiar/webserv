@@ -25,10 +25,3 @@ public:
     }
     
 };
-
-
-// [12:41:03] [INFO ] [SERVER ] Listening on port 8080
-// [12:41:05] [CONN ] [ACCEPT ] Client 127.0.0.1:53214 connected
-// [12:41:05] [REQ  ] [GET    ] /index.html
-// [12:41:05] [RESP ] [200    ] 532 bytes
-// [12:41:06] [ERROR] [CGI    ] script timeout

@@ -6,6 +6,8 @@ ListeningSocket::ListeningSocket(serverConfig *conf, int fd): socketsManager(con
 
 ListeningSocket::~ListeningSocket() {}
 
+bool ListeningSocket::isTimeOut() {return false;}
+
 std::string getMergedIpPort(struct sockaddr_in addr)
 {
     char ip[INET_ADDRSTRLEN];
@@ -38,6 +40,7 @@ void ListeningSocket::handleEvent( void )
         }
         fcntl(clientFd, F_SETFL, O_NONBLOCK);
         socketsManager *sock = new ClientSocket(clientFd, this->serverConf);
+        sock->updateTimeInteraction();
         this->newClientFds.push_back(sock);
         DisplyLogs::printCurrentAtion("[CONN ] [ACCEPT ]", "Client "+getMergedIpPort(address)+" connected", GREEN);
     }

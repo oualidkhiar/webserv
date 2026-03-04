@@ -119,17 +119,3 @@ std::string generateRandomName()
 	}
 	return name;
 }
-
-
-// Sat, 03 Jan 2026 11:10:45 GMT
-// std::string getDateValue()
-// {
-// }
-
-// int main()
-// {
-//     std::time_t result = std::time(NULL);
-//     char *date;
-//     date = std::asctime(std::localtime(&result));
-//     std::cout << date << std::endl;
-// }

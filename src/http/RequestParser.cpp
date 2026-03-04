@@ -269,7 +269,7 @@ void RequestParser::read_header(HttpRequest &request, HttpResponse &response)
 
 /* ************************************************************************** */
 /*                                                                            */
-/*                           REQUEST_LINE parsing 						  */
+/*                           REQUEST_LINE parsing 						  	  */
 /*                                                                            */
 /* ************************************************************************** */
 

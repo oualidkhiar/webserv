@@ -1,9 +1,9 @@
 #include "handleCgi.hpp"
 #include "utils.hpp"
+#include "Executor.hpp"
 #include <unistd.h>
 #include <sys/stat.h>
 #include <ctime>
-#include "Executor.hpp"
 
 Cgi::Cgi(HttpRequest &request, HttpResponse &resp) : request(request), 
 response(resp), responseCode(0), size(0), pid(-1)
@@ -138,7 +138,6 @@ std::pair<std::string, std::string> Cgi::exrtactKeyValue(std::string line, size_
 
 void Cgi::shiftFileOffset(size_t len)
 {
-	std::cout << len << std::endl;
 	char *buffer = new char[len];
 	if (!buffer)
 	{

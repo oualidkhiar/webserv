@@ -6,6 +6,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include "DisplyLogs.hpp"
+#include <ctime>
 class ServerManager;
 
 enum Action {
@@ -23,6 +24,7 @@ protected:
     int                              socketFd;
     Action                           action;
     std::vector<socketsManager *>    newClientFds;
+    time_t                           lastTimeInteraction;
 
 public:
 
@@ -30,11 +32,13 @@ public:
     virtual ~socketsManager();
 
     virtual void handleEvent() = 0;
-    Action getAction() {return this->action;}
-    void setActionNone( void ) {this->action = NO_ACTION;}
-    int getFd() {return socketFd;}
-    std::vector<socketsManager *>& getNewClient() {return this->newClientFds;}
-    void clearVector() {newClientFds.clear();}
+    virtual bool isTimeOut() = 0;
+    Action getAction();
+    void setActionNone( void );
+    int getFd();
+    std::vector<socketsManager *>& getNewClient();
+    void clearVector();
+    void updateTimeInteraction();
 
 };
 

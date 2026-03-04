@@ -1,14 +1,6 @@
 #include "server_manager.hpp"
 #include "TransactionManager.hpp"
 
-size_t ft_strlen(unsigned char *s)
-{
-    int i = 0;
-    while (s[i])
-        i++;
-    return (i);
-}
-
 int main(int ac, char **av)
 {
     if (ac != 2) {

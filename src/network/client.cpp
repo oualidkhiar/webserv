@@ -1,12 +1,17 @@
 #include "clientSocket.hpp"
 #include "server_manager.hpp"
 #include "ErrorResponse.hpp"
+#include "constent.hpp"
 
 ClientSocket::ClientSocket(int fd ,serverConfig *conf): 
 socketsManager(conf, fd), state(READING_REQUEST)
 {
     this->transactionMgr = new TransactionManager();
     this->transactionMgr->setServer(conf);
+}
+
+bool ClientSocket::isTimeOut() {
+    return time(NULL) - this->lastTimeInteraction >= MAX_TIME_WITHOUT_INTERACTION;
 }
 
 ClientSocket::~ClientSocket() {

@@ -24,7 +24,10 @@ public:
 
 	ClientSocket(int fd ,serverConfig *conf);
     ~ClientSocket();
+
+    // overridden functions
     void    handleEvent();
+    bool    isTimeOut();
 
 };
 
