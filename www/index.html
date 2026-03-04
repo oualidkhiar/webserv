@@ -7,12 +7,12 @@
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet"/>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
       --bg: #0a0c10;
       --surface: #111318;
       --border: #1e2230;
       --accent-cgi: #00e5a0;
+      --accent-get: #f0a500;
       --accent-post: #4d9fff;
       --accent-delete: #ff4d6d;
       --text: #e2e8f0;
@@ -20,7 +20,6 @@
       --mono: 'JetBrains Mono', monospace;
       --sans: 'Syne', sans-serif;
     }
-
     body {
       background: var(--bg);
       color: var(--text);
@@ -28,29 +27,25 @@
       min-height: 100vh;
       padding: 40px 20px;
     }
-
     header {
       text-align: center;
       margin-bottom: 60px;
     }
-
     header h1 {
       font-family: var(--sans);
       font-size: clamp(2rem, 5vw, 3.5rem);
       font-weight: 800;
       letter-spacing: -0.03em;
-      background: linear-gradient(135deg, #00e5a0, #4d9fff, #ff4d6d);
+      background: linear-gradient(135deg, #00e5a0, #f0a500, #4d9fff, #ff4d6d);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
     }
-
     header p {
       color: var(--muted);
       font-size: 0.85rem;
       margin-top: 8px;
     }
-
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
@@ -58,7 +53,6 @@
       max-width: 1200px;
       margin: 0 auto;
     }
-
     .card {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -66,12 +60,10 @@
       overflow: hidden;
       transition: transform 0.2s, box-shadow 0.2s;
     }
-
     .card:hover {
       transform: translateY(-2px);
       box-shadow: 0 8px 40px rgba(0,0,0,0.4);
     }
-
     .card-header {
       padding: 20px 24px 16px;
       border-bottom: 1px solid var(--border);
@@ -79,7 +71,6 @@
       align-items: center;
       gap: 12px;
     }
-
     .badge {
       font-family: var(--sans);
       font-weight: 700;
@@ -88,21 +79,17 @@
       border-radius: 999px;
       letter-spacing: 0.08em;
     }
-
-    .badge.cgi   { background: rgba(0,229,160,0.15); color: var(--accent-cgi); border: 1px solid rgba(0,229,160,0.3); }
-    .badge.post  { background: rgba(77,159,255,0.15); color: var(--accent-post); border: 1px solid rgba(77,159,255,0.3); }
-    .badge.delete{ background: rgba(255,77,109,0.15); color: var(--accent-delete); border: 1px solid rgba(255,77,109,0.3); }
-
+    .badge.cgi    { background: rgba(0,229,160,0.15);  color: var(--accent-cgi);    border: 1px solid rgba(0,229,160,0.3); }
+    .badge.get    { background: rgba(240,165,0,0.15);   color: var(--accent-get);    border: 1px solid rgba(240,165,0,0.3); }
+    .badge.post   { background: rgba(77,159,255,0.15);  color: var(--accent-post);   border: 1px solid rgba(77,159,255,0.3); }
+    .badge.delete { background: rgba(255,77,109,0.15);  color: var(--accent-delete); border: 1px solid rgba(255,77,109,0.3); }
     .card-header h2 {
       font-family: var(--sans);
       font-size: 1.1rem;
       font-weight: 700;
     }
-
     .card-body { padding: 20px 24px 24px; }
-
     .field { margin-bottom: 14px; }
-
     label {
       display: block;
       font-size: 0.72rem;
@@ -111,7 +98,6 @@
       text-transform: uppercase;
       margin-bottom: 6px;
     }
-
     input, textarea, select {
       width: 100%;
       background: var(--bg);
@@ -124,11 +110,8 @@
       outline: none;
       transition: border-color 0.2s;
     }
-
     input:focus, textarea:focus, select:focus { border-color: #334155; }
-
     textarea { resize: vertical; min-height: 90px; }
-
     .btn {
       width: 100%;
       padding: 12px;
@@ -142,14 +125,12 @@
       margin-top: 18px;
       transition: opacity 0.2s, transform 0.1s;
     }
-
     .btn:hover  { opacity: 0.88; }
     .btn:active { transform: scale(0.98); }
-
     .btn.cgi    { background: var(--accent-cgi);    color: #000; }
+    .btn.get    { background: var(--accent-get);    color: #000; }
     .btn.post   { background: var(--accent-post);   color: #000; }
     .btn.delete { background: var(--accent-delete); color: #fff; }
-
     .response-box {
       margin-top: 16px;
       background: var(--bg);
@@ -163,11 +144,9 @@
       word-break: break-all;
       display: none;
     }
-
     .response-box.visible { display: block; }
     .response-box.ok      { color: var(--accent-cgi);   border-color: rgba(0,229,160,0.3); }
     .response-box.err     { color: var(--accent-delete); border-color: rgba(255,77,109,0.3); }
-
     .status-line {
       font-size: 0.72rem;
       margin-bottom: 6px;
@@ -178,14 +157,11 @@
   </style>
 </head>
 <body>
-
 <header>
   <h1>WebServer Tester</h1>
-  <p>Test CGI, POST, and DELETE endpoints on your local server</p>
+  <p>Test CGI, GET, POST, and DELETE endpoints on your local server</p>
 </header>
-
 <div class="grid">
-
   <!-- CGI -->
   <div class="card">
     <div class="card-header">
@@ -214,6 +190,30 @@
       </div>
       <button class="btn cgi" onclick="sendCGI()">▶  Send CGI Request</button>
       <div class="response-box" id="cgi-response"></div>
+    </div>
+  </div>
+
+  <!-- GET -->
+  <div class="card">
+    <div class="card-header">
+      <span class="badge get">GET</span>
+      <h2>GET Request</h2>
+    </div>
+    <div class="card-body">
+      <div class="field">
+        <label>URL</label>
+        <input id="get-url" type="text" value="/api/resource" placeholder="/api/resource"/>
+      </div>
+      <div class="field">
+        <label>Query Parameters (optional)</label>
+        <input id="get-query" type="text" placeholder="key=value&foo=bar"/>
+      </div>
+      <div class="field">
+        <label>Extra Headers (JSON, optional)</label>
+        <textarea id="get-headers" placeholder='{"Authorization": "Bearer token"}'></textarea>
+      </div>
+      <button class="btn get" onclick="sendGET()">▶  Send GET Request</button>
+      <div class="response-box" id="get-response"></div>
     </div>
   </div>
 
@@ -268,9 +268,7 @@
       <div class="response-box" id="del-response"></div>
     </div>
   </div>
-
 </div>
-
 <script>
   // Update CGI body visibility
   document.getElementById('cgi-method').addEventListener('change', function() {
@@ -312,6 +310,22 @@
       const res = await fetch(url, opts);
       display('cgi-response', res);
     } catch(e) { displayErr('cgi-response', e); }
+  }
+
+  async function sendGET() {
+    const base    = document.getElementById('get-url').value.trim();
+    const query   = document.getElementById('get-query').value.trim();
+    const hdrRaw  = document.getElementById('get-headers').value.trim();
+    const url     = query ? `${base}?${query}` : base;
+    let headers   = {};
+    if (hdrRaw) {
+      try { headers = JSON.parse(hdrRaw); }
+      catch(e) { alert('Invalid JSON in headers field'); return; }
+    }
+    try {
+      const res = await fetch(url, { method: 'GET', headers });
+      display('get-response', res);
+    } catch(e) { displayErr('get-response', e); }
   }
 
   async function sendPOST() {

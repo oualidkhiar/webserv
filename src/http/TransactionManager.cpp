@@ -127,7 +127,7 @@ std::pair<unsigned char *, size_t> TransactionManager::getResponse()
             return std::make_pair((unsigned char *)"", 0); // if child proccess still running cgi don't do anything go handle the other clients
         }
     }
-    if (response.getStatus() != 0 and response.getStatus() != 301 and response.getStatus() != 302) {
+    if (response.getStatus() != 200 and response.getStatus() != 301 and response.getStatus() != 302) {
         this->response.setState(RESPONSE_FINISHED);
         std::pair<unsigned char *, size_t> p = ErrorResponse::getErrorResponse(response.getStatus());
         return p;

@@ -299,6 +299,7 @@ bool validateDataBlock(serverConfig *server)
 		if (it->second->allowMethods.empty()) {
 			if (server->getAllowedMethods().empty()) {
 				std::cerr << "Error: location " << it->first << " does not contain allowed methods" << std::endl;
+				return false;
 			}
 			it->second->allowMethods = server->getAllowedMethods();
 		}

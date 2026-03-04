@@ -4,7 +4,7 @@
 HttpResponse::HttpResponse()
 {
     this->state = FRESH;
-    this->status = 0;
+    this->status = 200;
     file = NULL;
     body = NULL;
 }
