@@ -117,7 +117,6 @@ void RequestParser::read_body_chunked(HttpRequest &request)
 		size_t max = request.getLocation()->clientMaxSizeBody;
 		if (max > 0 && request.getBody().bodySize() > max)
 		{
-			std::cout << "salam";
 			request.setResponseCode(HP_PAYLOAD_TOO_LARGE);
 			return;
 		}
@@ -164,8 +163,6 @@ bool RequestParser::setBufferFixed(HttpRequest &request, Body *body)
 	size_t max = request.getLocation()->clientMaxSizeBody;
 	if (max > 0 && (size_t)content_length > max)
 	{
-
-		std::cout << "salam2 " << content_length << " " << max;
 		request.setResponseCode(HP_PAYLOAD_TOO_LARGE);
 		body->setType(EMPTY);
 		return (false);
@@ -207,7 +204,6 @@ void RequestParser::read_header(HttpRequest &request, HttpResponse &response)
         return;
     if (pos > BUFFER_SIZE)
     {
-		std::cout << "salam3";
         request.setResponseCode(HP_REQUEST_HEADER_TOO_LARGE);
         return;
     }
@@ -393,15 +389,11 @@ void RequestParser::create_request(HttpRequest &request, HttpResponse &response)
     if (request.getStatus() == READ_BODY)
 	{
 		read_body(request);
-		// if (request.getStatus() == ERROR)
-		// {
-			// if (response.getStatus() == 0)
-			// {
-			// 	response.setStatus(request.getResponseCode());
-			// 	response.setState(RESPONSE_FINISHED);
-			// }
-			// return;
-		// }
+		if (request.getStatus() == ERROR)
+		{
+			response.setStatus(request.getResponseCode());
+			return;
+		}
 		if (request.getType() == POST && request.getCGIType() != NO_CGI)
 		{
 			PostParser::executeCGI(request);
