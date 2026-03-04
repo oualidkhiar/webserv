@@ -127,6 +127,10 @@ void Executor::execute(HttpRequest &request, HttpResponse &response)
         response.setState(RESPONSE_FINISHED);
 		return ;
     }
+    if (cgiType != NO_CGI) { // check if request is cgi
+        this->Case = CGI_EXECUTION;
+        return ;
+    }
     if (request.getType() == DELETE) {
         executeDelete(request, response);
     }

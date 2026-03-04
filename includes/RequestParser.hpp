@@ -14,6 +14,7 @@ private:
     void read_body_fixed(HttpRequest &request);
     bool setBufferFixed(HttpRequest &request , Body * body);
     size_t findCrlfPos(HttpRequest & request);
+    void checkLocationRules(HttpRequest &request);
 public:
     RequestParser();
     void create_request(HttpRequest &request, HttpResponse &response);

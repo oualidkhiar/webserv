@@ -15,6 +15,7 @@
       --accent-get: #f0a500;
       --accent-post: #4d9fff;
       --accent-delete: #ff4d6d;
+      --accent-multi: #c084fc;
       --text: #e2e8f0;
       --muted: #64748b;
       --mono: 'JetBrains Mono', monospace;
@@ -27,25 +28,18 @@
       min-height: 100vh;
       padding: 40px 20px;
     }
-    header {
-      text-align: center;
-      margin-bottom: 60px;
-    }
+    header { text-align: center; margin-bottom: 60px; }
     header h1 {
       font-family: var(--sans);
       font-size: clamp(2rem, 5vw, 3.5rem);
       font-weight: 800;
       letter-spacing: -0.03em;
-      background: linear-gradient(135deg, #00e5a0, #f0a500, #4d9fff, #ff4d6d);
+      background: linear-gradient(135deg, #00e5a0, #f0a500, #4d9fff, #ff4d6d, #c084fc);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
     }
-    header p {
-      color: var(--muted);
-      font-size: 0.85rem;
-      margin-top: 8px;
-    }
+    header p { color: var(--muted); font-size: 0.85rem; margin-top: 8px; }
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
@@ -60,10 +54,7 @@
       overflow: hidden;
       transition: transform 0.2s, box-shadow 0.2s;
     }
-    .card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 40px rgba(0,0,0,0.4);
-    }
+    .card:hover { transform: translateY(-2px); box-shadow: 0 8px 40px rgba(0,0,0,0.4); }
     .card-header {
       padding: 20px 24px 16px;
       border-bottom: 1px solid var(--border);
@@ -83,11 +74,8 @@
     .badge.get    { background: rgba(240,165,0,0.15);   color: var(--accent-get);    border: 1px solid rgba(240,165,0,0.3); }
     .badge.post   { background: rgba(77,159,255,0.15);  color: var(--accent-post);   border: 1px solid rgba(77,159,255,0.3); }
     .badge.delete { background: rgba(255,77,109,0.15);  color: var(--accent-delete); border: 1px solid rgba(255,77,109,0.3); }
-    .card-header h2 {
-      font-family: var(--sans);
-      font-size: 1.1rem;
-      font-weight: 700;
-    }
+    .badge.multi  { background: rgba(192,132,252,0.15); color: var(--accent-multi);  border: 1px solid rgba(192,132,252,0.3); }
+    .card-header h2 { font-family: var(--sans); font-size: 1.1rem; font-weight: 700; }
     .card-body { padding: 20px 24px 24px; }
     .field { margin-bottom: 14px; }
     label {
@@ -110,8 +98,68 @@
       outline: none;
       transition: border-color 0.2s;
     }
+    input[type="file"] {
+      padding: 8px 12px;
+      cursor: pointer;
+      color: var(--muted);
+    }
+    input[type="file"]::file-selector-button {
+      background: var(--border);
+      color: var(--text);
+      border: none;
+      border-radius: 4px;
+      padding: 4px 10px;
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      cursor: pointer;
+      margin-right: 10px;
+    }
     input:focus, textarea:focus, select:focus { border-color: #334155; }
     textarea { resize: vertical; min-height: 90px; }
+
+    /* Multipart rows */
+    .mp-fields { display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px; }
+    .mp-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 6px;
+      align-items: center;
+    }
+    .mp-row input { margin: 0; }
+    .mp-file-row { grid-template-columns: 1fr auto; }
+    .mp-file-inner { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .mp-remove {
+      background: rgba(255,77,109,0.15);
+      color: var(--accent-delete);
+      border: 1px solid rgba(255,77,109,0.3);
+      border-radius: 6px;
+      width: 30px;
+      height: 34px;
+      cursor: pointer;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: background 0.2s;
+    }
+    .mp-remove:hover { background: rgba(255,77,109,0.3); }
+    .add-field-btn {
+      background: transparent;
+      border: 1px dashed var(--border);
+      color: var(--muted);
+      border-radius: 6px;
+      padding: 7px;
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      cursor: pointer;
+      width: 100%;
+      transition: border-color 0.2s, color 0.2s;
+      margin-bottom: 4px;
+    }
+    .add-field-btn:hover { border-color: var(--accent-multi); color: var(--accent-multi); }
+    .boundary-hint { font-size: 0.7rem; color: var(--muted); margin-top: 6px; opacity: 0.7; }
+
     .btn {
       width: 100%;
       padding: 12px;
@@ -131,6 +179,7 @@
     .btn.get    { background: var(--accent-get);    color: #000; }
     .btn.post   { background: var(--accent-post);   color: #000; }
     .btn.delete { background: var(--accent-delete); color: #fff; }
+    .btn.multi  { background: var(--accent-multi);  color: #000; }
     .response-box {
       margin-top: 16px;
       background: var(--bg);
@@ -145,8 +194,8 @@
       display: none;
     }
     .response-box.visible { display: block; }
-    .response-box.ok      { color: var(--accent-cgi);   border-color: rgba(0,229,160,0.3); }
-    .response-box.err     { color: var(--accent-delete); border-color: rgba(255,77,109,0.3); }
+    .response-box.ok  { color: var(--accent-cgi);    border-color: rgba(0,229,160,0.3); }
+    .response-box.err { color: var(--accent-delete);  border-color: rgba(255,77,109,0.3); }
     .status-line {
       font-size: 0.72rem;
       margin-bottom: 6px;
@@ -159,9 +208,10 @@
 <body>
 <header>
   <h1>WebServer Tester</h1>
-  <p>Test CGI, GET, POST, and DELETE endpoints on your local server</p>
+  <p>Test CGI, GET, POST, Multipart, and DELETE endpoints on your local server</p>
 </header>
 <div class="grid">
+
   <!-- CGI -->
   <div class="card">
     <div class="card-header">
@@ -245,6 +295,49 @@
     </div>
   </div>
 
+  <!-- MULTIPART -->
+  <div class="card">
+    <div class="card-header">
+      <span class="badge multi">MULTIPART</span>
+      <h2>Multipart Form Data</h2>
+    </div>
+    <div class="card-body">
+      <div class="field">
+        <label>URL</label>
+        <input id="mp-url" type="text" value="/api/upload" placeholder="/api/upload"/>
+      </div>
+      <div class="field">
+        <label>Text Fields</label>
+        <div class="mp-fields" id="mp-text-fields">
+          <div class="mp-row">
+            <input type="text" placeholder="field name" class="mp-name"/>
+            <input type="text" placeholder="value" class="mp-value"/>
+            <button class="mp-remove" onclick="removeRow(this)">✕</button>
+          </div>
+        </div>
+        <button class="add-field-btn" onclick="addTextField()">+ Add Text Field</button>
+      </div>
+      <div class="field">
+        <label>File Fields</label>
+        <div class="mp-fields" id="mp-file-fields">
+          <div class="mp-row mp-file-row">
+            <div class="mp-file-inner">
+              <input type="text" placeholder="field name" class="mp-fname"/>
+              <input type="file" class="mp-file"/>
+            </div>
+            <button class="mp-remove" onclick="removeRow(this)">✕</button>
+          </div>
+        </div>
+        <button class="add-field-btn" onclick="addFileField()">+ Add File Field</button>
+      </div>
+      <div class="boundary-hint" id="mp-boundary-display">
+        Content-Type: multipart/form-data; boundary=&lt;auto&gt;
+      </div>
+      <button class="btn multi" onclick="sendMultipart()">▶  Send Multipart Request</button>
+      <div class="response-box" id="mp-response"></div>
+    </div>
+  </div>
+
   <!-- DELETE -->
   <div class="card">
     <div class="card-header">
@@ -268,9 +361,9 @@
       <div class="response-box" id="del-response"></div>
     </div>
   </div>
+
 </div>
 <script>
-  // Update CGI body visibility
   document.getElementById('cgi-method').addEventListener('change', function() {
     document.getElementById('cgi-body-field').style.opacity = this.value === 'POST' ? '1' : '0.4';
   });
@@ -280,8 +373,7 @@
     box.className = 'response-box visible';
     let body = '';
     try { body = await res.text(); } catch(e) { body = '(no body)'; }
-    const ok = res.ok;
-    box.classList.add(ok ? 'ok' : 'err');
+    box.classList.add(res.ok ? 'ok' : 'err');
     box.innerHTML = `<div class="status-line">HTTP ${res.status} ${res.statusText}</div>${escHtml(body)}`;
   }
 
@@ -296,66 +388,117 @@
   }
 
   async function sendCGI() {
-    const path  = document.getElementById('cgi-path').value.trim();
-    const query = document.getElementById('cgi-query').value.trim();
-    const method= document.getElementById('cgi-method').value;
-    const body  = document.getElementById('cgi-body').value;
-    const url   = query ? `${path}?${query}` : path;
+    const path   = document.getElementById('cgi-path').value.trim();
+    const query  = document.getElementById('cgi-query').value.trim();
+    const method = document.getElementById('cgi-method').value;
+    const body   = document.getElementById('cgi-body').value;
+    const url    = query ? `${path}?${query}` : path;
     try {
       const opts = { method };
       if (method === 'POST' && body) {
         opts.headers = { 'Content-Type': 'application/x-www-form-urlencoded' };
         opts.body = body;
       }
-      const res = await fetch(url, opts);
-      display('cgi-response', res);
+      display('cgi-response', await fetch(url, opts));
     } catch(e) { displayErr('cgi-response', e); }
   }
 
   async function sendGET() {
-    const base    = document.getElementById('get-url').value.trim();
-    const query   = document.getElementById('get-query').value.trim();
-    const hdrRaw  = document.getElementById('get-headers').value.trim();
-    const url     = query ? `${base}?${query}` : base;
-    let headers   = {};
+    const base   = document.getElementById('get-url').value.trim();
+    const query  = document.getElementById('get-query').value.trim();
+    const hdrRaw = document.getElementById('get-headers').value.trim();
+    const url    = query ? `${base}?${query}` : base;
+    let headers  = {};
     if (hdrRaw) {
       try { headers = JSON.parse(hdrRaw); }
       catch(e) { alert('Invalid JSON in headers field'); return; }
     }
     try {
-      const res = await fetch(url, { method: 'GET', headers });
-      display('get-response', res);
+      display('get-response', await fetch(url, { method: 'GET', headers }));
     } catch(e) { displayErr('get-response', e); }
   }
 
   async function sendPOST() {
-    const url = document.getElementById('post-url').value.trim();
-    const ct  = document.getElementById('post-ct').value;
-    const body= document.getElementById('post-body').value;
+    const url  = document.getElementById('post-url').value.trim();
+    const ct   = document.getElementById('post-ct').value;
+    const body = document.getElementById('post-body').value;
     try {
-      const res = await fetch(url, {
+      display('post-response', await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': ct },
-        body: body
-      });
-      display('post-response', res);
+        body
+      }));
     } catch(e) { displayErr('post-response', e); }
   }
 
+  // Multipart helpers
+  function addTextField() {
+    const container = document.getElementById('mp-text-fields');
+    const row = document.createElement('div');
+    row.className = 'mp-row';
+    row.innerHTML = `
+      <input type="text" placeholder="field name" class="mp-name"/>
+      <input type="text" placeholder="value" class="mp-value"/>
+      <button class="mp-remove" onclick="removeRow(this)">✕</button>`;
+    container.appendChild(row);
+  }
+
+  function addFileField() {
+    const container = document.getElementById('mp-file-fields');
+    const row = document.createElement('div');
+    row.className = 'mp-row mp-file-row';
+    row.innerHTML = `
+      <div class="mp-file-inner">
+        <input type="text" placeholder="field name" class="mp-fname"/>
+        <input type="file" class="mp-file"/>
+      </div>
+      <button class="mp-remove" onclick="removeRow(this)">✕</button>`;
+    container.appendChild(row);
+  }
+
+  function removeRow(btn) {
+    btn.closest('.mp-row').remove();
+  }
+
+  async function sendMultipart() {
+    const url = document.getElementById('mp-url').value.trim();
+    const fd  = new FormData();
+
+    // Append text fields
+    document.querySelectorAll('#mp-text-fields .mp-row').forEach(row => {
+      const name  = row.querySelector('.mp-name').value.trim();
+      const value = row.querySelector('.mp-value').value;
+      if (name) fd.append(name, value);
+    });
+
+    // Append file fields
+    document.querySelectorAll('#mp-file-fields .mp-row').forEach(row => {
+      const name      = row.querySelector('.mp-fname').value.trim();
+      const fileInput = row.querySelector('.mp-file');
+      if (name && fileInput.files.length > 0) {
+        fd.append(name, fileInput.files[0], fileInput.files[0].name);
+      }
+    });
+
+    // Let the browser set Content-Type with the correct boundary automatically
+    try {
+      display('mp-response', await fetch(url, { method: 'POST', body: fd }));
+    } catch(e) { displayErr('mp-response', e); }
+  }
+
   async function sendDELETE() {
-    const url     = document.getElementById('del-url').value.trim();
-    const hdrRaw  = document.getElementById('del-headers').value.trim();
-    const body    = document.getElementById('del-body').value.trim();
-    let headers   = {};
+    const url    = document.getElementById('del-url').value.trim();
+    const hdrRaw = document.getElementById('del-headers').value.trim();
+    const body   = document.getElementById('del-body').value.trim();
+    let headers  = {};
     if (hdrRaw) {
       try { headers = JSON.parse(hdrRaw); }
       catch(e) { alert('Invalid JSON in headers field'); return; }
     }
     try {
       const opts = { method: 'DELETE', headers };
-      if (body) { opts.body = body; }
-      const res = await fetch(url, opts);
-      display('del-response', res);
+      if (body) opts.body = body;
+      display('del-response', await fetch(url, opts));
     } catch(e) { displayErr('del-response', e); }
   }
 </script>

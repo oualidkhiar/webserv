@@ -1,12 +1,13 @@
 #include "RequestParser.hpp"
 #include "enums.hpp"
 #include "StringManip.hpp"
-#include <iostream>
-#include <cstdlib>
-#include <cctype>
 #include "utils.hpp"
 #include "PostParser.hpp"
 #include "Executor.hpp"
+#include <iostream>
+#include <cstdlib>
+#include <cctype>
+#include <algorithm>
 
 RequestParser ::RequestParser() {}
 
@@ -290,6 +291,47 @@ bool RequestParser::set_request_type(HttpRequest &request, std::string token)
 	return true;
 }
 
+void RequestParser::checkLocationRules(HttpRequest &request)
+{
+	if (request.getLocation() == NULL)
+	{
+		request.setResponseCode(HP_NOT_FOUND);
+		return ;
+	}
+
+	if (!Executor::isAllowedMethod(request))
+	{
+		request.setResponseCode(HP_METHOD_NOT_ALLOWED);
+		return ;
+	}
+
+	if (request.getCGIType() != NO_CGI) { // sheck if extension allowed 
+		std::vector<std::string> extensions = request.getLocation()->cgi_extension;
+		CGIType t = request.getCGIType();
+		std::string req_extention;
+		if (t == PHP_CGI) {
+			req_extention = ".php";
+		} else if (t == PYTHON_CGI) {
+			req_extention = ".py";
+		} else {
+			req_extention = ".sh";
+		}
+		if (std::find(extensions.begin(), extensions.end(), req_extention) == extensions.end()) {
+			request.setResponseCode(HP_FORBIDDEN);
+			return;
+		}
+	}
+
+	if (request.getType() == POST)
+	{
+		if (request.getLocation()->upload_store.empty())
+		{
+			request.setResponseCode(HP_FORBIDDEN);
+			return;
+		}
+	}
+}
+
 void RequestParser::reading_request_line(HttpRequest &request, HttpResponse &response)
 {
 	int token_numbers = 0;
@@ -351,27 +393,7 @@ void RequestParser::reading_request_line(HttpRequest &request, HttpResponse &res
 	request.eraseFromRequest(0, pos + 2);
 
 	Executor::setLocation(request);
-
-	if (request.getLocation() == NULL)
-	{
-		request.setResponseCode(HP_NOT_FOUND);
-		return ;
-	}
-
-	if (!Executor::isAllowedMethod(request))
-	{
-		request.setResponseCode(HP_METHOD_NOT_ALLOWED);
-		return ;
-	}
-
-	if (request.getType() == POST)
-	{
-		if (request.getLocation()->upload_store.empty())
-		{
-			request.setResponseCode(HP_FORBIDDEN);
-			return;
-		}
-	}
+	checkLocationRules(request);
 }
 
 /* ************************************************************************** */
