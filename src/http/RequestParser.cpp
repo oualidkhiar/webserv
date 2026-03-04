@@ -244,7 +244,7 @@ void RequestParser::read_header(HttpRequest &request, HttpResponse &response)
     request.setStatus(READ_BODY);
 
 	/*after reading the headers we creatFile if there is body read and fileupload*/
-	if (request.getType() == POST )
+	if (request.getType() == POST)
 	{
 		// condition: for mulipartformdata
 		if (request.getCGIType() == NO_CGI)
@@ -255,15 +255,14 @@ void RequestParser::read_header(HttpRequest &request, HttpResponse &response)
 				std::string boundary = PostParser::extractBoundary(contentType);
 				if (boundary.empty() || boundary.size() > 70)
 				{
-					response.setStatus(HP_BAD_REQUEST);
-					response.setState(RESPONSE_FINISHED);
+					request.setResponseCode(HP_BAD_REQUEST);
 					return;
 				}
 				request.setBoundary("--" + boundary);
 				return ;
 			}
 		}
-		PostParser::creatFile(request, response); // this creat the file for : CGI | upload file that is not multipart/form-data
+		PostParser::creatFile(request); // this creat the file for : CGI | upload file that is not multipart/form-data
 	}
 }
 
@@ -359,24 +358,22 @@ void RequestParser::reading_request_line(HttpRequest &request, HttpResponse &res
 
 	if (request.getLocation() == NULL)
 	{
-		response.setStatus(HP_NOT_FOUND);
-		response.setState(RESPONSE_FINISHED);
-		request.setStatus(ERROR);
+		request.setResponseCode(HP_NOT_FOUND);
 		return ;
 	}
 
 	if (!Executor::isAllowedMethod(request))
 	{
-		response.setStatus(HP_METHOD_NOT_ALLOWED);
-		response.setState(RESPONSE_FINISHED);
-		request.setStatus(ERROR);
+		request.setResponseCode(HP_METHOD_NOT_ALLOWED);
 		return ;
 	}
-	if (request.getType() == POST) {
-		if (request.getLocation()->upload_store.empty()) {
-			response.setStatus(HP_FORBIDDEN);
-			response.setState(RESPONSE_FINISHED);
-			request.setStatus(ERROR);
+
+	if (request.getType() == POST)
+	{
+		if (request.getLocation()->upload_store.empty())
+		{
+			request.setResponseCode(HP_FORBIDDEN);
+			return;
 		}
 	}
 }
@@ -414,16 +411,6 @@ void RequestParser::create_request(HttpRequest &request, HttpResponse &response)
 			PostParser::executeUpload(request, response);
 		}
 	}
-	if (request.getStatus() == FINISHED)
-        return;
-
 	if (request.getStatus() == ERROR)
-	{
-		if (response.getStatus() == 0)
-		{
-			response.setStatus(request.getResponseCode());
-			response.setState(RESPONSE_FINISHED);
-		}
-		return ;
-	}
+		response.setStatus(request.getResponseCode());
 }

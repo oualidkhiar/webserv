@@ -59,7 +59,8 @@ enum ContentType
 enum MultipartState
 {
 	MP_READING_HEADERS,
-	MP_WRITING_BODY
+	MP_WRITING_BODY,
+	MP_COMPLETE
 };
 
 struct getInfos

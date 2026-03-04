@@ -37,6 +37,7 @@ void HttpResponse::setStatus(int status)
 {
     this->status = status;
     createHeaderLine();
+    this->state = RESPONSE_FINISHED;
 }
 
 void HttpResponse::createHeaders()

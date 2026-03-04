@@ -94,7 +94,7 @@ bool PostParser::readPartHeaders(HttpRequest &request, std::string &buf, const s
 	return true;
 }
 
-bool PostParser::writePartBody(HttpRequest &request, HttpResponse &response, std::string &buf, const std::string &delimiter)
+bool PostParser::writePartBody(HttpRequest &request, std::string &buf, const std::string &delimiter)
 {
 	size_t bPos = buf.find(delimiter);
 	if (bPos != std::string::npos)
@@ -104,9 +104,7 @@ bool PostParser::writePartBody(HttpRequest &request, HttpResponse &response, std
 			std::vector<unsigned char> last(buf.begin(), buf.begin() + bPos);
 			if (request.getFtFile()->writeToFile(last, true) == -1)
 			{
-				response.setStatus(HP_INTERNAL_SERVER_ERROR);
-				response.setState(RESPONSE_FINISHED);
-				request.setStatus(FINISHED);
+				request.setResponseCode(HP_INTERNAL_SERVER_ERROR);
 				return false;
 			}
 			delete request.getFtFile();
@@ -116,8 +114,7 @@ bool PostParser::writePartBody(HttpRequest &request, HttpResponse &response, std
 		// "--boundary--" final boundary, we're done
 		if (after + 2 <= buf.size() && buf[after] == '-' && buf[after + 1] == '-')
 		{
-			response.setStatus(HP_CREATED);
-			response.setState(RESPONSE_FINISHED);
+			request.setMpState(MP_COMPLETE);
 			buf.clear();
 			return false;
 		}
@@ -137,9 +134,7 @@ bool PostParser::writePartBody(HttpRequest &request, HttpResponse &response, std
 			std::vector<unsigned char> chunk(buf.begin(), buf.begin() + safe);
 			if (request.getFtFile()->writeToFile(chunk, false) == -1)
 			{
-				response.setStatus(HP_INTERNAL_SERVER_ERROR);
-				response.setState(RESPONSE_FINISHED);
-				request.setStatus(FINISHED);
+				request.setResponseCode(HP_INTERNAL_SERVER_ERROR);
 				return false;
 			}
 		}
@@ -163,31 +158,32 @@ void PostParser::executeUpload(HttpRequest &request, HttpResponse &response)
 		const std::string delimiter  = "\r\n" + boundary;     // "\r\n--boundary"
 
 		bool loop = true;
-		while (loop)
+		while (loop && request.getStatus() != ERROR)
 		{
 			loop = false;
 			if (request.getMpState() == MP_READING_HEADERS)
 				loop = readPartHeaders(request, buf, boundary);
 			else
-				loop = writePartBody(request, response, buf, delimiter);
-			if (response.getState() == RESPONSE_FINISHED)
-				return;
+				loop = writePartBody(request, buf, delimiter);
+		}
+
+
+		if (request.getStatus() == ERROR)
+			return;
+		if (request.getMpState() == MP_COMPLETE)
+		{
+			response.setStatus(HP_CREATED);
+			return;
 		}
 		// All body data received but no closing boundary found — malformed multipart
-		if (request.getStatus() == FINISHED && response.getState() != RESPONSE_FINISHED)
-		{
-			response.setStatus(HP_BAD_REQUEST);
-			response.setState(RESPONSE_FINISHED);
-		}
+		if (request.getStatus() == FINISHED)
+			request.setResponseCode(HP_BAD_REQUEST);
 	}
 	else
 	{
 		bool closeFile = (request.getStatus() == FINISHED);
-		if (request.getFtFile()->writeToFile(request.getBody().getBody(), closeFile) == -1) { // write syscall failed
-			response.setState(RESPONSE_FINISHED);
-			response.setStatus(HP_INTERNAL_SERVER_ERROR);
-			request.setStatus(FINISHED);
-		}
+		if (request.getFtFile()->writeToFile(request.getBody().getBody(), closeFile) == -1)
+			request.setResponseCode(HP_INTERNAL_SERVER_ERROR);
 	}
 }
 
@@ -227,13 +223,21 @@ std::string PostParser::applicationFileName(HttpRequest &request)
 
 void PostParser::executeCGI(HttpRequest &request)
 {
-	//TODO validate path and allowed methods .
+	if (request.getFtFile() == NULL)
+	{
+		request.setResponseCode(HP_INTERNAL_SERVER_ERROR);
+		return;
+	}
 	bool closeFile = (request.getStatus() == FINISHED);
-	request.getFtFile()->writeToFile(request.getBody().getBody(), closeFile);
+	if (request.getFtFile()->writeToFile(request.getBody().getBody(), closeFile) == -1)
+	{
+		request.setResponseCode(HP_INTERNAL_SERVER_ERROR);
+		return;
+	}
 	request.getBody().clearBody();
 }
 
-void PostParser::creatFile(HttpRequest &request, HttpResponse &response)
+void PostParser::creatFile(HttpRequest &request)
 {
 	if (request.getCGIType() != NO_CGI)
 	{
