@@ -3,7 +3,7 @@
 #include <map>
 #include "enums.hpp"
 #include "Body.hpp"
-#include "../includes/config.hpp"
+#include "config.hpp"
 #include "FtFile.hpp"
 
 class HttpResponse;

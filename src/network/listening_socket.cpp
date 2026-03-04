@@ -1,5 +1,5 @@
-#include "../includes/listeningSocket.hpp"
-#include "../includes/server_manager.hpp"
+#include "listeningSocket.hpp"
+#include "server_manager.hpp"
 #include <arpa/inet.h>
 
 ListeningSocket::ListeningSocket(serverConfig *conf, int fd): socketsManager(conf, fd) {}

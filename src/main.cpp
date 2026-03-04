@@ -1,6 +1,5 @@
-#include "../includes/server_manager.hpp"
-#include "../HandleRequests/TransactionManager.hpp"
-// #include "../HandleRequests/RequestParser.hpp" // debugging
+#include "server_manager.hpp"
+#include "TransactionManager.hpp"
 
 size_t ft_strlen(unsigned char *s)
 {
@@ -30,49 +29,3 @@ int main(int ac, char **av)
     server.TrackSocketsEvent();
     return (0);
 }
-
-
-/* DEBUGGING 
-
-void PrintVector(std::vector<unsigned char> v)
-{
-	// std::cout << v.empty();
-	for (size_t i = 0; i < v.size(); i++)
-	{
-		if (v[i] == '\n')
-		{
-			std::cout << "\\n" << std::endl;
-		}
-		else if (v[i] == '\r')
-			std::cout << "\\r";
-		else
-    		std::cout << v[i];
-	}
-	std::cout << std::endl;
-}
-
-int main(int ac, char **av)
-{
-	RequestParser parser;
-	HttpRequest request;
-	std::string R;	
-	R = "7\r\n"
-		"Mozilla\r\n"
-		"9\r\n"
-		"Developer\r\n"
-		"7\r\n"
-		"Network\r\n"
-		"0\r\n"
-		"\r\n";
-	std::vector<unsigned char> v(R.begin(), R.end());
-	request.setRequest(v);
-	parser.read_body_chunked(request);
-	
-	std::cout << "Printing body: " << std::endl;
-	PrintVector(request.getBody().getBody());
-	std::cout << std::endl;
-	std::cout << "Printing request: " << std::endl;
-
-	PrintVector(request.getRequest());
-}
-*/

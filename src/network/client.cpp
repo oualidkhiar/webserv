@@ -1,6 +1,6 @@
-#include "../includes/clientSocket.hpp"
-#include "../includes/server_manager.hpp"
-#include "../HandleRequests/ErrorResponse.hpp"
+#include "clientSocket.hpp"
+#include "server_manager.hpp"
+#include "ErrorResponse.hpp"
 
 ClientSocket::ClientSocket(int fd ,serverConfig *conf): 
 socketsManager(conf, fd), state(READING_REQUEST)

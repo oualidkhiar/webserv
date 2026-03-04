@@ -2,7 +2,7 @@
 #define CLIENTSOCKET_HPP
 
 #include "./socketsManager.hpp"
-#include "../HandleRequests/TransactionManager.hpp"
+#include "./TransactionManager.hpp"
 
 enum ClientState {
     READING_REQUEST,

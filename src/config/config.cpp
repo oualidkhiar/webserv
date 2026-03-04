@@ -1,4 +1,4 @@
-#include "../includes/config.hpp"
+#include "config.hpp"
 
 config::config(std::string FileName): filename(FileName), error(false) {}
 

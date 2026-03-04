@@ -1,4 +1,4 @@
-#include "../HandleRequests/ErrorResponse.hpp"
+#include "ErrorResponse.hpp"
 #include "TransactionManager.hpp"
 #include "RequestParser.hpp"
 #include "Executor.hpp"

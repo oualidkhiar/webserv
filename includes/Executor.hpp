@@ -1,7 +1,7 @@
 #pragma once
 #include "HttpRequest.hpp"
 #include "HttpResponse.hpp"
-#include "../includes/config.hpp"
+#include "config.hpp"
 #include "handleCgi.hpp"
 
 enum ExecutorCase{

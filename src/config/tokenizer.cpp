@@ -1,4 +1,4 @@
-#include "../includes/tokenizer.hpp"
+#include "tokenizer.hpp"
 
 tokenizer::tokenizer(std::string filename): file(filename.c_str()), error(false) {
     if (!file.is_open()) {

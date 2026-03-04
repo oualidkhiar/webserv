@@ -1,4 +1,4 @@
-#include "../includes/parser.hpp"
+#include "parser.hpp"
 
 parser::parser(tokenizer& tok): tokens(tok), error(false), index(0) {}
 

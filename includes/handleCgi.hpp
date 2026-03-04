@@ -1,5 +1,5 @@
 #pragma once
-#include "../includes/config.hpp"
+#include "config.hpp"
 #include "HttpRequest.hpp"
 #include "HttpResponse.hpp"
 #include <sys/types.h>

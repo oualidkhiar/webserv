@@ -1,7 +1,7 @@
 #ifndef PARSER_HPP
 #define PARSER_HPP
 
-#include "./tokenizer.hpp"
+#include "tokenizer.hpp"
 
 enum nodeType {
 	SERVER_NODE,

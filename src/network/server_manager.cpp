@@ -1,4 +1,4 @@
-#include "../includes/server_manager.hpp"
+#include "server_manager.hpp"
 
 ServerManager::ServerManager(config& conf): conf(conf), error(false) {}
 
