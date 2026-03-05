@@ -2,6 +2,7 @@
 #define CONFIG_HPP
 
 #include "./parser.hpp"
+#include "../HandleRequests/SessionManager.hpp"
 
 struct location {
 
@@ -22,8 +23,8 @@ struct location {
 
 struct serverConfig {
 private:
-
-    std::vector<int>								Port;
+	SessionManager*									sessionManager;
+    std::vector<int>								Port	;
 	size_t											clientMaxSizeBody;
 	std::vector<std::string>						ServerNames;
 	std::string										rootPath;
@@ -34,9 +35,10 @@ private:
 
 public:
 	std::map<std::string, location *>				Locations;
-	serverConfig(): clientMaxSizeBody(0), autoindex(false) {}
+	serverConfig(): clientMaxSizeBody(0), autoindex(false), sessionManager(NULL) {}
 	// geters for Global data
 	std::vector<int>& getPorts();
+	SessionManager* getSessionManager();
 	size_t getMaxBodySize();
 	std::vector<std::string>& getServerNames();
 	std::string&	getRootPath();
@@ -44,7 +46,8 @@ public:
 	bool getAutoIndexFlag();
 	std::set<std::string>& getAllowedMethods();
 	std::pair<int, std::string>& getRedirection();
-	// seters for Global data
+	// seters for Global data	
+	void setSessionManager(SessionManager* sessionManager);
 	void setPort(int port);
 	void setMaxBodySize(size_t clientBody);
 	void setServerName(std::string serverName);

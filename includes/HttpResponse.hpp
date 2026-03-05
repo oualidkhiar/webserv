@@ -7,6 +7,7 @@
 #include "HttpRequest.hpp"
 #include "Body.hpp"
 
+class Session;
 class HttpResponse
 {
 private:
@@ -18,6 +19,7 @@ private:
     Body *body;
     ResponseState state;
     FtFile *file;
+    Session * session;
     void createHeaderLine();
     void createHeaders();
     // cgi handlers
@@ -36,6 +38,9 @@ public:
     void createBody();
     void setBody(Body *body);
     void initializeResponse();
+    void setSession(Session *session);
+
+    Session *getSession();
     std::string getHeaderLine();
     size_t bodySize();
     void appendBodyToResponse(std::vector<unsigned char> &chunk);

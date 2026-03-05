@@ -1,5 +1,6 @@
 #include "HttpResponse.hpp"
 #include <sstream>
+#include "Session.hpp"
 
 HttpResponse::HttpResponse()
 {
@@ -7,6 +8,7 @@ HttpResponse::HttpResponse()
     this->status = 200;
     file = NULL;
     body = NULL;
+    session = NULL;
 }
 
 void HttpResponse::setState(ResponseState state) { this->state = state; }
@@ -15,6 +17,8 @@ ResponseState HttpResponse::getState() { return this->state; }
 int HttpResponse::getStatus() { return (this->status); }
 void HttpResponse::AddHeader(std::string key, std::string value) { this->headers.insert(std::make_pair(key, value)); }
 void HttpResponse::overWriteHeader(std::pair<std::string, std::string> p) {this->headers[p.first] = p.second; }
+void HttpResponse::setSession(Session *session) { this->session = session; }
+Session *HttpResponse::getSession() { return this->session; }
 
 void HttpResponse::setFile(FtFile *file)
 {
@@ -123,6 +127,8 @@ std::string HttpResponse::getReasonPhrase(int code)
     // --- 3xx Redirection ---
     case HP_MOVED_PERMANENTLY:
         return "Moved Permanently";
+    case HP_FOUND:
+        return "Found";
 
     // --- 4xx Client Error ---
     case HP_BAD_REQUEST:
