@@ -88,32 +88,19 @@ void Cgi::createEnvp()
 
 	value = "SERVER_PROTOCOL=" + http_Protocol;
 	env.push_back(value);
-
-	value = request.getHeader("Content-Type");
-	if (value.length() > 0)
-	{
-		value = "CONTENT_TYPE=" + value;
-		env.push_back(value);
-	}
-
-	value = request.getHeader("Content-Length");
-	if (value.length() > 0)
-	{
-		value = "CONTENT_LENGTH=" + value;
-		env.push_back(value);
-	}
-
-	value = request.getHeader("Host");
-	if (value.length() > 0)
-	{
-		value = "HTTP_HOST=" + value;
-		env.push_back(value);
-	}
-
-	value = request.getHeader("User-Agent");
-	if (value.length() > 0)
-	{
-		value = "HTTP_USER_AGENT=" + value;
+	std::map<std::string, std::string> headers = request.getHeaders();
+	for (std::map<std::string, std::string>::iterator it = headers.begin(); it != headers.end(); ++it) {
+		if (it->first == "content-type") {
+			value = "CONTENT_TYPE="+it->second;
+		} else if (it->first == "content-length") {
+		 	value = "CONTENT_LENGTH="+it->second;
+		} else if (it->first == "host") {
+			value = "HTTP_HOST="+it->second;
+		} else if (it->first == "user-agent") {
+			value = "HTTP_USER_AGENT="+it->second;
+		} else {
+			value = it->first+"="+it->second;
+		}
 		env.push_back(value);
 	}
 	convertFromVectorStringtToDoubleArray(env);
