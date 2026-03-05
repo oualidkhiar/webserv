@@ -30,6 +30,7 @@ public:
     void setStatus(int status);
     void AddHeader(std ::string key, std::string value);
     void overWriteHeader(std::pair<std::string, std::string> p);
+    void setCookie(const std::string &name, const std::string &value);
 
     void setFile(FtFile *file);
     void setState(ResponseState state);

@@ -2,6 +2,7 @@
 #include "TransactionManager.hpp"
 #include "RequestParser.hpp"
 #include "Executor.hpp"
+#include "utils.hpp"
 #include <cstring>
 
 TransactionManager::TransactionManager() : c(request, response)
@@ -104,6 +105,8 @@ void TransactionManager::setServer(serverConfig *config)
 
 std::pair<unsigned char *, size_t> TransactionManager::firstResponse()
 {
+    if (request.getCookie("session_id").empty())
+        response.setCookie("session_id", generateRandomName());
     response.initializeResponse();
     responsed = true;
     std::pair<unsigned char *, size_t> roofResponse = getRoofResponse();
@@ -127,7 +130,7 @@ std::pair<unsigned char *, size_t> TransactionManager::getResponse()
             return std::make_pair((unsigned char *)"", 0); // if child proccess still running cgi don't do anything go handle the other clients
         }
     }
-    if (response.getStatus() != 200 and response.getStatus() != 301 and response.getStatus() != 302) {
+    if (response.getStatus() >= 400) {
         this->response.setState(RESPONSE_FINISHED);
         std::pair<unsigned char *, size_t> p = ErrorResponse::getErrorResponse(response.getStatus());
         return p;
