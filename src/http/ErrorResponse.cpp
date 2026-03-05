@@ -5,26 +5,7 @@
 #include <sstream>
 #include <cstring>
 
-std::map<int, std::string> ErrorResponse::initErrorPages()
-{
-    std::map<int, std::string> errorPages;
-
-    errorPages[400] = "www/error_pages/400.html";
-    errorPages[403] = "www/error_pages/403.html";
-    errorPages[404] = "www/error_pages/404.html";
-    errorPages[405] = "www/error_pages/405.html";
-    errorPages[413] = "www/error_pages/413.html";
-    errorPages[414] = "www/error_pages/414.html";
-    errorPages[500] = "www/error_pages/500.html";
-    errorPages[501] = "www/error_pages/501.html";
-    errorPages[503] = "www/error_pages/503.html";
-    errorPages[505] = "www/error_pages/505.html";
-    errorPages[504] = "www/error_pages/504.html";
-
-    return errorPages;
-}
-
-void mergeContentWithHeaders(size_t& bodyLen, std::string& content, int code) {
+static void mergeContentWithHeaders(size_t& bodyLen, std::string& content, int code) {
     std::string headers;
     std::ostringstream s;
 	s << bodyLen;
@@ -37,10 +18,9 @@ void mergeContentWithHeaders(size_t& bodyLen, std::string& content, int code) {
     bodyLen = content.size();
 }
 
-void buildSimpleHtmlForShowingErrorNumber(std::string& content, int code) // in case we dont have an error pages for that error
+static void buildSimpleHtmlForShowingErrorNumber(std::string& content, int code) // in case we dont have an error pages for that error
 {
     std::string header_line = getStatusReponseLine(code);
-    std::cout << "respo n " << header_line << std::endl;
     content = "<!DOCTYPE html>\n"
                 "<html lang=\"en\">\n"
                 "<head>\n"
@@ -71,6 +51,25 @@ void buildSimpleHtmlForShowingErrorNumber(std::string& content, int code) // in 
                 "    <div class=\"error-code\">"+header_line+"</div>\n"
                 "</body>\n"
                 "</html>";
+}
+
+std::map<int, std::string> ErrorResponse::initErrorPages()
+{
+    std::map<int, std::string> errorPages;
+
+    errorPages[400] = "www/error_pages/400.html";
+    errorPages[403] = "www/error_pages/403.html";
+    errorPages[404] = "www/error_pages/404.html";
+    errorPages[405] = "www/error_pages/405.html";
+    errorPages[413] = "www/error_pages/413.html";
+    errorPages[414] = "www/error_pages/414.html";
+    errorPages[500] = "www/error_pages/500.html";
+    errorPages[501] = "www/error_pages/501.html";
+    errorPages[503] = "www/error_pages/503.html";
+    errorPages[505] = "www/error_pages/505.html";
+    errorPages[504] = "www/error_pages/504.html";
+
+    return errorPages;
 }
 
 std::pair<unsigned char *, size_t> ErrorResponse::getErrorResponse(int code)
