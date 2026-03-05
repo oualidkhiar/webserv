@@ -23,7 +23,6 @@ void RequestParser::parseOrCreateCookie(HttpRequest &request, HttpResponse &resp
 	std::cout << "------------------ parsing cookies --------------------------------" << std::endl;
 	if (request.getConfig()->getSessionManager() == NULL)
 		request.getConfig()->setSessionManager(new SessionManager());
-
 	if (request.getHeader("cookie").empty())
 	{
 		std::cout << "creating session" << std::endl;
@@ -238,6 +237,16 @@ bool RequestParser::setBufferFixed(HttpRequest &request, Body *body)
 		body->setType(EMPTY);
 		return (false);
 	}
+	if (request.getLocation() == NULL) {
+		if (request.getUri() == "/cookies") {
+			if (content_length >= 256) {
+				return false;
+			}
+			body->setToRead((size_t)content_length);
+			return true;
+		}
+		return false;
+	}
 	size_t max = request.getLocation()->clientMaxSizeBody;
 	if (max > 0 && (size_t)content_length > max)
 	{
@@ -272,7 +281,7 @@ void RequestParser::read_body(HttpRequest &request)
 /*                                                                            */
 /* ************************************************************************** */
 
-void RequestParser::read_header(HttpRequest &request)
+void RequestParser::read_header(HttpRequest &request, HttpResponse &response)
 {
 
 	size_t pos;
@@ -309,7 +318,7 @@ void RequestParser::read_header(HttpRequest &request)
 		request.setResponseCode(HP_BAD_REQUEST);
 		return;
 	}
-
+	
 	if (request.getBody().discoverReadingType(request) == EMPTY)
 	{
 		request.setStatus(FINISHED);
@@ -320,7 +329,6 @@ void RequestParser::read_header(HttpRequest &request)
 	/*after reading the headers we creatFile if there is body read and fileupload*/
 	if (request.getType() == POST)
 	{
-
 		// condition: for mulipartformdata
 		if (request.getUri() == "/cookies")
 		{
@@ -498,11 +506,12 @@ void RequestParser::create_request(HttpRequest &request, HttpResponse &response)
 	if (request.getStatus() == READING_REQUEST_LINE)
 		reading_request_line(request);
 	if (request.getStatus() == READ_HEADER)
-		read_header(request);
+		read_header(request, response);
 	if (request.getStatus() == READ_BODY)
 	{
 		read_body(request);
-		if (request.getUri() == "/cookies" && request.getType() == POST)
+		std::cout <<"herrrrrrrrrrrrrrrrrrrrrrrr\n\n"; 
+		if (request.getUri() == "/cookies")
 		{
 			PostCookiesHandler(request, response);
 			return;

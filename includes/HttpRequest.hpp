@@ -20,18 +20,12 @@ private:
     enum HttpVersion http_version;
 
     std::map<std::string, std::string> headers;
-<<<<<<< HEAD:includes/HttpRequest.hpp
-=======
     std::map<std::string, std::string> cookies;
 
->>>>>>> cookies-implementation:HandleRequests/HttpRequest.hpp
     Body body;
     enum CGIType cgi_type;
     int status_code;
-<<<<<<< HEAD:includes/HttpRequest.hpp
-=======
     std::string reason_phrase;
->>>>>>> cookies-implementation:HandleRequests/HttpRequest.hpp
 
     enum status status;
     size_t available_data;
@@ -96,6 +90,10 @@ public:
     bool setHttpVersion(const std::string &http_version);
     bool hasError();
     ~HttpRequest();
+    // cookies
+    void parseCookies();
+    std::string getCookie(const std::string &name);
+    std::map<std::string, std::string> getCookies();
 
     // DEBUGING FINCTIONS
     void printHeaders();

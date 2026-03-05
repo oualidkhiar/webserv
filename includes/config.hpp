@@ -2,7 +2,7 @@
 #define CONFIG_HPP
 
 #include "./parser.hpp"
-#include "../HandleRequests/SessionManager.hpp"
+#include "SessionManager.hpp"
 
 struct location {
 
