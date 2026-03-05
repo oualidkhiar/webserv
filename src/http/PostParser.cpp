@@ -120,7 +120,7 @@ bool PostParser::writePartBody(HttpRequest &request, std::string &buf, const std
 	return false;
 }
 
-void PostParser::executeUpload(HttpRequest &request, HttpResponse &response)
+void PostParser::executeUpload(HttpRequest &request)
 {
 	std::string contentType = request.getHeader("content-type");
 
@@ -148,7 +148,7 @@ void PostParser::executeUpload(HttpRequest &request, HttpResponse &response)
 			return;
 		if (request.getMpState() == MP_COMPLETE)
 		{
-			response.setStatus(HP_CREATED);
+			request.setResponseCode(HP_CREATED);
 			return;
 		}
 		// All body data received but no closing boundary found — malformed multipart
@@ -160,6 +160,8 @@ void PostParser::executeUpload(HttpRequest &request, HttpResponse &response)
 		bool closeFile = (request.getStatus() == FINISHED);
 		if (request.getFtFile()->writeToFile(request.getBody().getBody(), closeFile) == -1)
 			request.setResponseCode(HP_INTERNAL_SERVER_ERROR);
+		else if (closeFile)
+			request.setResponseCode(HP_CREATED);
 		request.getBody().clearBody();
 	}
 }

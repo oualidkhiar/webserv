@@ -414,11 +414,11 @@ void RequestParser::create_request(HttpRequest &request, HttpResponse &response)
 		if (request.getStatus() != ERROR && request.getType() == POST)
 		{
 			if (request.getCGIType() == NO_CGI)
-				PostParser::executeUpload(request, response);
+				PostParser::executeUpload(request);
 			else
 				PostParser::executeCGI(request);
 		}
 	}
-	if (request.getStatus() == ERROR)
+	if (request.getStatus() == ERROR || request.getResponseCode() == HP_CREATED)
 		response.setStatus(request.getResponseCode());
 }
