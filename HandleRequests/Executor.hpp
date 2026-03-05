@@ -20,6 +20,10 @@ private:
     void executeGet(HttpRequest &request, HttpResponse & response);
     std::pair<int , FtFile *> extractFileInfos(const char * path);
 
+    void CookiesHandler(HttpRequest &request, HttpResponse &response);
+    void CookiesForm(HttpRequest &request, HttpResponse &response);
+    void CookiesWelcomePage(HttpRequest &request, HttpResponse &response);
+
     // Multipart parsing helpers
     std::string pathResolverForDelete(HttpRequest &request);
     // 

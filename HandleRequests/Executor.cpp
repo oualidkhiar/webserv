@@ -9,10 +9,11 @@
 #include <sstream>
 #include <fcntl.h>
 #include <dirent.h>
+#include "Session.hpp"
 
-Executor::Executor(): Case(NONE) {}
+Executor::Executor() : Case(NONE) {}
 
-ExecutorCase Executor::getExecutorCase() {return this->Case;}
+ExecutorCase Executor::getExecutorCase() { return this->Case; }
 
 std::string Executor::pathResolverForDelete(HttpRequest &request)
 {
@@ -22,10 +23,10 @@ std::string Executor::pathResolverForDelete(HttpRequest &request)
     return (path);
 }
 
-
 void Executor::executeDelete(HttpRequest &request, HttpResponse &response)
 {
     std::string path = pathResolverForDelete(request);
+    std::cout <<"path = "<<path<<std::endl;
     struct stat sb;
     if (stat(path.c_str(), &sb) != 0)
     {
@@ -40,6 +41,7 @@ void Executor::executeDelete(HttpRequest &request, HttpResponse &response)
     if (unlink(path.c_str()) != 0)
     {
         response.setStatus(HP_INTERNAL_SERVER_ERROR);
+        response.setState(RESPONSE_FINISHED);
         return;
     }
     // 0 is for success yak ?
@@ -51,7 +53,6 @@ void Executor::executeDelete(HttpRequest &request, HttpResponse &response)
     response.AddHeader("server", "TestServer/1.1\r\n");
     response.setState(RESPONSE_FINISHED);
 }
-
 
 std::pair<int, FtFile *> Executor::extractFileInfos(const char *path)
 {
@@ -75,7 +76,8 @@ void Executor::setLocation(HttpRequest &request)
     request.setLocation(bestLocation);
 }
 
-bool isDirectory(const std::string &path) {
+bool isDirectory(const std::string &path)
+{
     struct stat s;
     if (stat(path.c_str(), &s) != 0)
         return false;
@@ -86,22 +88,32 @@ std::pair<int, std::string> Executor::pathResolver(HttpRequest &request)
 {
     std::string path;
     std::string uri = request.getUri();
+    if (uri.compare("/cookies") == 0)
+    {
+        return std::make_pair(COOKIES_PAGE, ""); // case cookies
+    }
     path = request.getLocation()->rootPath + uri;
-    if (isDirectory(path)) {
-        if (uri[uri.length()-1] != '/') {
-            return std::make_pair(301, uri+"/"); // case redirection 
+    if (isDirectory(path))
+    {
+        if (uri[uri.length() - 1] != '/')
+        {
+            return std::make_pair(301, uri + "/"); // case redirection
         }
-        else if (request.getLocation()->redirection.second.length() > 0) { // case redirection from config file
+        else if (request.getLocation()->redirection.second.length() > 0)
+        { // case redirection from config file
             return std::make_pair(request.getLocation()->redirection.first,
-                    request.getLocation()->redirection.second);
+                                  request.getLocation()->redirection.second);
         }
-        else if (request.getLocation()->indexFiles.size() > 0) { // case index file exist
+        else if (request.getLocation()->indexFiles.size() > 0)
+        { // case index file exist
             return std::make_pair(2, "");
         }
-        else if (request.getLocation()->autoindex) { // open dir and generate a list of what that dir contain
+        else if (request.getLocation()->autoindex)
+        { // open dir and generate a list of what that dir contain
             return std::make_pair(3, path);
         }
-        else {
+        else
+        {
             return std::make_pair(4, ""); // forbiden
         }
     }
@@ -120,22 +132,27 @@ bool Executor::isAllowedMethod(HttpRequest &request)
 void Executor::execute(HttpRequest &request, HttpResponse &response)
 {
     CGIType cgiType = request.getCGIType();
-	if (request.getType() == POST) {
-        if (cgiType == PHP_CGI or cgiType == PYTHON_CGI or cgiType == SHELL_CGI) { // check if request is cgi
+    if (request.getType() == POST)
+    {
+        if (cgiType == PHP_CGI or cgiType == PYTHON_CGI or cgiType == SHELL_CGI)
+        { // check if request is cgi
             this->Case = CGI_EXECUTION;
-            return ;
+            return;
         }
         response.setState(RESPONSE_FINISHED);
-		return ;
+        return;
     }
-    if (cgiType == PHP_CGI or cgiType == PYTHON_CGI or cgiType == SHELL_CGI) { // check if request is cgi
+    if (cgiType == PHP_CGI or cgiType == PYTHON_CGI or cgiType == SHELL_CGI)
+    { // check if request is cgi
         this->Case = CGI_EXECUTION;
-        return ;
+        return;
     }
-    if (request.getType() == DELETE) {
+    if (request.getType() == DELETE)
+    {
         executeDelete(request, response);
     }
-    if (request.getType() == GET) {
+    if (request.getType() == GET)
+    {
         executeGet(request, response);
     }
 }
@@ -153,14 +170,14 @@ void Executor::setContentTpe(HttpResponse &response, const std::string &path)
         response.AddHeader(CONTENT_TYPE_HEADER, DEFAULT_CONTENT_TYPE);
 }
 
-void Executor::caseRedirection(HttpResponse& response, std::string& path, int code)
+void Executor::caseRedirection(HttpResponse &response, std::string &path, int code)
 {
-    response.AddHeader("location", path+"\r\n");
+    response.AddHeader("location", path + "\r\n");
     response.setStatus(code);
     response.setState(RESPONSE_FINISHED);
 }
 
-std::pair<int, FtFile *> Executor::getIndexFile(HttpRequest& request)
+std::pair<int, FtFile *> Executor::getIndexFile(HttpRequest &request)
 {
     std::string indexFile;
     int lastFile;
@@ -179,33 +196,37 @@ std::pair<int, FtFile *> Executor::getIndexFile(HttpRequest& request)
 std::string extructFileName(std::string fullPath)
 {
     std::size_t pos = fullPath.find_last_of('/');
-    if (pos != std::string::npos) {
+    if (pos != std::string::npos)
+    {
         return fullPath.substr(pos);
     }
     return "";
 }
 
-void Executor::caseIndexFile(HttpResponse& resp, HttpRequest& req)
+void Executor::caseIndexFile(HttpResponse &resp, HttpRequest &req)
 {
     std::pair<int, FtFile *> res = getIndexFile(req);
     req.checkCGI(res.second->getPath());
     CGIType cgiType = req.getCGIType();
-    if (cgiType == PHP_CGI or cgiType == PYTHON_CGI or cgiType == SHELL_CGI) { // maybe index file is a cgi (needs to execute : index.py ...)
+    if (cgiType == PHP_CGI or cgiType == PYTHON_CGI or cgiType == SHELL_CGI)
+    { // maybe index file is a cgi (needs to execute : index.py ...)
         res.second->ft_close();
         std::string fileName = extructFileName(res.second->getPath());
-        if (fileName.length() == 0) {
+        if (fileName.length() == 0)
+        {
             resp.setStatus(HP_NOT_FOUND);
             resp.setState(READING_LARGE_FILE);
-            return ;
+            return;
         }
         req.setUri(fileName);
         this->Case = CGI_EXECUTION;
-        return ;
+        return;
     }
-    if (res.first != 1) {
+    if (res.first != 1)
+    {
         resp.setStatus(res.first);
         resp.setState(READING_LARGE_FILE);
-        return ;
+        return;
     }
     setContentTpe(resp, res.second->getPath());
     resp.setFile(res.second);
@@ -216,13 +237,14 @@ void Executor::caseIndexFile(HttpResponse& resp, HttpRequest& req)
 std::vector<unsigned char> convertToVector(std::string body)
 {
     std::vector<unsigned char> res;
-    for (size_t i = 0; i < body.size(); i++) {
+    for (size_t i = 0; i < body.size(); i++)
+    {
         res.push_back(body[i]);
     }
     return res;
 }
 
-std::string buildListInHtmlFormat(std::string& uri, DIR *dir)
+std::string buildListInHtmlFormat(std::string &uri, DIR *dir)
 {
     std::stringstream html;
     struct dirent *entry;
@@ -233,16 +255,17 @@ std::string buildListInHtmlFormat(std::string& uri, DIR *dir)
     html << "<h1>Index of " << uri << "</h1>\n";
     html << "<hr>\n";
     html << "<ul>\n";
-    while ((entry = readdir(dir)) != NULL) {
+    while ((entry = readdir(dir)) != NULL)
+    {
         std::string name = entry->d_name;
-         if (name[0] == '.')
+        if (name[0] == '.')
             continue;
         std::string link = uri;
-        if (uri[uri.size()-1] != '/')
+        if (uri[uri.size() - 1] != '/')
             link += "/";
         link += name;
         html << "<li><a href=\"" << link
-            << "\">" << name << "</a></li>";
+             << "\">" << name << "</a></li>";
     }
     html << "</ul>\n";
     html << "<hr>\n";
@@ -251,12 +274,13 @@ std::string buildListInHtmlFormat(std::string& uri, DIR *dir)
     return html.str();
 }
 
-void Executor::caseListingFiles(HttpResponse& resp, HttpRequest& req, std::string& path)
+void Executor::caseListingFiles(HttpResponse &resp, HttpRequest &req, std::string &path)
 {
     DIR *dir = opendir(path.c_str());
     std::string uri = req.getUri();
     resp.createBody();
-    if (!dir) {
+    if (!dir)
+    {
         resp.setStatus(HP_FORBIDDEN);
         resp.setState(READING_LARGE_FILE);
         return;
@@ -266,7 +290,7 @@ void Executor::caseListingFiles(HttpResponse& resp, HttpRequest& req, std::strin
     std::vector<unsigned char> chunk = convertToVector(list);
     std::ostringstream content_len;
     content_len << list.length();
-    resp.AddHeader("content-length", content_len.str()+"\r\n");
+    resp.AddHeader("content-length", content_len.str() + "\r\n");
     resp.AddHeader("Connection", "closed\r\n");
     resp.AddHeader("server", "TestServer/1.1\r\n");
     resp.AddHeader("Content-Type", "text/html\r\n");
@@ -274,12 +298,54 @@ void Executor::caseListingFiles(HttpResponse& resp, HttpRequest& req, std::strin
     resp.setState(RESPONSE_FINISHED);
 }
 
-void Executor::caseSpecifiedFile(HttpResponse& response, std::string& path)
+void Executor::CookiesForm(HttpRequest &request, HttpResponse &response)
+{
+    std::string html = "\r\n<html><body><form method=\"POST\" action=\"/cookies\"><input type=\"text\" name=\"username\" placeholder=\"Enter your username\"><input type=\"submit\" value=\"Submit\"></form></body></html>";
+    std::vector<unsigned char> chunk = convertToVector(html);
+    std::ostringstream content_len;
+    content_len << html.length();
+    response.AddHeader("content-length", content_len.str() + "\r\n");
+    response.AddHeader("Connection", "closed\r\n");
+    response.AddHeader("server", "TestServer/1.1\r\n");
+    response.AddHeader("Content-Type", "text/html\r\n");
+    response.createBody();
+    response.appendBodyToResponse(chunk);
+    response.setState(RESPONSE_FINISHED);
+}
+void Executor::CookiesWelcomePage(HttpRequest &request, HttpResponse &response)
+{
+    Session *session = response.getSession();
+    std::string html = "\r\n<html><body><h1>Welcome, " + session->getData("username") + "!</h1><p>Session ID: " + session->getSessionId() + "</p></body></html>";
+    std::vector<unsigned char> chunk = convertToVector(html);
+    std::ostringstream content_len;
+    content_len << html.length();
+    response.AddHeader("content-length", content_len.str() + "\r\n");
+    response.AddHeader("Connection", "closed\r\n");
+    response.AddHeader("server", "TestServer/1.1\r\n");
+    response.AddHeader("Content-Type", "text/html\r\n");
+    response.createBody();
+    response.appendBodyToResponse(chunk);
+    response.setState(RESPONSE_FINISHED);
+}
+
+
+void Executor::CookiesHandler(HttpRequest &request, HttpResponse &response)
+{
+    Session *session = response.getSession();
+    if (session->getData("username").empty())
+        CookiesForm(request, response);
+    else
+        CookiesWelcomePage(request, response);
+}
+void Executor::caseSpecifiedFile(HttpResponse &response, std::string &path)
 {
     std::pair<int, FtFile *> p = extractFileInfos(path.c_str());
-    if (p.first != 1) {
+    if (p.first != 1)
+    {
         response.setStatus(p.first);
-    } else {
+    }
+    else
+    {
         response.setFile(p.second);
         setContentTpe(response, p.second->getPath());
     }
@@ -287,7 +353,7 @@ void Executor::caseSpecifiedFile(HttpResponse& response, std::string& path)
     response.setState(READING_LARGE_FILE);
 }
 
-void Executor::caseForbiden(HttpResponse& resp)
+void Executor::caseForbiden(HttpResponse &resp)
 {
     resp.setStatus(HP_FORBIDDEN);
     resp.setState(RESPONSE_FINISHED);
@@ -299,44 +365,52 @@ void Executor::executeGet(HttpRequest &request, HttpResponse &response)
     std::pair<int, FtFile *> pair;
     switch (p.first)
     {
-        case 301: // redirection for 301
-        {
-            caseRedirection(response, p.second, HP_MOVED_PERMANENTLY);
-            break;
-        }
+    case 301: // redirection for 301
+    {
+        caseRedirection(response, p.second, HP_MOVED_PERMANENTLY);
+        break;
+    }
 
-        case 302: // redirection for 302
-        {
-            caseRedirection(response, p.second, HP_FOUND);
-            break;
-        }
+    case 302: // redirection for 302
+    {
+        caseRedirection(response, p.second, HP_FOUND);
+        break;
+    }
 
-        case 2: // index file exist send index file
-        {
-            caseIndexFile(response, request);
-            break;
-        }
-        
-        case 3: // case listing files from dir
-        {
-            caseListingFiles(response, request, p.second);
-            break ;
-        }
-        
-        case 4: // forbiden --> it is a directory but there is no index file and autoindex is false
-        {
-            caseForbiden(response);
-            break;
-        }
+    case 2: // index file exist send index file
+    {
+        caseIndexFile(response, request);
+        break;
+    }
 
-        case 5: // regular request with specify the target file 
-        {
-            caseSpecifiedFile(response, p.second);
-            break;
-        }
+    case 3: // case listing files from dir
+    {
+        caseListingFiles(response, request, p.second);
+        break;
+    }
 
-        default:
-            break;
+    case 4: // forbiden --> it is a directory but there is no index file and autoindex is false
+    {
+        caseForbiden(response);
+        break;
+    }
+
+    case 5: // regular request with specify the target file
+    {
+        caseSpecifiedFile(response, p.second);
+        break;
+    }
+    case  COOKIES_PAGE:
+    {
+        // cookies page means uri is /cookies
+        // here we should generate a page that shows username of the user that is logged in and the session id
+        // if we dont have a username we generate a post form to submit the username
+        CookiesHandler(request, response);
+        break;
+    }
+
+    default:
+        break;
     }
 }
 
@@ -344,11 +418,15 @@ std::string normalizeUri(std::string uri)
 {
     std::string normalizedUri;
     bool seen = false;
-    for (int i = 0; i < uri.length(); i++) {
-        if (uri[i] == '/' and !seen) {
+    for (int i = 0; i < uri.length(); i++)
+    {
+        if (uri[i] == '/' and !seen)
+        {
             normalizedUri.push_back(uri[i]);
             seen = true;
-        } else if (uri[i] != '/') {
+        }
+        else if (uri[i] != '/')
+        {
             normalizedUri.push_back(uri[i]);
             seen = false;
         }
@@ -358,7 +436,7 @@ std::string normalizeUri(std::string uri)
 
 int Executor::matchedScore(const std::string uri, const std::string key)
 {
-    if (uri.compare(0, key.length(), key) != 0) 
+    if (uri.compare(0, key.length(), key) != 0)
         return 0;
     if (uri.length() == key.length())
         return key.length();
@@ -367,8 +445,8 @@ int Executor::matchedScore(const std::string uri, const std::string key)
     return 0;
 }
 
-location* Executor::getLongestMatchedLocation(HttpRequest &request, 
-                            std::map<std::string, location *> map)
+location *Executor::getLongestMatchedLocation(HttpRequest &request,
+                                              std::map<std::string, location *> map)
 {
     request.setUri(normalizeUri((request.getUri())));
     std::string uri = request.getUri();

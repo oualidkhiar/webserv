@@ -14,6 +14,7 @@ HttpRequest::HttpRequest()
 	file = NULL;
 	CT = NO_CT;
 	mp_state = MP_READING_HEADERS;
+
 }
 
 int HttpRequest::getPort() { return (this->port); }
@@ -77,6 +78,7 @@ void HttpRequest::checkCGI(const std::string &uri)
 	else
 		this->setCGIType(NO_CGI);
 }
+
 
 bool HttpRequest::setUri(const std::string &uri)
 {
@@ -146,9 +148,6 @@ std::string HttpRequest::getHeader(std::string key)
 void HttpRequest::parseCookies()
 {
     std::string cookie_header = getHeader("cookie");
-    if (cookie_header.empty())
-        return;
-
     size_t pos = 0;
     while (pos < cookie_header.size())
     {

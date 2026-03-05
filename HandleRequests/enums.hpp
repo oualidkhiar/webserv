@@ -3,6 +3,8 @@
 #define FIXED_LENGTH_HEADER "content-length"
 #define MAX_FILE_READ 8192
 #define BUFFER_SIZE 8192
+#define TIME_EXPIRATION 3600
+#define COOKIES_PAGE 2222 
 
 enum RequestType
 {

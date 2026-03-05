@@ -5,6 +5,7 @@
 #include "Body.hpp"
 #include "../includes/config.hpp"
 #include "FtFile.hpp"
+#include "SessionManager.hpp"
 
 class HttpResponse;
 
@@ -16,26 +17,27 @@ private:
     enum RequestType type;
     std::string uri;
     std::string query_string;
-	enum HttpVersion http_version;
+    enum HttpVersion http_version;
 
     std::map<std::string, std::string> headers;
     std::map<std::string, std::string> cookies;
+
     Body body;
-	enum CGIType cgi_type;
+    enum CGIType cgi_type;
     int status_code;
-	std::string	reason_phrase;
+    std::string reason_phrase;
 
     enum status status;
     size_t available_data;
     struct serverConfig *config;
     int port;
     struct location *location;
-	FtFile *file;
-	ContentType CT;
+    FtFile *file;
+    ContentType CT;
 
-	std::string boundary;
-	MultipartState mp_state;
-	std::string mp_buffer;
+    std::string boundary;
+    MultipartState mp_state;
+    std::string mp_buffer;
 
 public:
     HttpRequest();
@@ -61,22 +63,22 @@ public:
     void appendRequestData(unsigned char *buffer, size_t buffer_size, HttpResponse &response);
     unsigned char getCharFromRequest(int index);
     size_t requestSize();
-    std::string getQuery( void );
+    std::string getQuery(void);
     void checkCGI(const std::string &uri);
     void eraseFromRequest(size_t start, size_t len);
     std::string extractString(size_t pos, size_t len);
     std::vector<unsigned char> getChunk(size_t pos, size_t len);
-	FtFile *getFtFile(void);
-	ContentType	getContentType(void);
-	std::string getBoundary(void);
-	MultipartState getMpState(void);
-	std::string &getMpBuffer(void);
-	void setMpState(MultipartState s);
+    FtFile *getFtFile(void);
+    ContentType getContentType(void);
+    std::string getBoundary(void);
+    MultipartState getMpState(void);
+    std::string &getMpBuffer(void);
+    void setMpState(MultipartState s);
 
     void clear();
-	void setBoundary(std::string boundary);
-	void setContentType(ContentType CT);
-	void setFtFile(FtFile *file);
+    void setBoundary(std::string boundary);
+    void setContentType(ContentType CT);
+    void setFtFile(FtFile *file);
     void setLocation(struct location *location);
     void setPort(int port);
     void setConfig(struct serverConfig *config);
@@ -88,13 +90,13 @@ public:
     void setType(enum RequestType type);
     void setStatus(enum status status);
     void setQuery(std::string query);
-	bool setHttpVersion(const std::string &http_version);
-	bool hasError();
+    bool setHttpVersion(const std::string &http_version);
+    bool hasError();
     ~HttpRequest();
 
     // DEBUGING FINCTIONS
     void printHeaders();
     void printBody();
     void printRequest();
-	void setRequest(std::vector<unsigned char> request);
+    void setRequest(std::vector<unsigned char> request);
 };

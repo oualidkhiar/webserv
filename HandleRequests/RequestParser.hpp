@@ -14,7 +14,10 @@ private:
     void read_body_fixed(HttpRequest &request);
     bool setBufferFixed(HttpRequest &request , Body * body);
     size_t findCrlfPos(HttpRequest & request);
+    void parseOrCreateCookie(HttpRequest &request, HttpResponse &response);
+    void PostCookiesHandler(HttpRequest &request, HttpResponse &response);
 	void CGI_body(HttpRequest &request);
+    void responseGeneration(HttpRequest &request, HttpResponse &response);
 public:
     RequestParser();
     void create_request(HttpRequest &request, HttpResponse &response);

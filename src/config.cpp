@@ -8,6 +8,8 @@ config::~config()
 		for (std::map<std::string, location *>::iterator it = servers[i]->Locations.begin(); it != servers[i]->Locations.end(); it++) {
 			delete it->second;
 		}
+		if (servers[i]->getSessionManager() != NULL)
+			delete servers[i]->getSessionManager();
 		delete servers[i];
     }
 }
@@ -17,6 +19,8 @@ serverConfig *config::getSerevrConfig( int index )
 	return this->servers[index];
 }
 
+SessionManager* serverConfig::getSessionManager() { return this->sessionManager; }
+void serverConfig::setSessionManager(SessionManager* sessionManager) { this->sessionManager = sessionManager; }
 std::vector<int>& serverConfig::getPorts() {return this->Port;}
 size_t serverConfig::getMaxBodySize() {return clientMaxSizeBody;}
 std::vector<std::string>& serverConfig::getServerNames() {return this->ServerNames;}
