@@ -45,7 +45,6 @@ public:
     std::string getReasonPhrase(int code);
     int getStatus();
     std::string getHeader(std::string key);
-    static HttpResponse getResponse(HttpRequest &request);
     ~HttpResponse();
     void printHeaders();
 

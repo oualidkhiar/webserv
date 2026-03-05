@@ -196,7 +196,7 @@ void RequestParser::read_body(HttpRequest &request)
 /*                                                                            */
 /* ************************************************************************** */
 
-void RequestParser::read_header(HttpRequest &request, HttpResponse &response)
+void RequestParser::read_header(HttpRequest &request)
 {
 
     size_t pos;
@@ -332,7 +332,7 @@ void RequestParser::checkLocationRules(HttpRequest &request)
 	}
 }
 
-void RequestParser::reading_request_line(HttpRequest &request, HttpResponse &response)
+void RequestParser::reading_request_line(HttpRequest &request)
 {
 	int token_numbers = 0;
 
@@ -389,8 +389,8 @@ void RequestParser::reading_request_line(HttpRequest &request, HttpResponse &res
 		request.setResponseCode(HP_BAD_REQUEST);
 		return;
 	}
-	request.setStatus(READ_HEADER);
 	request.eraseFromRequest(0, pos + 2);
+	request.setStatus(READ_HEADER);
 
 	Executor::setLocation(request);
 	checkLocationRules(request);
@@ -405,24 +405,18 @@ void RequestParser::reading_request_line(HttpRequest &request, HttpResponse &res
 void RequestParser::create_request(HttpRequest &request, HttpResponse &response)
 {
 	if (request.getStatus() == READING_REQUEST_LINE)
-        reading_request_line(request, response);
+        reading_request_line(request);
 	if (request.getStatus() == READ_HEADER)
-        read_header(request, response); // file created.
+        read_header(request);
     if (request.getStatus() == READ_BODY)
 	{
 		read_body(request);
-		if (request.getStatus() == ERROR)
+		if (request.getStatus() != ERROR && request.getType() == POST)
 		{
-			response.setStatus(request.getResponseCode());
-			return;
-		}
-		if (request.getType() == POST && request.getCGIType() != NO_CGI)
-		{
-			PostParser::executeCGI(request);
-		}
-		if (request.getType() == POST && request.getCGIType() == NO_CGI)
-		{
-			PostParser::executeUpload(request, response);
+			if (request.getCGIType() == NO_CGI)
+				PostParser::executeUpload(request, response);
+			else
+				PostParser::executeCGI(request);
 		}
 	}
 	if (request.getStatus() == ERROR)
