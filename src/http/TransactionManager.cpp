@@ -105,8 +105,6 @@ void TransactionManager::setServer(serverConfig *config)
 
 std::pair<unsigned char *, size_t> TransactionManager::firstResponse()
 {
-    if (request.getCookie("session_id").empty())
-        response.setCookie("session_id", generateRandomName());
     response.initializeResponse();
     responsed = true;
     std::pair<unsigned char *, size_t> roofResponse = getRoofResponse();

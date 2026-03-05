@@ -19,7 +19,6 @@ private:
 	enum HttpVersion http_version;
 
     std::map<std::string, std::string> headers;
-    std::map<std::string, std::string> cookies;
     Body body;
 	enum CGIType cgi_type;
     int status_code;
@@ -45,9 +44,6 @@ public:
     enum HttpVersion getHttpVersion();
     std::map<std::string, std::string> getHeaders();
     std::string getHeader(std::string key);
-    void parseCookies();
-    std::string getCookie(const std::string &name);
-    std::map<std::string, std::string> getCookies();
     enum status getStatus();
     int getResponseCode();
     Body &getBody();
