@@ -47,23 +47,6 @@ std::string PostParser::extractBoundary(const std::string &contentType)
 	return contentType.substr(pos, end - pos);
 }
 
-std::string PostParser::extractHeaderValue(const std::string &headers, const std::string &key)
-{
-	size_t pos = headers.find(key);
-	if (pos == std::string::npos)
-		return "";
-
-	pos = headers.find("\"", pos);
-	if (pos == std::string::npos)
-		return "";
-
-	size_t end = headers.find("\"", pos + 1);
-	if (end == std::string::npos)
-		return "";
-
-	return headers.substr(pos + 1, end - pos - 1);
-}
-
 bool PostParser::readPartHeaders(HttpRequest &request, std::string &buf, const std::string &boundary)
 {
 	if (buf.size() >= boundary.size() + 2 && buf.compare(0, boundary.size(), boundary) == 0)
@@ -80,16 +63,10 @@ bool PostParser::readPartHeaders(HttpRequest &request, std::string &buf, const s
 	if (hEnd == std::string::npos)
 		return false;
 
-	std::string headers = buf.substr(0, hEnd);
 	buf.erase(0, hEnd + 4);
 
-	std::string filename = extractHeaderValue(headers, "filename=");
-	if (!filename.empty())
-	{
-		std::string path = request.getLocation()->rootPath + "/"
-					 + request.getLocation()->upload_store + "/" + filename;
-		request.setFtFile(new FtFile(path));
-	}
+	std::string filePath = generateFileName(request);
+	request.setFtFile(new FtFile(filePath));
 	request.setMpState(MP_WRITING_BODY);
 	return true;
 }
@@ -167,7 +144,6 @@ void PostParser::executeUpload(HttpRequest &request, HttpResponse &response)
 				loop = writePartBody(request, buf, delimiter);
 		}
 
-
 		if (request.getStatus() == ERROR)
 			return;
 		if (request.getMpState() == MP_COMPLETE)
@@ -184,6 +160,7 @@ void PostParser::executeUpload(HttpRequest &request, HttpResponse &response)
 		bool closeFile = (request.getStatus() == FINISHED);
 		if (request.getFtFile()->writeToFile(request.getBody().getBody(), closeFile) == -1)
 			request.setResponseCode(HP_INTERNAL_SERVER_ERROR);
+		request.getBody().clearBody();
 	}
 }
 
@@ -208,16 +185,9 @@ static std::string generateDateName(const std::string &basePath)
 	}
 }
 
-std::string PostParser::applicationFileName(HttpRequest &request)
+std::string PostParser::generateFileName(HttpRequest &request)
 {
 	std::string basePath = request.getLocation()->rootPath + "/" + request.getLocation()->upload_store + "/";
-	std::string value = request.getHeader("content-disposition");
-	if (value.find("filename=") != std::string::npos)
-	{
-		std::string filename = extractHeaderValue(value, "filename=");
-		if (!filename.empty())
-			return (basePath + filename);
-	}
 	return (basePath + generateDateName(basePath));
 }
 
@@ -245,13 +215,13 @@ void PostParser::creatFile(HttpRequest &request)
 		FtFile *file = new FtFile(name);
 		request.setFtFile(file);
 	}
-	if (request.getCGIType() == NO_CGI)
+	else
 	{
 		std::string contentType = request.getHeader("content-type");
 		if (!contentType.empty() && contentType.find("multipart/form-data") != std::string::npos)
 			return;
 
-		std::string filePath = PostParser::applicationFileName(request);
+		std::string filePath = PostParser::generateFileName(request);
 		FtFile *file = new FtFile(filePath);
 		request.setFtFile(file);
 	}
