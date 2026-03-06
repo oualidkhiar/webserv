@@ -6,7 +6,7 @@
 #include <ctime>
 
 Cgi::Cgi(HttpRequest &request, HttpResponse &resp) : request(request), 
-response(resp), responseCode(0), size(0), pid(-1)
+response(resp), size(0), responseCode(0), pid(-1)
 {
 	http_Protocol = "HTTP/1.1";
 }
@@ -24,7 +24,7 @@ Cgi::~Cgi()
 
 void Cgi::fill_char_array(char *c_str, std::string cppStr)
 {
-	for (int i = 0; i < cppStr.length(); i++)
+	for (size_t i = 0; i < cppStr.length(); i++)
 	{
 		c_str[i] = cppStr[i];
 	}
@@ -35,7 +35,7 @@ void Cgi::convertFromVectorStringtToDoubleArray(std::vector<std::string> &env)
 {
 	envp = new char *[env.size() + 1];
 
-	for (int i = 0; i < env.size(); i++)
+	for (size_t i = 0; i < env.size(); i++)
 	{
 		envp[i] = new char[env[i].length() + 1];
 		fill_char_array(envp[i], env[i]);
@@ -281,7 +281,6 @@ void Cgi::parentPs()
 			this->responseCode = HP_INTERNAL_SERVER_ERROR;
 			return ;
 		}
-		char buffer[10];
 		resetFileOffset();
     	if (this->responseCode != 0) {return ;}
 		writeHeadersFromCgiOut();

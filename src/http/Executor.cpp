@@ -177,7 +177,7 @@ std::pair<int, FtFile *> Executor::getIndexFile(HttpRequest &request)
 {
     std::string indexFile;
     int lastFile;
-    for (int i = 0; i < request.getLocation()->indexFiles.size(); i++)
+    for (size_t i = 0; i < (request.getLocation()->indexFiles.size()); i++)
     {
         indexFile = (request.getLocation()->rootPath + "/" + request.getLocation()->indexFiles[i]);
         std::pair<int, FtFile *> p = extractFileInfos(indexFile.c_str());
@@ -294,9 +294,12 @@ void Executor::caseListingFiles(HttpResponse &resp, HttpRequest &req, std::strin
     resp.setState(RESPONSE_FINISHED);
 }
 
-void Executor::CookiesForm(HttpRequest &request, HttpResponse &response)
+void Executor::CookiesForm(HttpResponse &response)
 {
-    std::string html = "\r\n<html><body><form method=\"POST\" action=\"/cookies\"><input type=\"text\" name=\"username\" placeholder=\"Enter your username\"><input type=\"submit\" value=\"Submit\"></form></body></html>";
+    std::string html = "\r\n<html><body><form method=\"POST\" \
+    action=\"/cookies\"><input type=\"text\" name=\"username\" \
+    placeholder=\"Enter your username\"><input type=\"submit\" \
+    value=\"Submit\"></form></body></html>";
     std::vector<unsigned char> chunk = convertToVector(html);
     std::ostringstream content_len;
     content_len << html.length();
@@ -308,7 +311,7 @@ void Executor::CookiesForm(HttpRequest &request, HttpResponse &response)
     response.appendBodyToResponse(chunk);
     response.setState(RESPONSE_FINISHED);
 }
-void Executor::CookiesWelcomePage(HttpRequest &request, HttpResponse &response)
+void Executor::CookiesWelcomePage(HttpResponse &response)
 {
     Session *session = response.getSession();
     std::string html = "\r\n<html><body><h1>Welcome, " + session->getData("username") + "!</h1><p>Session ID: " + session->getSessionId() + "</p></body></html>";
@@ -325,13 +328,13 @@ void Executor::CookiesWelcomePage(HttpRequest &request, HttpResponse &response)
 }
 
 
-void Executor::CookiesHandler(HttpRequest &request, HttpResponse &response)
+void Executor::CookiesHandler(HttpResponse &response)
 {
     Session *session = response.getSession();
     if (session->getData("username").empty())
-        CookiesForm(request, response);
+        CookiesForm(response);
     else
-        CookiesWelcomePage(request, response);
+        CookiesWelcomePage(response);
 }
 void Executor::caseSpecifiedFile(HttpResponse &response, std::string &path)
 {
@@ -401,7 +404,7 @@ void Executor::executeGet(HttpRequest &request, HttpResponse &response)
         // cookies page means uri is /cookies
         // here we should generate a page that shows username of the user that is logged in and the session id
         // if we dont have a username we generate a post form to submit the username
-        CookiesHandler(request, response);
+        CookiesHandler(response);
         break;
     }
 
@@ -414,7 +417,7 @@ std::string normalizeUri(std::string uri)
 {
     std::string normalizedUri;
     bool seen = false;
-    for (int i = 0; i < uri.length(); i++)
+    for (size_t i = 0; i < uri.length(); i++)
     {
         if (uri[i] == '/' and !seen)
         {

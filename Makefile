@@ -3,7 +3,7 @@
 CXX = c++
 
 # Flags (-Wall -Werror -Wall) to be added.
-CXXFLAGS = -std=c++98 -Iincludes
+CXXFLAGS = -Wall -Wextra -Werror -std=c++98 -Iincludes
 
 SRCDIR = src/
 CONFIG_FILES = config.cpp parser.cpp tokenizer.cpp

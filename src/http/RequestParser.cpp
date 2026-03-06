@@ -52,7 +52,7 @@ void RequestParser::parseOrCreateCookie(HttpRequest &request, HttpResponse &resp
 	}
 }
 
-void RequestParser::responseGeneration(HttpRequest &request, HttpResponse &response)
+void RequestParser::responseGeneration(HttpResponse &response)
 {
 	response.setStatus(HP_FOUND);
 	response.AddHeader("Location", "/cookies\r\n");
@@ -83,8 +83,7 @@ void RequestParser::PostCookiesHandler(HttpRequest &request, HttpResponse &respo
 		return;
 	}
 	response.getSession()->setData("username", username);
-	std::cout << "Username set in session: " << username << std::endl;
-	responseGeneration(request, response);
+	responseGeneration(response);
 	response.setState(RESPONSE_FINISHED);
 	request.setStatus(FINISHED);
 }

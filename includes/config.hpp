@@ -35,7 +35,7 @@ private:
 
 public:
 	std::map<std::string, location *>				Locations;
-	serverConfig(): clientMaxSizeBody(0), autoindex(false), sessionManager(NULL) {}
+	serverConfig(): sessionManager(NULL), clientMaxSizeBody(0), autoindex(false) {}
 	// geters for Global data
 	std::vector<int>& getPorts();
 	SessionManager* getSessionManager();

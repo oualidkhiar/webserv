@@ -13,7 +13,7 @@ class HttpResponse
 private:
 
     std::string header;
-    RequestType type;
+    // RequestType type;
     int status;
     std::map<std::string, std::string> headers;
     Body *body;
