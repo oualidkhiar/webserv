@@ -26,7 +26,6 @@ std::string Executor::pathResolverForDelete(HttpRequest &request)
 void Executor::executeDelete(HttpRequest &request, HttpResponse &response)
 {
     std::string path = pathResolverForDelete(request);
-    std::cout <<"path = "<<path<<std::endl;
     struct stat sb;
     if (stat(path.c_str(), &sb) != 0)
     {
@@ -70,8 +69,6 @@ void Executor::setLocation(HttpRequest &request)
 {
     location *bestLocation;
     bestLocation = getLongestMatchedLocation(request, request.getConfig()->Locations);
-    std::cout << "best match is " << bestLocation->key << std::endl;
-    std::cout << "uri = " << request.getUri() << std::endl;
     request.setLocation(bestLocation);
 }
 
@@ -413,26 +410,6 @@ void Executor::executeGet(HttpRequest &request, HttpResponse &response)
     }
 }
 
-std::string normalizeUri(std::string uri)
-{
-    std::string normalizedUri;
-    bool seen = false;
-    for (size_t i = 0; i < uri.length(); i++)
-    {
-        if (uri[i] == '/' and !seen)
-        {
-            normalizedUri.push_back(uri[i]);
-            seen = true;
-        }
-        else if (uri[i] != '/')
-        {
-            normalizedUri.push_back(uri[i]);
-            seen = false;
-        }
-    }
-    return normalizedUri;
-}
-
 int Executor::matchedScore(const std::string uri, const std::string key)
 {
     if (uri.compare(0, key.length(), key) != 0)
@@ -447,7 +424,6 @@ int Executor::matchedScore(const std::string uri, const std::string key)
 location *Executor::getLongestMatchedLocation(HttpRequest &request,
                                               std::map<std::string, location *> map)
 {
-    request.setUri(normalizeUri((request.getUri())));
     std::string uri = request.getUri();
     location *best_match = NULL;
     int best_score = 0;

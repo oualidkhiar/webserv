@@ -20,12 +20,10 @@ RequestParser ::RequestParser() {}
 
 void RequestParser::parseOrCreateCookie(HttpRequest &request, HttpResponse &response)
 {
-	std::cout << "------------------ parsing cookies --------------------------------" << std::endl;
 	if (request.getConfig()->getSessionManager() == NULL)
 		request.getConfig()->setSessionManager(new SessionManager());
 	if (request.getHeader("cookie").empty())
 	{
-		std::cout << "creating session" << std::endl;
 		std::string session_id = request.getConfig()->getSessionManager()->createSession(TIME_EXPIRATION)->getSessionId();
 		response.AddHeader("Set-Cookie", "session_id=" + session_id + "; Path=/; HttpOnly\r\n");
 		response.setSession(request.getConfig()->getSessionManager()->getSession(session_id));
@@ -212,7 +210,6 @@ void RequestParser::read_body_fixed(HttpRequest &request)
 	{
 		body.appendChunkToBody(request.getChunk(0, available_data));
 		body.decrementToRead(available_data);
-		std::cout << "to read:" << body.getToRead() << std::endl;
 		request.clear();
 	}
 	else
@@ -509,7 +506,6 @@ void RequestParser::create_request(HttpRequest &request, HttpResponse &response)
 	if (request.getStatus() == READ_BODY)
 	{
 		read_body(request);
-		std::cout <<"herrrrrrrrrrrrrrrrrrrrrrrr\n\n"; 
 		if (request.getUri() == "/cookies")
 		{
 			PostCookiesHandler(request, response);

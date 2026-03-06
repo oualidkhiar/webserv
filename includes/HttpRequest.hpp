@@ -84,6 +84,7 @@ public:
     void setResponseCode(const int status_code);
     void setHeaders(std::map<std::string, std::string> headers);
     bool setUri(const std::string &uri);
+    std::string normalizeUri(const std::string& uri);
     void setType(enum RequestType type);
     void setStatus(enum status status);
     void setQuery(std::string query);

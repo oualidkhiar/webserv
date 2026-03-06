@@ -77,25 +77,44 @@ void HttpRequest::checkCGI(const std::string &uri)
 	else
 		this->setCGIType(NO_CGI);
 }
-
+std::string HttpRequest::normalizeUri(const std::string& uri)
+{
+    std::string normalizedUri;
+    bool seen = false;
+    for (size_t i = 0; i < uri.length(); i++)
+    {
+        if (uri[i] == '/' and !seen)
+        {
+            normalizedUri.push_back(uri[i]);
+            seen = true;
+        }
+        else if (uri[i] != '/')
+        {
+            normalizedUri.push_back(uri[i]);
+            seen = false;
+        }
+    }
+    return normalizedUri;
+}
 
 bool HttpRequest::setUri(const std::string &uri)
 {
-	if (uri.empty())
+	std::string normalizedUri = normalizeUri(uri);
+	if (normalizedUri.empty())
 	{
 		this->setResponseCode(HP_BAD_REQUEST);
 		return false;
 	}
 
-	bool is_origin = (uri[0] == '/');
-	bool is_asterisk = (uri == "*");
+	bool is_origin = (normalizedUri[0] == '/');
+	bool is_asterisk = (normalizedUri == "*");
 	if (!is_origin && !is_asterisk)
 	{
 		this->setResponseCode(HP_BAD_REQUEST);
 		return false;
 	}
-	checkCGI(uri);
-	this->uri = uri;
+	checkCGI(normalizedUri);
+	this->uri = normalizedUri;
 	return true;
 }
 

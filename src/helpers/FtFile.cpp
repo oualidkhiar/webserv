@@ -100,13 +100,12 @@ std::vector<unsigned char> FtFile::readFile()
     int bytes_read;
     if (fd == -1)
     {
-        std::cout << "\nft_file readFile opened " << path << std::endl;
         fd = open(path.c_str(), O_RDONLY);
         this->state = FILE_READING;
         if (fd < 0)
         {
-            // handle failair
-            exit_error("POPEN FAILED");
+            // we should set error not exit
+            return chunk;
         }
     }
     bytes_read = read(fd, buffer, MAX_FILE_READ);

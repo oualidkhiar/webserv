@@ -24,7 +24,6 @@ void ClientSocket::readingAndProcessingRequest()
     int bytesRead;
 
     bytesRead = read(this->socketFd, buffer, MAX_BUFFER_SIZE);
-    // std::cout << "buffer == " << buffer << std::endl;
     if (bytesRead > 0) {
         this->transactionMgr->appendToRequest(buffer, bytesRead);
         if (this->transactionMgr->getRequestStatus() == FINISHED) {
@@ -62,7 +61,6 @@ void ClientSocket::sendingResponse()
 {
     int ret;
     std::pair<unsigned char *, size_t> response = this->transactionMgr->getResponse();
-    std::cout << "response ===  " << response.first << std::endl;
     if (response.second == 0) {
         if (this->transactionMgr->getResponseState() == WAITING_FOR_CGI) {
             DisplyLogs::printCurrentAtion("[INFO ] [RESP ]", "waiting for CGI to finish execution...", GREEN);

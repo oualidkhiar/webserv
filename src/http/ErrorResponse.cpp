@@ -12,7 +12,7 @@ static void mergeContentWithHeaders(size_t& bodyLen, std::string& content, int c
     headers = getStatusReponseLine(code);
     headers += "Content-Type: text/html\r\n"
             "Content-Length: "+s.str()+"\r\n"
-            "Connection: close\r\n" // im not sure 
+            "Connection: close\r\n"
             "\r\n";
     content = headers+content;
     bodyLen = content.size();
@@ -21,6 +21,11 @@ static void mergeContentWithHeaders(size_t& bodyLen, std::string& content, int c
 static void buildSimpleHtmlForShowingErrorNumber(std::string& content, int code) // in case we dont have an error pages for that error
 {
     std::string header_line = getStatusReponseLine(code);
+    if (header_line.empty()) {
+        std::ostringstream s;
+        s << code;
+        header_line = "Unknow error Number: "+s.str();
+    }
     content = "<!DOCTYPE html>\n"
                 "<html lang=\"en\">\n"
                 "<head>\n"

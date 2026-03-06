@@ -333,7 +333,6 @@ void Cgi::executeCgi(void)
 	}
 	createResponse();
 	if (this->responseCode != 0) {
-		std::cout << path << std::endl;
 		return ;
 	}
 	createEnvp();
