@@ -16,13 +16,12 @@ size_t Body::getToRead() { return (this->to_read); }
 enum ReadingType Body::discoverReadingType(HttpRequest &request) 
 {
     std::string te = request.getHeader(CHUNKED_HEADER);
-    std::string te_lower = te;
-    for (size_t i = 0; i < te_lower.size(); i++)
-        te_lower[i] = std::tolower(te_lower[i]);
-    bool has_chunked = (te_lower.find("chunked") != std::string::npos);
+    for (size_t i = 0; i < te.size(); i++)
+        te[i] = std::tolower(te[i]);
+    bool has_chunked = (te.find("chunked") != std::string::npos);
     bool has_content_length = !request.getHeader(FIXED_LENGTH_HEADER).empty();
 
-    // Transfer-Encoding present but not chunked — unsupported encoding
+    // Transfer-Encoding present but not chunked
     if (!te.empty() && !has_chunked)
     {
         request.setResponseCode(HP_NOT_IMPLEMENTED);
@@ -30,7 +29,7 @@ enum ReadingType Body::discoverReadingType(HttpRequest &request)
         return EMPTY;
     }
 
-    //if both are present, return EMPTY (security: request smuggling)
+    //if both are present, return EMPTY
     if (has_chunked && has_content_length)
     {
         request.setResponseCode(HP_BAD_REQUEST);
