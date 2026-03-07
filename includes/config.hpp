@@ -25,7 +25,6 @@ struct serverConfig {
 private:
 
 	std::map<int ,std::string>						errorPages;
-	// std::map<int, std::string>						defaultErrorPages;			
 	SessionManager*									sessionManager;
     std::vector<int>								Port	;
 	std::vector<std::string>						ip  ;
@@ -41,7 +40,6 @@ public:
 	std::map<std::string, location *>				Locations;
 	serverConfig(): sessionManager(NULL), clientMaxSizeBody(0), autoindex(false) {}
 	// geters for Global data
-	// std::map<int ,std::string>& getDefaultErrorPages();
 	std::map<int ,std::string>& getErrorPages();
 	std::vector<int>& getPorts();
 	std::vector<std::string>& getIps();
@@ -54,7 +52,6 @@ public:
 	std::set<std::string>& getAllowedMethods();
 	std::pair<int, std::string>& getRedirection();
 	// seters for Global data
-	// void setDefaultErrorPages(int code, std::string path);
 	void setErrorPage(int number, std::string path);
 	void setSessionManager(SessionManager* sessionManager);
 	void setPort(int port);
@@ -96,6 +93,5 @@ public:
 
 void clearServer(serverConfig *server);
 bool validateDataBlock(serverConfig *server);
-bool initDefaultErrorPages();
 
 #endif

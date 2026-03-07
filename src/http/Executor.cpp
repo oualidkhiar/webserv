@@ -15,6 +15,8 @@ Executor::Executor() : Case(NONE) {}
 
 ExecutorCase Executor::getExecutorCase() { return this->Case; }
 
+
+
 std::string Executor::pathResolverForDelete(HttpRequest &request)
 {
     std::string path;
@@ -48,7 +50,7 @@ void Executor::executeDelete(HttpRequest &request, HttpResponse &response)
     // here we sure thats request executed successfully so we can set the response header and body
     response.AddHeader("Content-Length", "0\r\n");
     response.AddHeader("Connection", "closed\r\n");
-    response.AddHeader("server", "TestServer/1.1\r\n");
+    response.AddHeader("server", response.getHostname()+"\r\n");
     response.setState(RESPONSE_FINISHED);
 }
 
@@ -285,7 +287,7 @@ void Executor::caseListingFiles(HttpResponse &resp, HttpRequest &req, std::strin
     content_len << list.length();
     resp.AddHeader("content-length", content_len.str() + "\r\n");
     resp.AddHeader("Connection", "closed\r\n");
-    resp.AddHeader("server", "TestServer/1.1\r\n");
+    resp.AddHeader("server", resp.getHostname()+"\r\n");
     resp.AddHeader("Content-Type", "text/html\r\n");
     resp.appendBodyToResponse(chunk);
     resp.setState(RESPONSE_FINISHED);
@@ -302,7 +304,7 @@ void Executor::CookiesForm(HttpResponse &response)
     content_len << html.length();
     response.AddHeader("content-length", content_len.str() + "\r\n");
     response.AddHeader("Connection", "closed\r\n");
-    response.AddHeader("server", "TestServer/1.1\r\n");
+    response.AddHeader("server", response.getHostname()+"\r\n");
     response.AddHeader("Content-Type", "text/html\r\n");
     response.createBody();
     response.appendBodyToResponse(chunk);
@@ -317,7 +319,7 @@ void Executor::CookiesWelcomePage(HttpResponse &response)
     content_len << html.length();
     response.AddHeader("content-length", content_len.str() + "\r\n");
     response.AddHeader("Connection", "closed\r\n");
-    response.AddHeader("server", "TestServer/1.1\r\n");
+    response.AddHeader("server", response.getHostname()+"\r\n");
     response.AddHeader("Content-Type", "text/html\r\n");
     response.createBody();
     response.appendBodyToResponse(chunk);

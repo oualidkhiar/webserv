@@ -20,8 +20,10 @@ private:
     ResponseState state;
     FtFile *file;
     Session * session;
+    std::string hostname;
     void createHeaderLine();
     void createHeaders();
+
     // cgi handlers
 
 public:
@@ -39,7 +41,8 @@ public:
     void setBody(Body *body);
     void initializeResponse();
     void setSession(Session *session);
-
+    void setHostname(std::string hostname);
+    std::string getHostname();
     Session *getSession();
     std::string getHeaderLine();
     size_t bodySize();

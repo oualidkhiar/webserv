@@ -8,7 +8,7 @@
 #include <ctime>
 #include <unistd.h>
 #include <fcntl.h>
-#define NAME_LEN 5
+#define NAME_LEN 15
 
 
 std::string getStatusReponseLine(int code)
