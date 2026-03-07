@@ -10,6 +10,18 @@ TransactionManager::TransactionManager() : c(request, response)
     responsed = false;
 }
 
+
+void TransactionManager::setHostname()
+{
+    if (request.getConfig()->getServerNames().empty())
+    {
+        response.setHostname("");
+    }
+    else
+    {
+        response.setHostname(request.getConfig()->getServerNames()[0]);
+    }
+}
 std::pair<unsigned char *, size_t> TransactionManager::getRoofResponse()
 {
     std::pair<unsigned char *, size_t> pair;
@@ -31,9 +43,6 @@ std::pair<unsigned char *, size_t> TransactionManager::getRoofResponse()
 
 std::pair<unsigned char *, size_t> TransactionManager::joinPairs(std::pair<unsigned char *, size_t> &pair1, std::pair<unsigned char *, size_t> &pair2)
 {
-
-    if (pair1.first == NULL || pair2.first == NULL)
-        std::cout << "NULL YA DINK" << std::endl;
     std::pair<unsigned char *, size_t> joined_pair;
     size_t newSize = pair1.second + pair2.second;
     unsigned char *joined_buffer = new unsigned char[newSize];
@@ -101,6 +110,7 @@ void TransactionManager::readChunk()
 void TransactionManager::setServer(serverConfig *config)
 {
     this->request.setConfig(config);
+    setHostname();
 }
 
 

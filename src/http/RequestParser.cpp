@@ -55,7 +55,7 @@ void RequestParser::responseGeneration(HttpResponse &response)
 	response.setStatus(HP_FOUND);
 	response.AddHeader("Location", "/cookies\r\n");
 	response.AddHeader("Connection", "closed\r\n");
-	response.AddHeader("server", "TestServer/1.1\r\n");
+	response.AddHeader("server", response.getHostname()+"\r\n");
 	response.AddHeader("content-length", "0\r\n");
 	response.AddHeader("set-cookie", "session_id=" + response.getSession()->getSessionId() + "; Path=/; HttpOnly\r\n");
 }

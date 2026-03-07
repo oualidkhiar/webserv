@@ -44,6 +44,9 @@ void HttpResponse::setStatus(int status)
     this->state = RESPONSE_FINISHED;
 }
 
+void HttpResponse::setHostname(std::string hostname) { this->hostname = hostname; }
+std::string HttpResponse::getHostname() { return this->hostname; }
+
 void HttpResponse::createHeaders()
 {
     std::ostringstream os;
@@ -53,7 +56,7 @@ void HttpResponse::createHeaders()
         os << 0;
     }
     this->headers.insert(std::make_pair("Connection", "close\r\n"));
-    this->headers.insert(std::make_pair("server", "TestServer/1.1\r\n"));
+    this->headers.insert(std::make_pair("server",hostname +"\r\n"));
     this->headers.insert(std::make_pair(FIXED_LENGTH_HEADER, os.str() + "\r\n"));
 }
 
