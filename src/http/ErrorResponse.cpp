@@ -1,10 +1,16 @@
 #include "ErrorResponse.hpp"
-#include "global.hpp"
 #include "utils.hpp"
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include <cstring>
+#include "403_html.h"
+#include "404_html.h"
+#include "405_html.h"
+#include "413_html.h"
+#include "500_html.h"
+#include "503_html.h"
+#include "504_html.h"
 
 static void mergeContentWithHeaders(size_t& bodyLen, std::string& content, int code) {
     std::string headers;
@@ -19,32 +25,44 @@ static void mergeContentWithHeaders(size_t& bodyLen, std::string& content, int c
     bodyLen = content.size();
 }
 
-std::string getErrorPagePath(HttpRequest& request)
+unsigned char *getDefaultErrorPages(int code)
 {
-    std::map<int, std::string>& errorPages = request.getConfig()->getErrorPages();
-    if (errorPages.find(request.)) {
-
-    }
+	switch (code)
+	{
+		case 404:
+			return __404_html; 
+			break;
+		default:
+			break;
+	}
+	return (unsigned char *)"";
 }
 
-std::pair<unsigned char *, size_t> ErrorResponse::getErrorResponse(serverConfig *serverConf)
-{
-    std::string fileErrorPath = getErrorPagePath(serverConf);
-    std::string content;
-    std::ifstream file(fileErrorPath.c_str());
 
-    if (file.is_open())
+std::pair<unsigned char *, size_t> ErrorResponse::getErrorResponse(serverConfig *serverConf, int code)
+{
+    std::string content;
+	std::map<int, std::string>& errorPages = serverConf->getErrorPages(); // user error pages
+	std::map<int, std::string>::iterator it = errorPages.find(code);
+    if (it != errorPages.end())
     {
-        std::ostringstream buffer;
-        buffer << file.rdbuf();
-        content = buffer.str();
-        file.close();
+        std::ifstream file(it->second.c_str());
+        if (file.is_open())
+        {
+            std::ostringstream buffer;
+            buffer << file.rdbuf();
+            content = buffer.str();
+            file.close();
+        }
+    } else {
+        content.assign((char *)getDefaultErrorPages(code));
     }
     size_t size = content.size();
     mergeContentWithHeaders(size, content, code);
-    unsigned char *response = __404_html; // need to freethis.
+    unsigned char *response = new unsigned char[size]; // need to freethis.
     if (size > 0)
         std::memcpy(response, content.c_str(), size);
 
     return std::make_pair(response, size);
 }
+

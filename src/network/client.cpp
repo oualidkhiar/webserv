@@ -87,7 +87,7 @@ void ClientSocket::sendingResponse()
 void ClientSocket::ErrorParseRequest() {
     int ret;
     int error_code = this->transactionMgr->getResponseCode();
-    std::pair<unsigned char *, size_t> error_response = ErrorResponse::getErrorResponse(error_code);
+    std::pair<unsigned char *, size_t> error_response = ErrorResponse::getErrorResponse(serverConf, error_code);
     ret = write(socketFd, error_response.first, error_response.second);
     if (ret == -1) {
         if (errno == EINTR or errno == EWOULDBLOCK or errno == EAGAIN) {

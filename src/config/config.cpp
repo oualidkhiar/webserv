@@ -22,7 +22,6 @@ serverConfig *config::getSerevrConfig( int index )
 SessionManager* serverConfig::getSessionManager() { return this->sessionManager; }
 void serverConfig::setSessionManager(SessionManager* sessionManager) { this->sessionManager = sessionManager; }
 std::map<int, std::string>& serverConfig::getErrorPages() {return this->errorPages;}
-std::map<int ,std::string>& serverConfig::getDefaultErrorPages() {return this->defaultErrorPages;}
 std::vector<int>& serverConfig::getPorts() {return this->Port;}
 std::vector<std::string>& serverConfig::getIps() {return this->ip;};
 size_t serverConfig::getMaxBodySize() {return clientMaxSizeBody;}
@@ -42,7 +41,6 @@ void serverConfig::setAllowedMethod(std::string method) {this->allowMethods.inse
 void serverConfig::setRedirection(int code, std::string url) {this->redirection.first = code; this->redirection.second = url;}
 void serverConfig::setIp(std::string ip) {this->ip.push_back(ip);}
 void serverConfig::setErrorPage(int number, std::string path) {this->errorPages[number] = path;}
-void serverConfig::setDefaultErrorPages(int code, std::string path) {this->defaultErrorPages.insert(std::make_pair(code, path));}
 
 bool config::CheckParse() {
 	return this->error;
@@ -399,29 +397,6 @@ void config::startEvaluation(parser& p)
     }
 }
 
-#include <sys/types.h>
-#include <sys/stat.h>
-
-bool dirExists(const std::string &path) {
-    struct stat st;
-    return (stat(path.c_str(), &st) == 0 && (st.st_mode & S_IFDIR));
-}
-
-bool createDir(const std::string &path) {
-    if (mkdir(path.c_str(), 0755) != 0) {
-        perror(("Failed to create directory: " + path).c_str());
-        return false;
-    }
-    return true;
-}
-
-bool initDefaultErrorPages()
-{
-	if (dirExists("/tmp/defaultErrorPages"))
-		return true;
-	
-}
-
 void config::buildServersConfig( void )
 {
     tokenizer tok(filename);
@@ -444,7 +419,6 @@ void config::buildServersConfig( void )
         return ;
     }
     startEvaluation(p);
-	initDefaultErrorPages();
 }
 
 // --------------------------------------------------------------------------- print-------

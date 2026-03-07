@@ -103,6 +103,13 @@ void TransactionManager::setServer(serverConfig *config)
     this->request.setConfig(config);
 }
 
+
+serverConfig *TransactionManager::getServer()
+{
+    return request.getConfig();
+}
+
+
 std::pair<unsigned char *, size_t> TransactionManager::firstResponse()
 {
     response.initializeResponse();
@@ -130,7 +137,7 @@ std::pair<unsigned char *, size_t> TransactionManager::getResponse()
     }
     if (response.getStatus() >= 400) {
         this->response.setState(RESPONSE_FINISHED);
-        std::pair<unsigned char *, size_t> p = ErrorResponse::getErrorResponse(response.getStatus());
+        std::pair<unsigned char *, size_t> p = ErrorResponse::getErrorResponse(getServer(), response.getStatus());
         return p;
     }
     else if (getResponseState() == READING_LARGE_FILE) {

@@ -6,8 +6,8 @@
 class ErrorResponse
 {
 private:
-    static std::map<int, std::string> getErrorPagePath(serverConfig *serverConf);
+    // static std::map<int, std::string> getErrorPagePath(serverConfig *serverConf);
 
 public:
-    static std::pair<unsigned char *, size_t> getErrorResponse(serverConfig *serverConf);
+    static std::pair<unsigned char *, size_t> getErrorResponse(serverConfig *serverConf, int code);
 };

@@ -30,6 +30,7 @@ public:
     void appendToRequest(unsigned char *buffer, size_t size);
     std::pair<unsigned char *, size_t> getResponse();
     int getResponseCode();
+	serverConfig *getServer();
     // BOOL IS_KEEP_ALIVE
     // SET CONFIG
 };
