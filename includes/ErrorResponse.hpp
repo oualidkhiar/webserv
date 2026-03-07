@@ -1,12 +1,13 @@
 #include <cstddef>
 #include <map>
 #include <string>
+#include "config.hpp"
 
 class ErrorResponse
 {
 private:
-    static std::map<int, std::string> initErrorPages();
+    static std::map<int, std::string> getErrorPagePath(serverConfig *serverConf);
 
 public:
-    static std::pair<unsigned char *, size_t> getErrorResponse(int code);
+    static std::pair<unsigned char *, size_t> getErrorResponse(serverConfig *serverConf);
 };

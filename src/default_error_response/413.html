@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>413 - Payload Too Large</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+        }
+
+        .container {
+            text-align: center;
+            padding: 2rem;
+            max-width: 650px;
+        }
+
+        .error-code {
+            font-size: 150px;
+            font-weight: bold;
+            line-height: 1;
+            margin-bottom: 20px;
+            text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.3);
+            animation: scale 2s ease-in-out infinite;
+        }
+
+        @keyframes scale {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 15px 40px;
+            background-color: white;
+            color: #fa709a;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            border: 2px solid white;
+            color: white;
+        }
+
+        .illustration {
+            margin-bottom: 2rem;
+            font-size: 100px;
+            animation: bounce 1s ease-in-out infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-15px);
+            }
+        }
+
+        .weight-icon {
+            display: inline-block;
+            font-size: 120px;
+        }
+
+        .info-box {
+            background-color: rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+            backdrop-filter: blur(10px);
+            text-align: left;
+        }
+
+        .info-box h3 {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .limit-info {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .limit-label {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .limit-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            background-color: rgba(255, 255, 255, 0.2);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+        }
+
+        .tips {
+            margin-top: 1rem;
+        }
+
+        .tips ul {
+            margin-left: 1.5rem;
+            line-height: 2;
+        }
+
+        .tips li {
+            opacity: 0.95;
+            font-size: 1rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            overflow: hidden;
+            margin-top: 1rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: #ff4757;
+            width: 100%;
+            animation: fillBar 2s ease-in-out;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        @keyframes fillBar {
+            from {
+                width: 0%;
+            }
+            to {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="illustration">
+            <span class="weight-icon">📦</span>
+        </div>
+        <div class="error-code">413</div>
+        <h1>Payload Too Large</h1>
+        <p>The file or data you're trying to upload is too big!</p>
+        
+        <div class="btn-group">
+            <button onclick="history.back()" class="btn">Go Back</button>
+            <a href="/" class="btn btn-secondary">Home Page</a>
+        </div>
+
+        <div class="info-box">
+            <h3>📏 Upload Limits</h3>
+            
+            <div class="limit-info">
+                <span class="limit-label">Maximum File Size</span>
+                <span class="limit-value">10 MB</span>
+            </div>
+
+            <div class="progress-bar">
+                <div class="progress-fill">
+                    Limit Exceeded!
+                </div>
+            </div>
+
+            <div class="tips">
+                <h3 style="font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 0.8rem;">💡 What you can do:</h3>
+                <ul>
+                    <li>Compress your file before uploading</li>
+                    <li>Split large files into smaller parts</li>
+                    <li>Use a file compression tool (ZIP, RAR)</li>
+                    <li>Resize images to reduce file size</li>
+                    <li>Contact support for larger upload limits</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

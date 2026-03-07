@@ -1,5 +1,6 @@
 #include "server_manager.hpp"
 #include "TransactionManager.hpp"
+#include "global.hpp"
 
 int main(int ac, char **av)
 {
@@ -13,6 +14,7 @@ int main(int ac, char **av)
     conf.buildServersConfig();
     if (conf.CheckParse())
         return (2);
+    initDefaultPages();
     // conf.printServer();
     ServerManager server(conf);
     server.StartAllServers();

@@ -23,8 +23,12 @@ struct location {
 
 struct serverConfig {
 private:
+
+	std::map<int ,std::string>						errorPages;
+	// std::map<int, std::string>						defaultErrorPages;			
 	SessionManager*									sessionManager;
     std::vector<int>								Port	;
+	std::vector<std::string>						ip  ;
 	size_t											clientMaxSizeBody;
 	std::vector<std::string>						ServerNames;
 	std::string										rootPath;
@@ -37,7 +41,10 @@ public:
 	std::map<std::string, location *>				Locations;
 	serverConfig(): sessionManager(NULL), clientMaxSizeBody(0), autoindex(false) {}
 	// geters for Global data
+	// std::map<int ,std::string>& getDefaultErrorPages();
+	std::map<int ,std::string>& getErrorPages();
 	std::vector<int>& getPorts();
+	std::vector<std::string>& getIps();
 	SessionManager* getSessionManager();
 	size_t getMaxBodySize();
 	std::vector<std::string>& getServerNames();
@@ -46,9 +53,12 @@ public:
 	bool getAutoIndexFlag();
 	std::set<std::string>& getAllowedMethods();
 	std::pair<int, std::string>& getRedirection();
-	// seters for Global data	
+	// seters for Global data
+	// void setDefaultErrorPages(int code, std::string path);
+	void setErrorPage(int number, std::string path);
 	void setSessionManager(SessionManager* sessionManager);
 	void setPort(int port);
+	void setIp(std::string ip);
 	void setMaxBodySize(size_t clientBody);
 	void setServerName(std::string serverName);
 	void setRootPath(std::string path);
@@ -85,6 +95,7 @@ public:
 };
 
 void clearServer(serverConfig *server);
-bool validateDataBlock(serverConfig *server); 
+bool validateDataBlock(serverConfig *server);
+bool initDefaultErrorPages();
 
 #endif

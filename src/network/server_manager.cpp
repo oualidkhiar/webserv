@@ -10,16 +10,22 @@ ServerManager::~ServerManager() {
     close(epfd);
 }
 
-int ServerManager::ListeningSocketStart(int port)
+int ServerManager::ListeningSocketStart(int& port, std::string& ip)
 {
     int                 opt;
     int                 socketFd;
     struct sockaddr_in  address;
     socklen_t           addLen;
 
-    address.sin_port = htons(port);
     address.sin_family = AF_INET;
-    address.sin_addr.s_addr = INADDR_ANY;
+    address.sin_port = htons(port);
+    if (ip == "*") {
+        address.sin_addr.s_addr = INADDR_ANY;
+        ip = "0.0.0.0";
+    } else if (inet_pton(AF_INET, static_cast<const char *>(ip.c_str()), &address.sin_addr) != 1) {
+        std::cout << "Error: Invalid ip address " << ip << std::endl;
+        return -1;
+    }
     addLen = sizeof(address);
     socketFd = socket(AF_INET, SOCK_STREAM, 0);
     opt = 1;
@@ -57,9 +63,10 @@ void ServerManager::StartAllServers()
     }
     for (int i = 0; i < conf.ServersNumber(); i++) {
         serverConfig *serverconf = conf.getSerevrConfig(i);
-        std::vector<int> ports = serverconf->getPorts();
+        std::vector<int>& ports = serverconf->getPorts();
+        std::vector<std::string>& ips = serverconf->getIps();
         for (size_t j = 0; j < ports.size(); j++) {
-            int sockFd = ListeningSocketStart(ports[j]);
+            int sockFd = ListeningSocketStart(ports[j], ips[j]);
             if (sockFd < 0) {
                 this->error = true;
                 return;
@@ -77,8 +84,8 @@ void ServerManager::StartAllServers()
                 return;
             }
             std::ostringstream s;
-            s << ports[i];
-            DisplyLogs::printCurrentAtion("[INFO ] [SERVER ]", "Listening on port "+s.str(), GREEN);
+            s << ports[j];
+            DisplyLogs::printCurrentAtion("[INFO ] [SERVER ]", "Listening on "+(ips[j]+":"+s.str()), GREEN);
             this->socketHandler.insert(std::make_pair(sockFd, sock));
         }
     }
