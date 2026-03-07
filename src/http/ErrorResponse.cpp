@@ -29,9 +29,20 @@ unsigned char *getDefaultErrorPages(int code)
 {
 	switch (code)
 	{
+		case 403:
+			return __403_html;
 		case 404:
-			return __404_html; 
-			break;
+			return __404_html;
+		case 405:
+			return __405_html;
+		case 413:
+			return __413_html;
+		case 500:
+			return __500_html;
+		case 503:
+			return __503_html;
+		case 504:
+			return __504_html;
 		default:
 			break;
 	}

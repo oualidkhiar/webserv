@@ -189,11 +189,14 @@ void RequestParser::read_body_chunked(HttpRequest &request)
 			request.setResponseCode(HP_BAD_REQUEST);
 			return;
 		}
-		size_t max = request.getLocation()->clientMaxSizeBody;
-		if (max > 0 && request.getBody().bodySize() > max)
+		if (request.getLocation() != NULL)
 		{
-			request.setResponseCode(HP_PAYLOAD_TOO_LARGE);
-			return;
+			size_t max = request.getLocation()->clientMaxSizeBody;
+			if (max > 0 && request.getBody().bodySize() > max)
+			{
+				request.setResponseCode(HP_PAYLOAD_TOO_LARGE);
+				return;
+			}
 		}
 		pos = findCrlfPos(request);
 	}
@@ -315,8 +318,16 @@ void RequestParser::read_header(HttpRequest &request, HttpResponse &response)
 		return;
 	}
 	
-	if (request.getBody().discoverReadingType(request) == EMPTY)
+	ReadingType bodyType = request.getBody().discoverReadingType(request);
+	if (request.getStatus() == ERROR)
+		return;
+	if (bodyType == EMPTY)
 	{
+		if (request.getType() == POST)
+		{
+			request.setResponseCode(HP_LENGTH_REQUIRED);
+			return;
+		}
 		request.setStatus(FINISHED);
 		return;
 	}

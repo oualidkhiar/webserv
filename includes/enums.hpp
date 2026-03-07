@@ -87,6 +87,7 @@ struct getInfos
 
 // 4xx Client Errors
 #define HP_BAD_REQUEST               400 // Syntax error, missing Host header, chunk formatting error
+#define HP_UNAUTHORIZED              401 // Authentication required
 #define HP_FORBIDDEN                 403 // chmod 000 file, or directory listing is OFF
 #define HP_NOT_FOUND                 404 // Requested path does not exist
 #define HP_METHOD_NOT_ALLOWED        405 // Method not in 'limit_except' block

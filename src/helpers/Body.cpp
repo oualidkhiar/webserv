@@ -21,7 +21,15 @@ enum ReadingType Body::discoverReadingType(HttpRequest &request)
         te_lower[i] = std::tolower(te_lower[i]);
     bool has_chunked = (te_lower.find("chunked") != std::string::npos);
     bool has_content_length = !request.getHeader(FIXED_LENGTH_HEADER).empty();
-    
+
+    // Transfer-Encoding present but not chunked — unsupported encoding
+    if (!te.empty() && !has_chunked)
+    {
+        request.setResponseCode(HP_NOT_IMPLEMENTED);
+        this->type = EMPTY;
+        return EMPTY;
+    }
+
     //if both are present, return EMPTY (security: request smuggling)
     if (has_chunked && has_content_length)
     {
