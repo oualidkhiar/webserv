@@ -21,7 +21,9 @@ serverConfig *config::getSerevrConfig( int index )
 
 SessionManager* serverConfig::getSessionManager() { return this->sessionManager; }
 void serverConfig::setSessionManager(SessionManager* sessionManager) { this->sessionManager = sessionManager; }
+std::map<int, std::string>& serverConfig::getErrorPages() {return this->errorPages;}
 std::vector<int>& serverConfig::getPorts() {return this->Port;}
+std::vector<std::string>& serverConfig::getIps() {return this->ip;};
 size_t serverConfig::getMaxBodySize() {return clientMaxSizeBody;}
 std::vector<std::string>& serverConfig::getServerNames() {return this->ServerNames;}
 std::string&	serverConfig::getRootPath() {return this->rootPath;}
@@ -37,6 +39,8 @@ void serverConfig::setIndexFile(std::string indexFile) {this->indexFiles.push_ba
 void serverConfig::setAutoIndexFlag() {this->autoindex = true;}
 void serverConfig::setAllowedMethod(std::string method) {this->allowMethods.insert(method);}
 void serverConfig::setRedirection(int code, std::string url) {this->redirection.first = code; this->redirection.second = url;}
+void serverConfig::setIp(std::string ip) {this->ip.push_back(ip);}
+void serverConfig::setErrorPage(int number, std::string path) {this->errorPages[number] = path;}
 
 bool config::CheckParse() {
 	return this->error;
@@ -158,6 +162,16 @@ void config::customDataServer(AstNode *node, serverConfig *server)
 {
 	if (node->name == "listen") {
 		for (size_t i = 0; i < node->args.size(); i++) {
+			std::string ipPort = node->args[i];
+			size_t pos = ipPort.find(":");
+			if (pos == std::string::npos) {
+				std::cout << "Error : Invalid IP:Port format, expected format IP:Port" << std::endl;
+				this->error = true;
+				return ;
+			} else {
+				server->setIp(ipPort.substr(0, pos));
+				node->args[i] = ipPort.substr(pos+1);
+			}
 			if (node->args[i].length() > 5) {
 				std::cout << "Error : Invalide port number " << node->args[i] << std::endl;
 				this->error = true;
@@ -251,6 +265,32 @@ void config::customDataServer(AstNode *node, serverConfig *server)
 		}
 		server->setRedirection(code, url);
 	}
+	else if (node->name == "error_pages") {
+		int last = node->args.size() - 1;
+		if (last <= 0) {
+			std::cout << "Error : invalid initialize of error page " << std::endl;
+		}
+		std::string errorPage = node->args[last];
+		for (size_t i = 0; i < node->args.size() - 1; i++) {
+			int errorNumber = std::atoi((node->args[i].c_str()));
+			if (
+				errorNumber == 400 || 
+				errorNumber == 403 || 
+				errorNumber == 404 || 
+				errorNumber == 405 || 
+				errorNumber == 413 || 
+				errorNumber == 500 || 
+				errorNumber == 501 || 
+				errorNumber == 503
+			)
+			{
+				server->setErrorPage(errorNumber, errorPage);
+			}
+			else {
+				std::cout << "Warning : invalide error page number " << errorNumber << " it will ignored" << std::endl;
+			}
+		}
+	}
 	else {
 		std::cout << "Warning: Unknown directive '" << node->name << "' " << "it will ignored in server block" << std::endl;
 	}
@@ -323,6 +363,7 @@ bool validateDataBlock(serverConfig *server)
 	return true;
 }
 
+
 void config::startEvaluation(parser& p)
 {
     int i = 0;
@@ -338,14 +379,14 @@ void config::startEvaluation(parser& p)
 			this->error = true;
             break ;
         }
-		std::vector<int> ports = server->getPorts();
-		for (size_t i = 0; i < server->getPorts().size(); i++)
+		std::vector<int>& ports = server->getPorts();
+		for (size_t i = 0; i < ports.size(); i++)
 		{
 			if (checkPortDuplicate.count(ports[i])) {
 				std::cout << "Error: virtual host not implemented, dont use the same port number more then one server" << std::endl;
 				this->error = true;
 				clearServer(server);
-				break ;
+				return ;
 			}
 			else {
 				checkPortDuplicate.insert(ports[i]);

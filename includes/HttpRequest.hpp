@@ -7,6 +7,7 @@
 #include "FtFile.hpp"
 #include "SessionManager.hpp"
 
+
 class HttpResponse;
 
 class HttpRequest

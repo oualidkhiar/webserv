@@ -15,7 +15,7 @@ private:
     int                                         epfd;
     bool                                        error;
 
-    int ListeningSocketStart(int port);
+    int ListeningSocketStart(int& port, std::string& ip);
 
 public:
 
