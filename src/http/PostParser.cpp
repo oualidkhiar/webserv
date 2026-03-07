@@ -158,7 +158,7 @@ void PostParser::executeUpload(HttpRequest &request)
 	else
 	{
 		bool closeFile = (request.getStatus() == FINISHED);
-		if (request.getFtFile()->writeToFile(request.getBody().getBody(), closeFile) == -1)
+		if (request.getBody().bodySize() > 0 && request.getFtFile()->writeToFile(request.getBody().getBody(), closeFile) == -1)
 			request.setResponseCode(HP_INTERNAL_SERVER_ERROR);
 		else if (closeFile)
 			request.setResponseCode(HP_CREATED);

@@ -157,6 +157,4 @@ std::pair<unsigned char *, size_t> TransactionManager::getResponse()
         return (firstResponse());
     else
         return (response.getChunkFromRequest());
-
-    std::cout << "NO CONDTION IS TRUE IN TransactionManager::getResponse" << std::endl;
 }
