@@ -76,8 +76,13 @@ void config::customDataLocation(AstNode *node, location *loc)
 			loc->rootPath = node->args[0];
 		}
 	}
-	else if (node->name == "client_max_body_size" && node->args.size() == 1)
+	else if (node->name == "client_max_body_size")
 	{
+		if (node->args.size() != 1) {
+			std::cout << "Error : invalide initialization of client max size body" << std::endl;
+			this->error = true;
+			return;
+		}
 		for (size_t j = 0; j < node->args[0].length(); j++)
 		{
 			if (!isdigit(node->args[0][j]))
@@ -98,6 +103,11 @@ void config::customDataLocation(AstNode *node, location *loc)
 	}
 	else if (node->name == "autoindex")
 	{
+		if (node->args.size() != 1) {
+			std::cout << "Error: invalid initialization of autoindex it must be like {autoindex off/on}" << std::endl;
+			this->error = true;
+			return ;
+		}
 		if (node->args[0] == "on")
 		{
 			loc->autoindex = true;
@@ -244,8 +254,13 @@ void config::customDataServer(AstNode *node, serverConfig *server)
 			server->setPort(std::atoi((node->args[i].c_str())));
 		}
 	}
-	else if (node->name == "client_max_body_size" && node->args.size() == 1)
+	else if (node->name == "client_max_body_size")
 	{
+		if (node->args.size() != 1) {
+			std::cout << "Error : invalide initialization of client max size body" << std::endl;
+			this->error = true;
+			return;
+		}
 		for (size_t j = 0; j < node->args[0].length(); j++)
 		{
 			if (!isdigit(node->args[0][j]))
@@ -273,6 +288,8 @@ void config::customDataServer(AstNode *node, serverConfig *server)
 		else if (node->args.size() > 1)
 		{
 			std::cout << "Error : multiple roots declared invalid" << std::endl;
+			this->error = true;
+			return ;
 		}
 	}
 	else if (node->name == "index")
@@ -284,8 +301,17 @@ void config::customDataServer(AstNode *node, serverConfig *server)
 	}
 	else if (node->name == "autoindex")
 	{
+		if (node->args.size() != 1) {
+			std::cout << "Error: invalid initialization of autoindex it must be like {autoindex off/on}" << std::endl;
+			this->error = true;
+			return ;
+		}
 		if (node->args[0] == "on")
 			server->setAutoIndexFlag();
+		else if (node->args[0] != "off")
+		{
+			std::cout << "Warning: Unknown word " << node->args[0] << " auto index will treat as default (off)" << std::endl;
+		}
 	}
 	else if (node->name == "methods")
 	{
@@ -343,7 +369,7 @@ void config::customDataServer(AstNode *node, serverConfig *server)
 		int last = node->args.size() - 1;
 		if (last <= 0)
 		{
-			std::cout << "Error : invalid initialize of error page " << std::endl;
+			std::cout << "Warning: invalid initialize of error page " << std::endl;
 		}
 		std::string errorPage = node->args[last];
 		for (size_t i = 0; i < node->args.size() - 1; i++)
@@ -447,10 +473,6 @@ bool validateDataBlock(serverConfig *server)
 		if (it->second->clientMaxSizeBody == 0)
 		{
 			it->second->clientMaxSizeBody = server->getMaxBodySize();
-		}
-		if (it->second->redirection.second.length() == 0)
-		{
-			it->second->redirection = server->getRedirection();
 		}
 	}
 	return true;

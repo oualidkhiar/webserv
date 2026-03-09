@@ -73,7 +73,7 @@ std::pair<unsigned char *, size_t> ErrorResponse::getErrorResponse(serverConfig 
             file.close();
         }
     }
-    else
+    if (content.size() == 0)
     {
         content.assign((char *)getDefaultErrorPages(code));
     }

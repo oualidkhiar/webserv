@@ -7,9 +7,9 @@ int main(int ac, char **av)
         std::cout << "invalid argument" << std::endl;
         return 2;
     }
-
+    std::string s
+    = "walid";
     config conf(av[1]);
-
     conf.buildServersConfig();
     if (conf.CheckParse())
         return (2);

@@ -201,9 +201,15 @@ std::string extructFileName(std::string fullPath)
 void Executor::caseIndexFile(HttpResponse &resp, HttpRequest &req)
 {
     std::pair<int, FtFile *> res = getIndexFile(req);
+    if (res.first != 1)
+    {
+        resp.setStatus(res.first);
+        resp.setState(READING_LARGE_FILE);
+        return;
+    }
     req.checkCGI(res.second->getPath());
     CGIType cgiType = req.getCGIType();
-    if (cgiType == PHP_CGI or cgiType == PYTHON_CGI or cgiType == SHELL_CGI)
+    if (cgiType != NO_CGI)
     { // maybe index file is a cgi (needs to execute : index.py ...)
         res.second->ft_close();
         std::string fileName = extructFileName(res.second->getPath());
@@ -215,12 +221,6 @@ void Executor::caseIndexFile(HttpResponse &resp, HttpRequest &req)
         }
         req.setUri(fileName);
         this->Case = CGI_EXECUTION;
-        return;
-    }
-    if (res.first != 1)
-    {
-        resp.setStatus(res.first);
-        resp.setState(READING_LARGE_FILE);
         return;
     }
     setContentTpe(resp, res.second->getPath());

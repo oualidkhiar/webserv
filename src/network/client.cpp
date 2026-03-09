@@ -68,6 +68,7 @@ void ClientSocket::sendingResponse()
         }
     }
     ret = write(socketFd, response.first, response.second);
+    std::cout << "response == " << response.first << std::endl;
     if (ret == -1) {
         if (errno == EPIPE or errno == ECONNRESET) {
             DisplyLogs::printCurrentAtion("[INFO ] [RESP ]", "client close connection", GREEN);
