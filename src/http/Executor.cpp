@@ -439,7 +439,7 @@ location *Executor::getLongestMatchedLocation(HttpRequest &request,
             best_score = score;
         }
     }
-    if (!best_match && map.count("/"))
+    if (request.getType() != POST && !best_match && map.count("/"))
         best_match = map["/"];
 
     return best_match;
