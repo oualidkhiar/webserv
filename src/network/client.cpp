@@ -83,7 +83,7 @@ void ClientSocket::sendingResponse()
         this->consecutive_failures_for_write++;
     }
     else if (this->transactionMgr->getResponseState() == RESPONSE_FINISHED) {
-        DisplyLogs::printCurrentAtion("[INFO ] [RESP ]", "Response (HTTP 200) fully sent to client", GREEN);
+        DisplyLogs::printCurrentAtion("[INFO ] [RESP ]", "Response fully sent to client", GREEN);
         this->action = CLOSE_CONNECTION;
     }
     else {

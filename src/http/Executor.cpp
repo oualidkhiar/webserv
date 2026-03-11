@@ -15,8 +15,6 @@ Executor::Executor() : Case(NONE) {}
 
 ExecutorCase Executor::getExecutorCase() { return this->Case; }
 
-
-
 std::string Executor::pathResolverForDelete(HttpRequest &request)
 {
     std::string path;
@@ -32,17 +30,25 @@ void Executor::executeDelete(HttpRequest &request, HttpResponse &response)
     if (stat(path.c_str(), &sb) != 0)
     {
         response.setStatus(HP_NOT_FOUND);
+        response.setState(RESPONSE_FINISHED);
         return;
     }
     if (access(path.c_str(), W_OK) != 0)
     {
         response.setStatus(HP_FORBIDDEN);
+        response.setState(RESPONSE_FINISHED);
+        return;
+    }
+    if (S_ISDIR(sb.st_mode))
+    {
+        response.setStatus(HP_FORBIDDEN);
+        response.setState(RESPONSE_FINISHED);
         return;
     }
     if (unlink(path.c_str()) != 0)
     {
         response.setStatus(HP_INTERNAL_SERVER_ERROR);
-        response.setState(RESPONSE_FINISHED);
+        response.setState(RESPONSE_FINISHED);   
         return;
     }
     response.setStatus(HP_OK);
@@ -50,7 +56,7 @@ void Executor::executeDelete(HttpRequest &request, HttpResponse &response)
     // here we sure thats request executed successfully so we can set the response header and body
     response.AddHeader("Content-Length", "0\r\n");
     response.AddHeader("Connection", "closed\r\n");
-    response.AddHeader("server", response.getHostname()+"\r\n");
+    response.AddHeader("server", response.getHostname() + "\r\n");
     response.setState(RESPONSE_FINISHED);
 }
 
@@ -130,15 +136,18 @@ bool Executor::isAllowedMethod(HttpRequest &request)
 void Executor::execute(HttpRequest &request, HttpResponse &response)
 {
     CGIType cgiType = request.getCGIType();
-	if (request.getType() == POST) {
-        if (cgiType != NO_CGI) { // check if request is cgi
+    if (request.getType() == POST)
+    {
+        if (cgiType != NO_CGI)
+        { // check if request is cgi
             this->Case = CGI_EXECUTION;
             return;
         }
         response.setState(RESPONSE_FINISHED);
         return;
     }
-    if (cgiType != NO_CGI) { // check if request is cgi
+    if (cgiType != NO_CGI)
+    { // check if request is cgi
         this->Case = CGI_EXECUTION;
         return;
     }
@@ -287,7 +296,7 @@ void Executor::caseListingFiles(HttpResponse &resp, HttpRequest &req, std::strin
     content_len << list.length();
     resp.AddHeader("content-length", content_len.str() + "\r\n");
     resp.AddHeader("Connection", "closed\r\n");
-    resp.AddHeader("server", resp.getHostname()+"\r\n");
+    resp.AddHeader("server", resp.getHostname() + "\r\n");
     resp.AddHeader("Content-Type", "text/html\r\n");
     resp.appendBodyToResponse(chunk);
     resp.setState(RESPONSE_FINISHED);
@@ -304,7 +313,7 @@ void Executor::CookiesForm(HttpResponse &response)
     content_len << html.length();
     response.AddHeader("content-length", content_len.str() + "\r\n");
     response.AddHeader("Connection", "closed\r\n");
-    response.AddHeader("server", response.getHostname()+"\r\n");
+    response.AddHeader("server", response.getHostname() + "\r\n");
     response.AddHeader("Content-Type", "text/html\r\n");
     response.createBody();
     response.appendBodyToResponse(chunk);
@@ -319,13 +328,12 @@ void Executor::CookiesWelcomePage(HttpResponse &response)
     content_len << html.length();
     response.AddHeader("content-length", content_len.str() + "\r\n");
     response.AddHeader("Connection", "closed\r\n");
-    response.AddHeader("server", response.getHostname()+"\r\n");
+    response.AddHeader("server", response.getHostname() + "\r\n");
     response.AddHeader("Content-Type", "text/html\r\n");
     response.createBody();
     response.appendBodyToResponse(chunk);
     response.setState(RESPONSE_FINISHED);
 }
-
 
 void Executor::CookiesHandler(HttpResponse &response)
 {
@@ -398,7 +406,7 @@ void Executor::executeGet(HttpRequest &request, HttpResponse &response)
         caseSpecifiedFile(response, p.second);
         break;
     }
-    case  COOKIES_PAGE:
+    case COOKIES_PAGE:
     {
         // cookies page means uri is /cookies
         // here we should generate a page that shows username of the user that is logged in and the session id
