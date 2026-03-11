@@ -1,9 +1,5 @@
 #include "ErrorResponse.hpp"
 #include "utils.hpp"
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <cstring>
 #include "403_html.h"
 #include "404_html.h"
 #include "405_html.h"
@@ -11,6 +7,12 @@
 #include "500_html.h"
 #include "503_html.h"
 #include "504_html.h"
+#include "400_html.h"
+#include "501_html.h"
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <cstring>
 
 static void mergeContentWithHeaders(size_t &bodyLen, std::string &content, int code, std ::string hostname = "")
 {
@@ -28,28 +30,32 @@ static void mergeContentWithHeaders(size_t &bodyLen, std::string &content, int c
     bodyLen = content.size();
 }
 
-unsigned char *getDefaultErrorPages(int code)
+std::pair<unsigned char *, size_t> getDefaultErrorPages(int code)
 {
     switch (code)
     {
-    case 403:
-        return __403_html;
-    case 404:
-        return __404_html;
-    case 405:
-        return __405_html;
-    case 413:
-        return __413_html;
-    case 500:
-        return __500_html;
-    case 503:
-        return __503_html;
-    case 504:
-        return __504_html;
-    default:
-        break;
+        case 403:
+            return std::make_pair(__403_html, __403_html_len);
+        case 404:
+            return std::make_pair(__404_html, __404_html_len);
+        case 405:
+            return std::make_pair(__405_html, __405_html_len);
+        case 413:
+            return std::make_pair(__413_html, __413_html_len);
+        case 500:
+            return std::make_pair(__500_html, __500_html_len);
+        case 503:
+            return std::make_pair(__503_html, __503_html_len);
+        case 504:
+            return std::make_pair(__504_html, __504_html_len);
+        case 400:
+            return std::make_pair(__400_html, __400_html_len);
+        case 501:
+            return std::make_pair(__501_html, __501_html_len);
+        default:
+            break;
     }
-    return (unsigned char *)"";
+    return std::make_pair((unsigned char *)"", 0);
 }
 
 std::pair<unsigned char *, size_t> ErrorResponse::getErrorResponse(serverConfig *serverConf, int code)
@@ -75,7 +81,19 @@ std::pair<unsigned char *, size_t> ErrorResponse::getErrorResponse(serverConfig 
     }
     if (content.size() == 0)
     {
-        content.assign((char *)getDefaultErrorPages(code));
+        std::pair<unsigned char *, size_t> p = getDefaultErrorPages(code);
+        if (p.second > 0) {
+            content.assign((char *)p.first, p.second);
+        }
+        else
+        {
+            std::ostringstream s;
+            s << code;
+            content = "<center>"
+                            "<br><br><br><br><br>"
+                            "<h1>"+s.str()+"</h1>"
+                    "</center>";
+        }
     }
     size_t size = content.size();
     mergeContentWithHeaders(size, content, code, hostname);

@@ -2,12 +2,15 @@
 #include "server_manager.hpp"
 #include "ErrorResponse.hpp"
 #include "constent.hpp"
+#define MAX_RETRIES 2
 
 ClientSocket::ClientSocket(int fd ,serverConfig *conf): 
 socketsManager(conf, fd), state(READING_REQUEST)
 {
     this->transactionMgr = new TransactionManager();
     this->transactionMgr->setServer(conf);
+    this->consecutive_failures_for_read = 0;
+    this->consecutive_failures_for_write = 0;
 }
 
 bool ClientSocket::isTimeOut() {
@@ -41,17 +44,20 @@ void ClientSocket::readingAndProcessingRequest()
             s << bytesRead;
             DisplyLogs::printCurrentAtion("[INFO ] [REQ  ]", "reading "+s.str()+" bytes from request", GREEN);
         }
+        this->consecutive_failures_for_read = 0;
     }
     else {
         if (bytesRead == 0) {
             DisplyLogs::printCurrentAtion("[WRNIN] [REQ  ]", "client close connection", YELLOW);
             this->action = CLOSE_CONNECTION;
         }
-        if (errno == EAGAIN or errno == EWOULDBLOCK)
-            DisplyLogs::printCurrentAtion("[WARNIN] [REQ  ]", "read would block, no data available right now, try again later", YELLOW);
-        else if (errno != EINTR) {
-            DisplyLogs::printCurrentAtion("[ERROR] [REQ  ]", "syscall read failed", RED);
-            this->action = CLOSE_CONNECTION;
+        else {  // read() == -1: no data available or temporary error.
+                // Without errno, we use a counter to limit retries (max MAX_RETRIES) before closing the socket.
+            if (this->consecutive_failures_for_read >= MAX_RETRIES) {
+                DisplyLogs::printCurrentAtion("[ERROR] [REQ  ]", "syscall read failed", RED);
+                this->action = CLOSE_CONNECTION;
+            }
+            this->consecutive_failures_for_read++;
         }
     }
     delete[] buffer;
@@ -68,19 +74,20 @@ void ClientSocket::sendingResponse()
         }
     }
     ret = write(socketFd, response.first, response.second);
-    std::cout << "response == " << response.first << std::endl;
     if (ret == -1) {
-        if (errno == EPIPE or errno == ECONNRESET) {
-            DisplyLogs::printCurrentAtion("[INFO ] [RESP ]", "client close connection", GREEN);
+        if (this->consecutive_failures_for_write >= MAX_RETRIES) { // // write() == -1: socket can’t write right now (buffer full or error).
+                                                                  // Since errno isn’t available, we retry later on EPOLLOUT and close only if failure persists. also(max = MAX_RETRIES) 
+            DisplyLogs::printCurrentAtion("[ERROR] [RESP ]", "write() failed: connection broken or socket closed", RED);
             this->action = CLOSE_CONNECTION;
         }
-        else if (errno == EAGAIN) {
-            DisplyLogs::printCurrentAtion("[WRNING] [RESP ]", "write would block — send buffer full, try again later", YELLOW);
-        }
+        this->consecutive_failures_for_write++;
     }
-    if (this->transactionMgr->getResponseState() == RESPONSE_FINISHED) {
+    else if (this->transactionMgr->getResponseState() == RESPONSE_FINISHED) {
         DisplyLogs::printCurrentAtion("[INFO ] [RESP ]", "Response (HTTP 200) fully sent to client", GREEN);
         this->action = CLOSE_CONNECTION;
+    }
+    else {
+        consecutive_failures_for_write = 0;
     }
     delete[] response.first;
 }
@@ -91,22 +98,14 @@ void ClientSocket::ErrorParseRequest() {
     std::pair<unsigned char *, size_t> error_response = ErrorResponse::getErrorResponse(serverConf, error_code);
     ret = write(socketFd, error_response.first, error_response.second);
     if (ret == -1) {
-        if (errno == EINTR or errno == EWOULDBLOCK or errno == EAGAIN) {
-            DisplyLogs::printCurrentAtion("[WRNIN] [RESP ]", "read syscall temporarily unavailable (EAGAIN/EINTR)", YELLOW);
-            delete[] error_response.first;
-            return ;
-        }
-        else {
-            this->action = CLOSE_CONNECTION;
-            delete[] error_response.first;
-            DisplyLogs::printCurrentAtion("[ERROR] [RESP ]", "write syscall failed", RED);
-        }
+        this->action = CLOSE_CONNECTION;
+        DisplyLogs::printCurrentAtion("[ERROR] [RESP ]", "write syscall failed", RED);
     }
     else {
-        delete[] error_response.first;
         DisplyLogs::printCurrentAtion("[INFO ] [RESP ]", "Error response successfully delivered to client", GREEN);
         this->action = CLOSE_CONNECTION;
     }
+    delete[] error_response.first;
 }
 
 void ClientSocket::handleEvent()
@@ -117,7 +116,8 @@ void ClientSocket::handleEvent()
     else if (this->state == WRITING_RESPONSE) {
         sendingResponse();
     }
-    else if (this->state == ERROR_RESP) {
+    else if (this->state == ERROR_RESP) { // error response that we detect at parsing time are serving using this function
+                                        // but if we detect error at execution time we hanle it in transaction manager class 
         ErrorParseRequest();
     }
 }
