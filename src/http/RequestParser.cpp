@@ -305,6 +305,13 @@ void RequestParser::read_header(HttpRequest &request, HttpResponse &response)
 			request.setResponseCode(HP_BAD_REQUEST);
 			return;
 		}
+		// added by ilyas -- protects from double content-length values in request
+		if (StringManip::toLowerCase(header.first) == FIXED_LENGTH_HEADER && request.getHeader(FIXED_LENGTH_HEADER).empty() == false)
+		{
+			request.setResponseCode(HP_BAD_REQUEST);
+			return;
+
+		}
 		request.addHeader(StringManip::toLowerCase(header.first), header.second);
 		headers_string.erase(0, line.length() + 1);
 	}
