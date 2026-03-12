@@ -15,8 +15,6 @@ private:
 
     ClientState         state;
     TransactionManager  *transactionMgr;
-    int                  consecutive_failures_for_read;
-    int                  consecutive_failures_for_write;
 
     void readingAndProcessingRequest( void );
     void sendingResponse();

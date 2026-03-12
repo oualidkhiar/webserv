@@ -97,7 +97,7 @@ void ServerManager::TrackSocketsEvent()
 
     while (true)
     {
-        nfds = epoll_wait(epfd, events, MAX_EVENTS, 1000); /// sleep untile data reach socket 
+        nfds = epoll_wait(epfd, events, MAX_EVENTS, 1000); /// sleep untile data reach socket
         for (int i = 0; i < nfds; i++) {
             socketsManager *sock = (socketsManager *)events[i].data.ptr;
             sock->handleEvent();
