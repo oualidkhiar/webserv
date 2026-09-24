@@ -1,5 +1,9 @@
 <h1 align="center"><b>WebServer</b></h1>
 
+## Linux Sockets Internals Explained
+
+📖 **[Read the guide](https://oualidkhiar.github.io/webserv-kernel-guide/)**
+
 ## Parsing
 
 An **HTTP** request looks like this:
